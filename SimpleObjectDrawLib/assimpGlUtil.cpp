@@ -1,6 +1,6 @@
 #pragma once
 
-#include "assimpGlUtil.h"
+#include "include/assimpGlUtil.h"
 
 #include <glew.h>
 #include <GL/gl.h>

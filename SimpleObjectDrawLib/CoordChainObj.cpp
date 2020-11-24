@@ -1,5 +1,5 @@
-#include "DrawableObjectClass.h"
-#include "glDrawExt.h"
+#include "include/DrawableObjectClass.h"
+#include "include/glDrawExt.h"
 
 #include <glew.h>
 #include <GL/gl.h>

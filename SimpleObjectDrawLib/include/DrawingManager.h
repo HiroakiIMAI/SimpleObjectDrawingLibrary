@@ -13,13 +13,6 @@
 #include "GLTypedef.h"
 
 
-#define			WINDOW_SIZE_X			(640 * 2)
-#define			WINDOW_SIZE_Y			(480)
-
-#define			VP_SIZE_X				(WINDOW_SIZE_X/2)
-#define			VP_SIZE_Y				(WINDOW_SIZE_Y)
-#define			VP_ASPECT				((float)VP_SIZE_X / (float)VP_SIZE_Y)
-
 
 #define			DIAG_VIEW				"DiagonalView"
 #define			HEAD_VIEW				"HeadView"
@@ -97,7 +90,7 @@ namespace SmplObjDrwLib {
 		public virtual ISodlObjBase
 	{
 	public:
-		static std::shared_ptr<ViewPortClass> create(std::string name);
+		static std::shared_ptr<ViewPortClass> create(std::string name, int vpSizeX, int vpSizeY);
 		static std::list<std::weak_ptr<ViewPortClass> > vpInstanceList;
 
 		int vp_id;
@@ -121,7 +114,7 @@ namespace SmplObjDrwLib {
 		std::shared_ptr<CamClass> getCam();
 
 	protected:
-		ViewPortClass(std::string name);
+		ViewPortClass(std::string name, int vpSizeX, int vpSizeY);
 
 		void fitCamMatrixToOrthView();
 		void addSelfToVpList();
@@ -137,14 +130,28 @@ namespace SmplObjDrwLib {
 		// コンストラクタ
 		//--------------------------------------------
 	private:
-		DrawingManager(int* argc, char** argv);
+		DrawingManager(
+			int* argc, 
+			char** argv, 
+			int windowSizeX, 
+			int windowSizeY,
+			std::string windowTitle 
+		);
 
 		//--------------------------------------------
 		// ファクトリ関数(シングルトンパターン)
 		//--------------------------------------------
 	public:
-		static TypeOfSelf* initMngr(int* argc, char** argv);
+		static TypeOfSelf* initMngr(
+			int* argc, char** argv, 
+			int windowSizeX = 640 * 2, 
+			int windowSizeY = 480 * 2,
+			std::string windowTitle = "SimpleObjectDrawingLibrary Window"
+		);
 
+		//--------------------------------------------
+		// 以下、本クラス固有の公開メンバ
+		//--------------------------------------------
 	public:
 		void drawUpdt();
 		void mvCam(Eigen::Vector3f mv);
@@ -165,7 +172,7 @@ namespace SmplObjDrwLib {
 		std::vector< std::shared_ptr<ViewPortClass> >viewPorts;
 
 		// ビューポートの追加
-		std::shared_ptr<ViewPortClass> addViewPort(std::string);
+		std::shared_ptr<ViewPortClass> addViewPort(std::string, int vpSizeX = -1, int vpSizeY = -1);
 
 		// コールバック関数の設定I/F
 		void SetKeyboardFunc(void(*func)(unsigned char key, int u, int v));
@@ -173,9 +180,15 @@ namespace SmplObjDrwLib {
 		void SetMouseDrag(void(*func)(int u, int v));
 		void SetPassiveMotionFunc(void(*func)(int u, int v));
 
+		//--------------------------------------------
+		// 以下、本クラス固有の非公開メンバ
+		//--------------------------------------------
 	private:
 
 		void draw(void);
+
+		int _windowSizeX;
+		int _windowSizeY;
 
 		static void OnKeyboardFunc (unsigned char key, int u, int v);
 		static void OnMouseBtn (int button, int state, int u, int v);
@@ -186,12 +199,7 @@ namespace SmplObjDrwLib {
 		static void(*usrMouseBtnFunc)(int button, int state, int u, int v);
 		static void(*usrMouseDragFunc)(int u, int v);
 		static void(*usrMouseHoverFunc)(int u, int v);
-		/*
-		void(*usrKeyboardFunc)(void(*func)(unsigned char key, int u, int v)) = NULL;
-		void (*usrMouseFunc)(void(*func)(int button, int state, int u, int v)) = NULL;
-		void (*usrMouseDrag)(void(*func)(int u, int v)) = NULL;
-		void (*usrPassiveMotionFunc)(void(*func)(int u, int v)) = NULL;
-		*/
+
 	};
 
 };

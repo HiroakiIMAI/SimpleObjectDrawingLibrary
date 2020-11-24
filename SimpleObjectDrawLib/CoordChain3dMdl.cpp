@@ -1,5 +1,5 @@
-#include "CoordChain3dMdl.h"
-#include "glDrawExt.h"
+#include "include/CoordChain3dMdl.h"
+#include "include/glDrawExt.h"
 
 #include <glew.h>
 #include <GL/gl.h>

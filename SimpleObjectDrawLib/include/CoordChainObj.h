@@ -82,6 +82,13 @@ namespace SmplObjDrwLib {
 		void DetachSelf_fromParentsCoordChain();
 		void AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> parent);
 
+		//--------------------------------------------
+		// Eigen::Vector 等をメンバに持つクラスのための
+		// New演算子オーバライドマクロ
+		//->>>----------------------------------------
+	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+		//-<<<----------------------------------------
 
 	protected:
 		Eigen::Affine3f GetTf_root2self();

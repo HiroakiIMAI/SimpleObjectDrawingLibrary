@@ -1,52 +1,60 @@
 #define  _USE_MATH_DEFINES
 
-#include "SimpleObjectDrawingLibrary.h"
-#pragma comment( lib, "fGlutTest.lib" )
-
+#include "include/SimpleObjectDrawingLibrary.h"
+#pragma comment( lib, "SimpleObjectDrawLib.lib" )
 
 #include <math.h>
 #include <iostream>
 
-#define			KEY_MOT_UNIT	5.f
-#define			CNV_DEG2RAD		(M_PI/180.f)
 
-#define			PATH_TESTMODEL	"C:/Program Files/Assimp/test/models/STL/Spider_ascii.stl"
+#define			WINDOW_SIZE_X			(640 * 2)
+#define			WINDOW_SIZE_Y			(480)
 
-//-----------------
-// debug
+#define			VP_SIZE_X				(WINDOW_SIZE_X/2)
+#define			VP_SIZE_Y				(WINDOW_SIZE_Y)
 
 
-// debug
-//-----------------
 
-namespace sodLib = SmplObjDrwLib;
-
-float Axez_X = 10;
-float Axez_Y = -200;
-float Axez_Z = -300;
-float Axez_B = 0;
-float Axez_C = 0;
+namespace sodl = SmplObjDrwLib;
 
 namespace app {
 
+	// グローバル変数
 	int mouseBtnSt[3];
 	int mouseU_prv = 0;
 	int mouseV_prv = 0;
 
+	float Axez_X = 10;
+	float Axez_Y = -200;
+	float Axez_Z = -300;
+	float Axez_B = 0;
+	float Axez_C = 0;
+
+	// Windowインタラクション関連コールバック関数
 	void keyFunc(unsigned char key, int u, int v);
-	//void onMouseBtn(int button, int state, int x, int y);
+	void onMouseBtn(int button, int state, int x, int y);
 	void onMouseDrag(int u, int v);
 	void onMouseHover(int u, int v);
+
+	// その他のサブ関数
+	std::string GetModulePath();	// 実行ファイルのパスを取得
+
 };
 
+
+//================================================================
+//
+//	<Summry>		アプリケーションのエントリポイント
+//	<Description>
+//================================================================
 int main(int argc, char ** argv) 
 {
-	sodLib::DrawingManager::initMngr( &argc, argv);
+	sodl::DrawingManager::initMngr( &argc, argv, WINDOW_SIZE_X, WINDOW_SIZE_Y);
 	
-	//sodLib::drwMngr->SetMouseFunc(app::onMouseBtn);
-	sodLib::drwMngr->SetMouseDrag(app::onMouseDrag);
-	sodLib::drwMngr->SetPassiveMotionFunc(app::onMouseHover);
-	sodLib::drwMngr->SetKeyboardFunc(app::keyFunc);
+	sodl::drwMngr->SetMouseFunc(app::onMouseBtn);
+	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
+	sodl::drwMngr->SetPassiveMotionFunc(app::onMouseHover);
+	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
 	
 
 	//////////////////////////////////////////////////////
@@ -55,7 +63,7 @@ int main(int argc, char ** argv)
 	//
 
 	// ビューポート1
-	auto vp1 = sodLib::drwMngr->viewPorts[0];
+	auto vp1 = sodl::drwMngr->viewPorts[0];
 	vp1->setVpSize(
 		0,			// left
 		0,			// bottom
@@ -69,7 +77,7 @@ int main(int argc, char ** argv)
 	vp1->attachCam(cam1);
 
 	// ビューポート2
-	auto vp2 = sodLib::drwMngr->addViewPort("vp2");
+	auto vp2 = sodl::drwMngr->addViewPort("vp2");
 	vp2->setVpSize(
 		VP_SIZE_X,	// left
 		0,			// bottom
@@ -82,19 +90,19 @@ int main(int argc, char ** argv)
 	cam2->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
 
 
-
-	// 時系列グラフの作成
-	auto timeSerialGraph = sodLib::TimeSeriesGraph::create("TimeSerealGraph");
+	
+ 	// 時系列グラフの作成
+	auto timeSerialGraph = sodl::TimeSeriesGraph::create("TimeSerealGraph");
 	timeSerialGraph->rangeMax.x() = 0;
 	timeSerialGraph->rangeMin.x() = 0;
 	timeSerialGraph->rangeMax.y() = 100;
 	timeSerialGraph->rangeMin.y() = -100;
 	{
 		// グラフ用に描画空間を追加
-		auto spaceGrph = sodLib::drwMngr->addDrawingSpace();
+		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
 		{
 			// ビューポート3
-			auto vpGrph = sodLib::drwMngr->addViewPort("vp3");
+			auto vpGrph = sodl::drwMngr->addViewPort("vp3");
 			vpGrph->spaceAttached = spaceGrph;
 			vpGrph->setVpSize(
 				VP_SIZE_X,		// left
@@ -110,21 +118,22 @@ int main(int argc, char ** argv)
 		}
 	}
 	// 描画空間にグラフを追加
-	sodLib::drwMngr->AddObjTree_ToDrwSpace(timeSerialGraph, 1);
+	sodl::drwMngr->AddObjTree_ToDrwSpace(timeSerialGraph, 1);
+	
 
-
+	
 	// 散布図グラフの作成
-	auto scatterGraph = sodLib::GraphObj::create("ScatterGraph");
+	auto scatterGraph = sodl::GraphObj::create("ScatterGraph");
 	scatterGraph->rangeMax.x() =  100;
 	scatterGraph->rangeMin.x() = -100;
 	scatterGraph->rangeMax.y() =  100;
 	scatterGraph->rangeMin.y() = -100;
 	{
 		// グラフ用に描画空間を追加
-		auto spaceGrph = sodLib::drwMngr->addDrawingSpace();
+		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
 		{
 			// ビューポート4
-			auto vpGrph = sodLib::drwMngr->addViewPort("vp4");
+			auto vpGrph = sodl::drwMngr->addViewPort("vp4");
 			vpGrph->spaceAttached = spaceGrph;
 			vpGrph->setVpSize(
 				VP_SIZE_X,			// left
@@ -140,8 +149,8 @@ int main(int argc, char ** argv)
 		}
 	}
 	// 描画空間にグラフを追加
-	sodLib::drwMngr->AddObjTree_ToDrwSpace(scatterGraph, 2);
-
+	sodl::drwMngr->AddObjTree_ToDrwSpace(scatterGraph, 2);
+	
 
 
 	//////////////////////////////////////////////////////
@@ -149,34 +158,43 @@ int main(int argc, char ** argv)
 	// 描画対象オブジェクトの生成
 	//
 
+	//-----------------------------------------------------
 	// 機械座標原点を定義
-	auto Mch_Origin = sodLib::CoordChainObj::create("Mch_Origin");
+	//-----------------------------------------------------
+	auto Mch_Origin = sodl::CoordChainObj::create("Mch_Origin");
 	Mch_Origin->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f,0.f);
 
+	//-----------------------------------------------------
 	// 機械座標原点から連鎖するXYZリンクを定義
-	auto Y_Link = sodLib::CoordChainObj::create("Y_Link", Mch_Origin);
-	auto X_Link = sodLib::CoordChainObj::create("X_Link", Y_Link );
-	auto Z_Link = sodLib::CoordChainObj::create("Z_Link", X_Link);
+	//-----------------------------------------------------
+	auto Y_Link = sodl::CoordChainObj::create("Y_Link", Mch_Origin);
+	auto X_Link = sodl::CoordChainObj::create("X_Link", Y_Link );
+	auto Z_Link = sodl::CoordChainObj::create("Z_Link", X_Link);
 
+	//-----------------------------------------------------
 	// 機械座標原点から連鎖するBCリンクを定義
-	auto B_Link = sodLib::CoordChainObj::create("B_Link", Mch_Origin);
+	//-----------------------------------------------------
+	auto B_Link = sodl::CoordChainObj::create("B_Link", Mch_Origin);
 	B_Link->CrdTrs.translation() = Eigen::Vector3f(300.f, 0.f, -300.f);
-	auto C_Link = sodLib::CoordChainObj::create("C_Link", B_Link);
+	auto C_Link = sodl::CoordChainObj::create("C_Link", B_Link);
 	C_Link->CrdTrs.translation() = Eigen::Vector3f(0.f, -300.f, 0.f);	
 
+	//-----------------------------------------------------
 	// 3Dモデルオブジェクトをリンクにアタッチする
-	auto Mch_OriginModel = sodLib::CoordChain3dMdl::create("3dModel/Y_Rail.stl", "Y_Rail", Mch_Origin);
+	//-----------------------------------------------------
+	// 実行ファイルのパスを取得する(モデルファイルの位置を相対パスで指定するため)
+	std::string exePath = app::GetModulePath();
+
+	auto Mch_OriginModel = sodl::CoordChain3dMdl::create( exePath+"3dModel\\Y_Rail.stl", "Y_Rail", Mch_Origin);
 	Mch_OriginModel->CrdTrs.translation() = Eigen::Vector3f(-100.f,-800.f,-100.f);
 	
-	auto Y_LinkModel = sodLib::CoordChain3dMdl::create("3dModel/X_Rail.stl", "X_Rail", Y_Link);
+	auto Y_LinkModel = sodl::CoordChain3dMdl::create( exePath + "3dModel\\X_Rail.stl", "X_Rail", Y_Link);
 	Y_LinkModel->CrdTrs.translation() = Eigen::Vector3f(-100.f, 0.f, 0.f);
 
-	auto X_LinkModel = sodLib::CoordChain3dMdl::create("3dModel/Z_Rail.stl", "Z_Rail", X_Link);
+	auto X_LinkModel = sodl::CoordChain3dMdl::create( exePath + "3dModel\\Z_Rail.stl", "Z_Rail", X_Link);
 	X_LinkModel->CrdTrs.translation() = Eigen::Vector3f(-50.f, -10.f, 0.f);
 
-	auto Z_LinkModel = sodLib::CoordChain3dMdl::create("3dModel/head_cone.stl", "head_cone", Z_Link);
-	
-
+	auto Z_LinkModel = sodl::CoordChain3dMdl::create( exePath + "3dModel\\head_cone.stl", "head_cone", Z_Link);
 
 
 	////////////////////////////////////////////////////// 
@@ -185,31 +203,29 @@ int main(int argc, char ** argv)
 	//
 
 	// 定義した座標系連鎖を描画空間にセット
-	sodLib::drwMngr->AddObjTree_ToDrwSpace(Mch_Origin);
+	sodl::drwMngr->AddObjTree_ToDrwSpace(Mch_Origin);
 
 	int count = 0;
 	while(1)
 	{
-		//app::keyFunc(sodLib::key); 
-		//sodLib::key = 0;
 
-		X_Link->CrdTrs.translation() = Eigen::Vector3f(Axez_X, 0, 0);
-		Y_Link->CrdTrs.translation() = Eigen::Vector3f(0, Axez_Y, 0);
-		Z_Link->CrdTrs.translation() = Eigen::Vector3f(0, 0, Axez_Z);
+		X_Link->CrdTrs.translation() = Eigen::Vector3f(app::Axez_X, 0, 0);
+		Y_Link->CrdTrs.translation() = Eigen::Vector3f(0, app::Axez_Y, 0);
+		Z_Link->CrdTrs.translation() = Eigen::Vector3f(0, 0, app::Axez_Z);
 
-		B_Link->CrdTrs.linear() = Eigen::AngleAxisf( Axez_B, UnitY ).matrix();
-		C_Link->CrdTrs.linear() = Eigen::AngleAxisf( Axez_C, UnitZ ).matrix();
+		B_Link->CrdTrs.linear() = Eigen::AngleAxisf(app::Axez_B, UnitY ).matrix();
+		C_Link->CrdTrs.linear() = Eigen::AngleAxisf(app::Axez_C, UnitZ ).matrix();
 		
 
 		//---------------------------------
 		// debug  
 		
-		timeSerialGraph->addData(Eigen::Vector3f(count, Axez_X + rand()%100 - 50, -3));
+		timeSerialGraph->addData(Eigen::Vector3f(count, app::Axez_X + rand()%100 - 50, -3));
 
 		// debug
 		//---------------------------------
 
-		sodLib::drwMngr->drawUpdt();
+		sodl::drwMngr->drawUpdt();
 
 		++count;
 		Sleep(10);
@@ -221,12 +237,19 @@ int main(int argc, char ** argv)
 
 namespace app {
 
-
+	//================================================================
+	//
+	//	<Summry>		キー操作時のコールバック
+	//	<Description>
+	//================================================================
 	void keyFunc(unsigned char key, int u, int v)
 	{
+		const float		KEY_MOT_UNIT	=	5.f;
+		const float		CNV_DEG2RAD		=	(M_PI / 180.f);
+
 		switch (key) {
-		case '\033':
-			exit(0);  /* '\033' は ESC の ASCII コード */
+		case '\033':	// '\033' は ESC の ASCII コード
+			exit(0);
 
 		case '1':
 			Axez_X += KEY_MOT_UNIT;
@@ -266,42 +289,56 @@ namespace app {
 		}
 	}
 
-	/*
+	//================================================================
+	//
+	//	<Summry>		GLウィンドウ上でマウスボタン操作時のコールバック
+	//	<Description>
+	//================================================================
 	void onMouseBtn(int button, int state, int x, int y)
 	{
-		mouseBtnSt[button] = state;
 	}
-	*/
 
+	//================================================================
+	//
+	//	<Summry>		GLウィンドウ上でマウスドラッグ時のコールバック
+	//	<Description>
+	//================================================================
 	void onMouseDrag(int u, int v)
 	{
-		/*
-		const int du = u - mouseU_prv;
-		const int dv = v - mouseV_prv;
-
-		Eigen::Vector3f mv;
-
-		if (mouseBtnSt[sodLib::MOUSE_LEFT_BUTTON] == sodLib::MOUSE_DOWN)
-		{
-			Eigen::Vector3f* cPos = &SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached->camPos;
-			Eigen::Vector3f* tPos = &SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached->camTgt;
-			Eigen::Vector3f dir_p2t = *cPos - *tPos;
-			dir_p2t.normalize();
-			Eigen::Vector3f uDir3D = dir_p2t.cross(UnitZ);
-			Eigen::Vector3f vDir3D = dir_p2t.cross(uDir3D);
-
-			*cPos += 2 * ((uDir3D * du) + (-vDir3D * dv));
-		}
-
-		mouseU_prv = u;
-		mouseV_prv = v;
-		*/
 	}
 
+	//================================================================
+	//
+	//	<Summry>		GLウィンドウ上でマウスホバー時のコールバック
+	//	<Description>
+	//================================================================
 	void onMouseHover(int u, int v)
 	{
-		//mouseU_prv = u;
-		//mouseV_prv = v;
+	}
+
+
+	//================================================================
+	//
+	//	<Summry>		実行ファイルのパスを取得
+	//	<Description>
+	//================================================================
+	std::string GetModulePath()
+	{
+		// 実行ファイルのパス
+		std::string modulePath = "";
+		// ドライブ名、ディレクトリ名、ファイル名、拡張子
+		char path[MAX_PATH], drive[MAX_PATH], dir[MAX_PATH], fname[MAX_PATH], ext[MAX_PATH];
+
+		// 実行ファイルのファイルパスを取得
+		if (GetModuleFileNameA(NULL, path, MAX_PATH) != 0)
+		{
+			// ファイルパスを分割
+			_splitpath_s(path, drive, dir, fname, ext);
+			// ドライブとディレクトリ名を結合して実行ファイルパスとする
+			modulePath = std::string(drive) + std::string(dir);
+		}
+
+		return modulePath;
 	}
 
 };

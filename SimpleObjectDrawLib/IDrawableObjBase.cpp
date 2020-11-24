@@ -1,4 +1,4 @@
-#include "IDrawableObjBase.h"
+#include "include/IDrawableObjBase.h"
 
 namespace SmplObjDrwLib {
 	namespace color4fv {

@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleObjectDrawLib", "SimpleObjectDrawLib\SimpleObjectDrawLib.vcxproj", "{8599FB59-F9F6-406B-A5BB-F60B4F7E2EA0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SODL_sample_00", "SODL_sample_00\SODL_sample_00.vcxproj", "{5051AA1A-4439-43A7-AD9A-82037E3B6C12}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8599FB59-F9F6-406B-A5BB-F60B4F7E2EA0} = {8599FB59-F9F6-406B-A5BB-F60B4F7E2EA0}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

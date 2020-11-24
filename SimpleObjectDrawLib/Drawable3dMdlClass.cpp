@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "Drawable3dMdlClass.h"
+#include "include/Drawable3dMdlClass.h"
 
 #include <glew.h>
 #include <GL/gl.h>

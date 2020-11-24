@@ -57,15 +57,31 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\PropertySheets\Assimp.props" />
+    <Import Project="..\..\..\PropertySheets\Eigen.props" />
+    <Import Project="..\..\..\PropertySheets\fGlut.props" />
+    <Import Project="..\..\..\PropertySheets\glew.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\PropertySheets\Assimp.props" />
+    <Import Project="..\..\..\PropertySheets\Eigen.props" />
+    <Import Project="..\..\..\PropertySheets\fGlut.props" />
+    <Import Project="..\..\..\PropertySheets\glew.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\PropertySheets\Assimp.props" />
+    <Import Project="..\..\..\PropertySheets\Eigen.props" />
+    <Import Project="..\..\..\PropertySheets\fGlut.props" />
+    <Import Project="..\..\..\PropertySheets\glew.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\PropertySheets\Assimp.props" />
+    <Import Project="..\..\..\PropertySheets\Eigen.props" />
+    <Import Project="..\..\..\PropertySheets\fGlut.props" />
+    <Import Project="..\..\..\PropertySheets\glew.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -75,6 +91,9 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -82,6 +101,9 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -111,21 +133,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\SimpleObjectDrawLib\assimpGlUtil.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\CoordChain3dMdl.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\CoordChainObj.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\Drawable3dMdlClass.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\DrawableObjectClass.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\DrawingManager.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\glDrawExt.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\GLTypedef.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\GraphObj.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\IDrawableObjBase.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\ISodlObjBase.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\SimpleObjectDrawingLibrary.h" />
-    <ClInclude Include="..\SimpleObjectDrawLib\TimeSeriesGraph.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

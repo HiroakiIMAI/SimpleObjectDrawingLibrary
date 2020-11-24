@@ -1,4 +1,4 @@
-#include "GraphObj.h"
+#include "include/GraphObj.h"
 
 using namespace SmplObjDrwLib;
 

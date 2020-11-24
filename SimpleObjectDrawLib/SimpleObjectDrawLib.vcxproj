@@ -18,6 +18,34 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assimpGlUtil.h" />
+    <ClInclude Include="include\CoordChain3dMdl.h" />
+    <ClInclude Include="include\CoordChainObj.h" />
+    <ClInclude Include="include\Drawable3dMdlClass.h" />
+    <ClInclude Include="include\DrawableObjectClass.h" />
+    <ClInclude Include="include\DrawingManager.h" />
+    <ClInclude Include="include\glDrawExt.h" />
+    <ClInclude Include="include\GLTypedef.h" />
+    <ClInclude Include="include\GraphObj.h" />
+    <ClInclude Include="include\IDrawableObjBase.h" />
+    <ClInclude Include="include\ISodlObjBase.h" />
+    <ClInclude Include="include\SimpleObjectDrawingLibrary.h" />
+    <ClInclude Include="include\TimeSeriesGraph.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="assimpGlUtil.cpp" />
+    <ClCompile Include="CoordChain3dMdl.cpp" />
+    <ClCompile Include="CoordChainObj.cpp" />
+    <ClCompile Include="Drawable3dMdlClass.cpp" />
+    <ClCompile Include="DrawableObjectClass.cpp" />
+    <ClCompile Include="DrawingManager.cpp" />
+    <ClCompile Include="glDrawExt.cpp" />
+    <ClCompile Include="GraphObj.cpp" />
+    <ClCompile Include="IDrawableObjBase.cpp" />
+    <ClCompile Include="ISodlObjBase.cpp" />
+    <ClCompile Include="TimeSeriesGraph.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8599FB59-F9F6-406B-A5BB-F60B4F7E2EA0}</ProjectGuid>
     <RootNamespace>SimpleObjectDrawLib</RootNamespace>
@@ -125,34 +153,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="assimpGlUtil.cpp" />
-    <ClCompile Include="CoordChain3dMdl.cpp" />
-    <ClCompile Include="CoordChainObj.cpp" />
-    <ClCompile Include="Drawable3dMdlClass.cpp" />
-    <ClCompile Include="DrawableObjectClass.cpp" />
-    <ClCompile Include="DrawingManager.cpp" />
-    <ClCompile Include="glDrawExt.cpp" />
-    <ClCompile Include="GraphObj.cpp" />
-    <ClCompile Include="IDrawableObjBase.cpp" />
-    <ClCompile Include="ISodlObjBase.cpp" />
-    <ClCompile Include="TimeSeriesGraph.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="assimpGlUtil.h" />
-    <ClInclude Include="CoordChain3dMdl.h" />
-    <ClInclude Include="CoordChainObj.h" />
-    <ClInclude Include="Drawable3dMdlClass.h" />
-    <ClInclude Include="DrawableObjectClass.h" />
-    <ClInclude Include="DrawingManager.h" />
-    <ClInclude Include="glDrawExt.h" />
-    <ClInclude Include="GLTypedef.h" />
-    <ClInclude Include="GraphObj.h" />
-    <ClInclude Include="IDrawableObjBase.h" />
-    <ClInclude Include="ISodlObjBase.h" />
-    <ClInclude Include="SimpleObjectDrawingLibrary.h" />
-    <ClInclude Include="TimeSeriesGraph.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

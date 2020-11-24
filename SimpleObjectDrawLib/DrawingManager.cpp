@@ -1,6 +1,6 @@
-#include "DrawingManager.h"
-#include "DrawableObjectClass.h"
-#include "glDrawExt.h"
+#include "include/DrawingManager.h"
+#include "include/DrawableObjectClass.h"
+#include "include/glDrawExt.h"
 
 #include <cstdio>
 #include <iostream>
@@ -152,10 +152,9 @@ std::list<std::weak_ptr<ViewPortClass> > ViewPortClass::vpInstanceList;
 //--------------------------------------------
 // ファクトリ関数
 //--------------------------------------------
-std::shared_ptr<ViewPortClass> ViewPortClass::create(std::string name)
+std::shared_ptr<ViewPortClass> ViewPortClass::create(std::string name, int vpSizeX, int vpSizeY)
 {
-	auto ptr = std::shared_ptr<ViewPortClass>(new ViewPortClass(name));
-//	ptr->addSelfToList();
+	auto ptr = std::shared_ptr<ViewPortClass>(new ViewPortClass(name, vpSizeX, vpSizeY));
 	ptr->addSelfToVpList();
 
 	// 作成したインスタンスが最初の一つでない場合、
@@ -173,7 +172,7 @@ std::shared_ptr<ViewPortClass> ViewPortClass::create(std::string name)
 //--------------------------------------------
 // コンストラクタ
 //--------------------------------------------
-ViewPortClass::ViewPortClass(std::string name) 
+ViewPortClass::ViewPortClass(std::string name, int vpSizeX, int vpSizeY)
 	:ISodlObjBase(name)
 	,camAttached(NULL)
 {
@@ -182,10 +181,10 @@ ViewPortClass::ViewPortClass(std::string name)
 
 	int num = vp_id + 1;
 
-	width	= WINDOW_SIZE_X/num;
-	height	= WINDOW_SIZE_Y/num;
-	left	= WINDOW_SIZE_X - width;
-	bottom	= WINDOW_SIZE_Y - height;
+	width	= vpSizeX /num;
+	height	= vpSizeY /num;
+	left	= vpSizeX - width;
+	bottom	= vpSizeY - height;
 
 	attachCam( CamClass::create(DEFAULT_CAM) );
 }
@@ -257,17 +256,19 @@ void ViewPortClass::fitCamMatrixToOrthView()
 //	<Summry>		コンストラクタ
 //	<Description>
 //================================================================
-DrawingManager::DrawingManager(int* argc, char** argv)
+DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle) :
+	_windowSizeX(windowSizeX),
+	_windowSizeY(windowSizeY)
 {
 	// init Glut
 	glutInit(argc, argv);
 	glutInitWindowPosition(100, 50);
-	glutInitWindowSize(WINDOW_SIZE_X, WINDOW_SIZE_Y);
+	glutInitWindowSize(windowSizeX, windowSizeY);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 
-	glutCreateWindow("fGlut Window");
+	glutCreateWindow( windowTitle.c_str() );
 
-	// for GLEW
+	// init GLEW
 	glewInit();
 
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -282,22 +283,21 @@ DrawingManager::DrawingManager(int* argc, char** argv)
 	glutMotionFunc(OnMouseDrag);
 	glutPassiveMotionFunc(OnMouseHover);
 
-	// デフォルトの描画空間を作成
+	// 描画空間ベクタを初期化する
 	drawingSpace = sPtr_vector< sPtr_vector< sPtr_IDrawableObjBase > >(
 		new std::vector< sPtr_vector< sPtr_IDrawableObjBase > >
 	);
-	drawingSpace->push_back(sPtr_vector< sPtr_IDrawableObjBase >( 
+	// デフォルト描画空間を作成してベクタにプッシュする
+	drawingSpace->push_back(sPtr_vector< sPtr_IDrawableObjBase >(
 		new std::vector< sPtr_IDrawableObjBase >)
 	);
 
 	//--------------------------------------------------------
 	// init ViewPortData
 
-	const float viewSizeV_half = 500.f;
-	const float viewSizeU_half = viewSizeV_half * VP_ASPECT;
-
 	auto vpDiag = addViewPort(DIAG_VIEW);
 	vpDiag->spaceAttached = (*drawingSpace)[0];
+
 	// init ViewPortData
 	//--------------------------------------------------------
 
@@ -317,9 +317,9 @@ DrawingManager::DrawingManager(int* argc, char** argv)
 //	<Summry>		ファクトリ関数(シングルトンパターン)
 //	<Description>
 //================================================================
-DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv)
+DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle)
 {
-	static auto ptr = new TypeOfSelf( argc, argv );
+	static auto ptr = new TypeOfSelf( argc, argv , windowSizeX, windowSizeY, windowTitle);
 	drwMngr.reset(ptr);
 
 	return  ptr;
@@ -423,9 +423,13 @@ void DrawingManager::mvCam( Eigen::Vector3f mv )
 //	<Summry>		ビューポートの追加
 //	<Description>
 //================================================================
-std::shared_ptr<ViewPortClass> DrawingManager::addViewPort(std::string name)
+std::shared_ptr<ViewPortClass> DrawingManager::addViewPort(std::string name, int vpSizeX, int vpSizeY)
 {
-	auto vp = ViewPortClass::create(name);
+	// 引数のvpSizeが省略された場合は、windowSizeを使用する
+	(vpSizeX == -1) ? vpSizeX = _windowSizeX : vpSizeX = vpSizeX;
+	(vpSizeY == -1) ? vpSizeY = _windowSizeY : vpSizeY = vpSizeY;
+
+	auto vp = ViewPortClass::create(name, vpSizeX, vpSizeY);
 	viewPorts.push_back(vp);
 	return vp;
 }
