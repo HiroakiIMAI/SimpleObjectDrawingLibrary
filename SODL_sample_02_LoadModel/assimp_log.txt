@@ -1,0 +1,19 @@
+Info,  T30012: Load C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\miku.obj
+Info,  T30012: Found a matching importer for this file format: Wavefront Object Importer.
+Info,  T30012: Import root directory is 'C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\'
+Info,  T30012: Entering post processing pipeline
+Info,  T30012: RemoveRedundantMatsProcess finished. Removed 1 redundant and 1 unused materials.
+Warn,  T30012: Found 4 degenerated primitives
+Info,  T30012: Points: 0, Lines: 1, Triangles: 17, Polygons: 0 (Meshes, X = removed)
+Error, T30012: FindInvalidDataProcess fails on mesh uvcoords: All vectors are identical
+Skipping one or more lines with the same contents
+Info,  T30012: FindInvalidDataProcess finished. Found issues ...
+Info,  T30012: OptimizeMeshesProcess finished. Input meshes: 18, Output meshes: 17
+Error, T30012: Failed to compute tangents; need UV data in channel0
+Skipping one or more lines with the same contents
+Info,  T30012: Tangents are undefined for line and point meshes
+Info,  T30012: CalcTangentsProcess finished. Tangents have been calculated
+Info,  T30012: JoinVerticesProcess finished | Verts in: 44987 out: 19729 | ~56.1%
+Error, T30012: This algorithm works on triangle meshes only
+Info,  T30012: Cache relevant are 13 meshes (14973 faces). Average output ACMR is 1.495893
+Info,  T30012: Leaving post processing pipeline

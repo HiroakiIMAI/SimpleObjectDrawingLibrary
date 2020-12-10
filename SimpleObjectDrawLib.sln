@@ -14,6 +14,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SODL_sample_01_CoordinateCh
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SODL_sample_02_LoadModel", "SODL_sample_02_LoadModel\SODL_sample_02_LoadModel.vcxproj", "{F3491A72-B4E3-40C0-99EE-61E6A438A2B0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SODL_sample_03_MultiViewPort", "SODL_sample_03_MultiViewPort\SODL_sample_03_MultiViewPort.vcxproj", "{14C1597C-D327-47BD-B9FF-0B39E7B3C897}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -54,6 +56,14 @@ Global
 		{F3491A72-B4E3-40C0-99EE-61E6A438A2B0}.Release|x64.Build.0 = Release|x64
 		{F3491A72-B4E3-40C0-99EE-61E6A438A2B0}.Release|x86.ActiveCfg = Release|Win32
 		{F3491A72-B4E3-40C0-99EE-61E6A438A2B0}.Release|x86.Build.0 = Release|Win32
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Debug|x64.ActiveCfg = Debug|x64
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Debug|x64.Build.0 = Debug|x64
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Debug|x86.ActiveCfg = Debug|Win32
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Debug|x86.Build.0 = Debug|Win32
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Release|x64.ActiveCfg = Release|x64
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Release|x64.Build.0 = Release|x64
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Release|x86.ActiveCfg = Release|Win32
+		{14C1597C-D327-47BD-B9FF-0B39E7B3C897}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -105,6 +105,9 @@ namespace SmplObjDrwLib {
 		int bottom;
 		int width;
 		int height;
+		int widthHalfZoomed;
+		int heightHalfZoomed;
+
 
 //		std::string name;
 		std::shared_ptr<CamClass> camAttached;

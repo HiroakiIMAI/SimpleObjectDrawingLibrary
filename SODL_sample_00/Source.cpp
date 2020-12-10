@@ -73,7 +73,7 @@ int main(int argc, char ** argv)
 	auto cam1 = vp1->getCam();
 	cam1->camPos = Eigen::Vector3f(600.f, -2000.f, -0.f);
 	cam1->camTgt = Eigen::Vector3f(300.f, -300.f, -300.f);
-	cam1->zoomRatio = 2.0;
+	cam1->zoomRatio = 0.5;
 	vp1->attachCam(cam1);
 
 	// ビューポート2

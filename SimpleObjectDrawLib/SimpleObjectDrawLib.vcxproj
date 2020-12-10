@@ -122,7 +122,7 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>xcopy include ..\Debug\include /I</Command>
+      <Command>xcopy include ..\Debug\include /I /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -134,7 +134,7 @@
     <PostBuildEvent>
       <Message>
       </Message>
-      <Command>xcopy include ..\Debug\include /I</Command>
+      <Command>xcopy include ..\Debug\include /I /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

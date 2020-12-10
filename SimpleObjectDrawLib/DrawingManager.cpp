@@ -229,16 +229,16 @@ void ViewPortClass::attachCam(std::shared_ptr<CamClass> cam)
 
 void ViewPortClass::fitCamMatrixToOrthView()
 {
-	int width_half = width >> 1;
-	int height_half = height >> 1;
+	widthHalfZoomed  = (width  >> 1) / camAttached->zoomRatio;
+	heightHalfZoomed = (height >> 1) / camAttached->zoomRatio;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(
-		-width_half * camAttached->zoomRatio, 
-		 width_half * camAttached->zoomRatio,
-		-height_half* camAttached->zoomRatio,
-		 height_half * camAttached->zoomRatio,
+		-widthHalfZoomed, 
+		 widthHalfZoomed,
+		-heightHalfZoomed,
+		 heightHalfZoomed,
 		0,
 		50000.f
 	);
@@ -361,11 +361,13 @@ void DrawingManager::draw(void)
 		glLoadIdentity();
 
 		// カメラを配置する前にviewPortに縁を描く
+		int _w = vp->widthHalfZoomed;
+		int _h = vp->heightHalfZoomed;
 		glColor3d(1.0, 1.0, 1.1); // white
-		glRecti(-vp->width/2, -vp->height/2, vp->width/2, vp->height/2);
-		glColor3d(0.0, 0.0, 0.1); // naybie
-		glRecti(-vp->width / 2 + 1, -vp->height / 2 + 1, vp->width / 2 - 1, vp->height / 2 - 1);
-
+		glRecti(-_w, -_h, _w, _w);
+		glColor3d(0.0, 0.0, 0.1); // navy
+		glRecti(-_w+1, -_h+1, _w-1, _w-1);
+	
 
 		// カメラの配置
 		gluLookAt(

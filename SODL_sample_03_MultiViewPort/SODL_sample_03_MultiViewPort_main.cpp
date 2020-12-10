@@ -12,8 +12,8 @@ namespace sodl = SmplObjDrwLib;
 // アプリケーションのグローバルシンボルをappネームスペースに収める
 namespace app {
 
-	const int	WINDOW_SIZE_X = 640;
-	const int	WINDOW_SIZE_Y = 480;
+	const int	WINDOW_SIZE_X = 1280;
+	const int	WINDOW_SIZE_Y = 960;
 	float ax_X = 100; // [mm]
 	float ax_Y = 100; // [mm]
 	float ax_Z = 100; // [mm]
@@ -49,6 +49,109 @@ int main(int argc, char ** argv)
 	// 描画マネージャにコールバック関数を設定する
 	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
 
+
+	//-----------------------------------------------------
+	// ビューポートとカメラの設定
+	//-----------------------------------------------------
+	// ビューポート1
+	//-----------------------------------------------------
+	//	デフォルトのビューポートは描画マネージャの初期化時にインスタンス化され、
+	//	viewPorts[0]にstd::shared_ptrで保持されている。
+	//	これを一時変数に受け取ってサイズや関連付けられたカメラ設定を操作する
+
+	// ビューポート1へのshared_ptr取得
+	auto vp1 = sodl::drwMngr->viewPorts[0];
+
+	// ビューポート1のサイズを設定する
+	//	ウィンドウを4分割した左上領域にビューポートを張る
+	//	(OpenGL画像座標系に従うので、ウィンドウ左下原点、上方向がY+、右方向がX+)
+	vp1->setVpSize(
+		0,								// left
+		app::WINDOW_SIZE_Y / 2,			// bottom
+		app::WINDOW_SIZE_X / 2,			// width
+		app::WINDOW_SIZE_Y / 2			// height
+	);
+
+	// ビューポート1に関連付けられたカメラへのshared_ptrを取得する
+	auto cam1 = vp1->getCam();
+
+	// カメラの位置を設定する
+	cam1->camPos = Eigen::Vector3f(600.f, -2000.f, 300.f);
+	// カメラの撮影対象位置を設定する
+	cam1->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+	// カメラのズーム比率を設定する
+	cam1->zoomRatio = 0.8;
+	vp1->attachCam(cam1);
+
+	//-----------------------------------------------------
+	// ビューポート2
+	//-----------------------------------------------------
+	// ビューポートを追加する。
+	//	追加されたビューポートインスタンスは
+	//	drwMngr->viewPorts[]にもshared_ptrを介して保持される
+	auto vp2 = sodl::drwMngr->addViewPort("vp2");
+
+	// ウィンドウを4分割した右上領域にビューポートを張る
+	vp2->setVpSize(
+		app::WINDOW_SIZE_X / 2,			// left
+		app::WINDOW_SIZE_Y / 2,			// bottom
+		app::WINDOW_SIZE_X / 2,			// width
+		app::WINDOW_SIZE_Y / 2			// height
+	);
+
+	// ビューポート2に関連付けられたカメラへのshared_ptrを取得する
+	auto cam2 = vp2->getCam();
+	// 上面図を撮影する
+	cam2->camPos = Eigen::Vector3f(0.f, -0.f, 5000.f);
+	cam2->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+	cam2->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
+	vp2->attachCam(cam2);
+
+	//-----------------------------------------------------
+	// ビューポート3
+	//-----------------------------------------------------
+	// ビューポートを追加する。
+	auto vp3 = sodl::drwMngr->addViewPort("vp3");
+
+	// ウィンドウを4分割した左下領域にビューポートを張る
+	vp3->setVpSize(
+		0,								// left
+		0,								// bottom
+		app::WINDOW_SIZE_X / 2,			// width
+		app::WINDOW_SIZE_Y / 2			// height
+	);
+
+	// ビューポート2に関連付けられたカメラへのshared_ptrを取得する
+	auto cam3 = vp3->getCam();
+	// 側面図を撮影する
+	cam3->camPos = Eigen::Vector3f(-1000.f, 0.f, 0.f);
+	cam3->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+	cam3->camUpVec = Eigen::Vector3f(0.f, 0.f, 1.f);
+	vp3->attachCam(cam3);
+
+	//-----------------------------------------------------
+	// ビューポート4
+	//-----------------------------------------------------
+	// ビューポートを追加する。
+	auto vp4 = sodl::drwMngr->addViewPort("vp4");
+
+	// ウィンドウを4分割した右下領域にビューポートを張る
+	vp4->setVpSize(
+		app::WINDOW_SIZE_X / 2, 		// left
+		0,								// bottom
+		app::WINDOW_SIZE_X / 2,			// width
+		app::WINDOW_SIZE_Y / 2			// height
+	);
+
+	// ビューポート2に関連付けられたカメラへのshared_ptrを取得する
+	auto cam4 = vp4->getCam();
+	// 側面図を撮影する
+	cam4->camPos = Eigen::Vector3f(0.f, -1000.f, 0.f);
+	cam4->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+	cam4->camUpVec = Eigen::Vector3f(0.f, 0.f, 1.f);
+	vp4->attachCam(cam4);
+
+
 	//-----------------------------------------------------
 	// ワールド座標系原点から連鎖するJ1~4座標系オブジェクトを定義
 	//-----------------------------------------------------
@@ -76,6 +179,8 @@ int main(int argc, char ** argv)
 	//-----------------------------------------------------
 	// 定義した座標系連鎖を描画マネージャの持つ描画空間にセット
 	sodl::drwMngr->AddObjTree_ToDrwSpace(World_Origin);
+
+
 
 	////////////////////////////////////////////////////// 
 	//

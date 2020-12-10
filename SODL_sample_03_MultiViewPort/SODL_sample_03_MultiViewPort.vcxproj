@@ -18,8 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SODL_sample_03_MultiViewPort_main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5051AA1A-4439-43A7-AD9A-82037E3B6C12}</ProjectGuid>
+    <ProjectGuid>{14C1597C-D327-47BD-B9FF-0B39E7B3C897}</ProjectGuid>
     <RootNamespace>SODL_sample_00</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -61,6 +64,7 @@
     <Import Project="..\..\..\PropertySheets\Eigen.props" />
     <Import Project="..\..\..\PropertySheets\fGlut.props" />
     <Import Project="..\..\..\PropertySheets\glew.props" />
+    <Import Project="..\..\..\PropertySheets\SimpleObjectDrawingLibrary.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -68,6 +72,7 @@
     <Import Project="..\..\..\PropertySheets\Eigen.props" />
     <Import Project="..\..\..\PropertySheets\fGlut.props" />
     <Import Project="..\..\..\PropertySheets\glew.props" />
+    <Import Project="..\..\..\PropertySheets\SimpleObjectDrawingLibrary.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -75,6 +80,7 @@
     <Import Project="..\..\..\PropertySheets\Eigen.props" />
     <Import Project="..\..\..\PropertySheets\fGlut.props" />
     <Import Project="..\..\..\PropertySheets\glew.props" />
+    <Import Project="..\..\..\PropertySheets\SimpleObjectDrawingLibrary.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -82,6 +88,7 @@
     <Import Project="..\..\..\PropertySheets\Eigen.props" />
     <Import Project="..\..\..\PropertySheets\fGlut.props" />
     <Import Project="..\..\..\PropertySheets\glew.props" />
+    <Import Project="..\..\..\PropertySheets\SimpleObjectDrawingLibrary.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -131,9 +138,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Source.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
