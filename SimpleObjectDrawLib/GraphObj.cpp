@@ -34,7 +34,9 @@ GraphObj::~GraphObj()
 //================================================================
 std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 	std::string name,
-	std::weak_ptr<CoordChainObj> parent
+	std::weak_ptr<CoordChainObj> parent,
+	float size_x,
+	float size_y
 )
 {
 	// インスタンスの生成
@@ -50,7 +52,7 @@ std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 	}
 
 	// メンバの初期化
-	ptr->initSelf();
+	ptr->initSelf(size_x, size_y);
 
 	return  ptr;
 }
@@ -60,7 +62,7 @@ std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 //	<Summry>		メンバ初期化関数
 //	<Description>
 //================================================================
-void GraphObj::initSelf()
+void GraphObj::initSelf(float size_x, float size_y)
 {
 	//-----------------------------------
 	// メンバ DrawableObj の初期化 
@@ -88,8 +90,8 @@ void GraphObj::initSelf()
 	// 背景の初期化
 	//-------------------------------
 	auto grph_back = this->back;
-	grph_back->boxSize.x() = 100;
-	grph_back->boxSize.y() = 100;
+	grph_back->boxSize.x() = size_x;
+	grph_back->boxSize.y() = size_y;
 	grph_back->drawType = DRAWTYPE::POLYGON;
 	copyColor4fv(color4fv::LGRAY, grph_back->color.fv4);
 
@@ -97,10 +99,10 @@ void GraphObj::initSelf()
 	// グラフエリアの初期化
 	//-------------------------------
 	auto grph_area = this->area;
-	grph_area->boxSize.x() = 90;
-	grph_area->boxSize.y() = 70;
+	grph_area->boxSize.x() = 0.9 * size_x;
+	grph_area->boxSize.y() = 0.7 * size_y;
 	grph_area->boxSize.z() = 0;
-	grph_area->CrdTrs.translation() = Eigen::Vector3f(5, 5, 0);
+	grph_area->CrdTrs.translation() = Eigen::Vector3f(0.05 * size_x, 0.10 * size_y, 0);
 	grph_area->drawType = DRAWTYPE::POLYGON;
 	copyColor4fv(color4fv::WHITE, grph_area->color.fv4);
 
@@ -130,6 +132,11 @@ void GraphObj::initSelf()
 	this->yAxis->points.push_back(Eigen::Vector3f(0, area->boxSize.y(), 0));
 
 	
+	//-------------------------------
+	// ラベル群の一括初期化
+	//-------------------------------
+	LabelObj::SetVpSizeToChildrenLabel(back, back->boxSize.x(), back->boxSize.y());
+
 	//-------------------------------
 	// x軸ラベルの初期化
 	//-------------------------------
@@ -211,6 +218,7 @@ void GraphObj::initSelf()
 	copyColor4fv(color4fv::BLUE, this->_dataToDraw->colorWire.fv4);
 
 }
+
 
 
 //================================================================

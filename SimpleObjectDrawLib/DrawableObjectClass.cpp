@@ -332,8 +332,8 @@ void LabelObj::_drawShapeOfSelf()
 	float x = GetTf_root2self().translation().x();
 	float y = GetTf_root2self().translation().y();	
 	glOrtho(
-		x-(x*rate), x+((100-x)*rate), 
-		y - (y*rate), y + ((100 - y)*rate),
+		x - (x*rate), x + ((vpSizeX - x)*rate), 
+		y - (y*rate), y + ((vpSizeY - y)*rate),
 		-1000, 1000);
 	
 	
@@ -378,7 +378,37 @@ void LabelObj::_drawShapeOfSelf()
 
 }
 
+//================================================================
+//
+//	<Summry>		メンバのラベル全てに対してグラフサイズを通知する
+//	<Description>	
+//					
+//================================================================
+void LabelObj::SetVpSizeToChildrenLabel(
+	std::shared_ptr<CoordChainObj> obj,
+	float size_x,
+	float size_y
+)
+{
+	// 与えられたオブジェクトがLabelObjならば、vpSizeにグラフサイズを設定する
+	if (auto sPtr_labelObj = std::dynamic_pointer_cast<LabelObj>(obj))
+	{
+		sPtr_labelObj->vpSizeX = size_x;
+		sPtr_labelObj->vpSizeY = size_y;
+	}
 
+	// 全ての子要素を探索し、再帰する
+	for (auto child = obj->wPtr_chldrn.begin();
+		child != obj->wPtr_chldrn.end();
+		child++)
+	{
+		auto sPtr_child = child->lock();
+		if (sPtr_child)
+		{
+			SetVpSizeToChildrenLabel(sPtr_child, size_x, size_y);
+		}
+	}
+}
 
 ////////////////
 //debug func

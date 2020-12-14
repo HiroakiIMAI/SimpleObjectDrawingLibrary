@@ -208,10 +208,17 @@ namespace SmplObjDrwLib {
 		// その他
 		//--------------------------------------------
 	public:
+		static void SetVpSizeToChildrenLabel(
+			std::shared_ptr<CoordChainObj> obj,
+			float size_x,
+			float size_y
+		);
+
 		std::string text;						// ラベル内容のテキスト
-		float size = 5;								// ラベルのフォントサイズ
+		float size = 5;							// ラベルのフォントサイズ
+		float vpSizeX = 100.f;					// ビューポートサイズ X
+		float vpSizeY = 100.f;					// ビューポートサイズ Y
 		LabelAlign align = LabelAlign::LEFT;	// ラベルのアラインメント
 	};
-
 }
 

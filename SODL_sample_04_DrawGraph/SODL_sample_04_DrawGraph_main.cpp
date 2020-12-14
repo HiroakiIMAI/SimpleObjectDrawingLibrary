@@ -20,9 +20,8 @@ namespace sodl = SmplObjDrwLib;
 namespace app {
 
 	// グローバル変数
-	int mouseBtnSt[3];
-	int mouseU_prv = 0;
-	int mouseV_prv = 0;
+	int mouse_x = 0;
+	int mouse_y = 0;
 
 	float Axez_X = 10;
 	float Axez_Y = -200;
@@ -73,26 +72,18 @@ int main(int argc, char ** argv)
 	auto cam1 = vp1->getCam();
 	cam1->camPos = Eigen::Vector3f(600.f, -2000.f, -0.f);
 	cam1->camTgt = Eigen::Vector3f(300.f, -300.f, -300.f);
-	cam1->zoomRatio = 2.0;
+	cam1->zoomRatio = 0.5;
 	vp1->attachCam(cam1);
-
-	// ビューポート2
-	auto vp2 = sodl::drwMngr->addViewPort("vp2");
-	vp2->setVpSize(
-		VP_SIZE_X,	// left
-		0,			// bottom
-		VP_SIZE_X,	// width
-		VP_SIZE_Y	// height
-	);
-	auto cam2 = vp2->camAttached;
-	cam2->camPos = Eigen::Vector3f(300.f, -300.f, 5000.f);
-	cam2->camTgt = Eigen::Vector3f(300.f, -300.f, -300.f);
-	cam2->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
-
 
 	
  	// 時系列グラフの作成
-	auto timeSerialGraph = sodl::TimeSeriesGraph::create("TimeSerealGraph");
+	auto timeSerialGraph
+		= sodl::TimeSeriesGraph::create(
+			"TimeSerealGraph",
+			std::weak_ptr<sodl::CoordChainObj>(),
+			200,
+			100
+		);
 	timeSerialGraph->rangeMax.x() = 0;
 	timeSerialGraph->rangeMin.x() = 0;
 	timeSerialGraph->rangeMax.y() = 100;
@@ -107,14 +98,14 @@ int main(int argc, char ** argv)
 			vpGrph->setVpSize(
 				VP_SIZE_X,		// left
 				VP_SIZE_Y / 2,	// bottom
-				VP_SIZE_X/2,		// width
+				VP_SIZE_X,		// width
 				VP_SIZE_Y / 2		// height
 			);
 			auto camGrph = vpGrph->getCam();
 			camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
 			camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
 			camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
-			camGrph->SetPrjMtx_As2DView(100, 100);
+			camGrph->SetPrjMtx_As2DView(200, 100);
 		}
 	}
 	// 描画空間にグラフを追加
@@ -221,6 +212,7 @@ int main(int argc, char ** argv)
 		// debug  
 		
 		timeSerialGraph->addData(Eigen::Vector3f(count, app::Axez_X + rand()%100 - 50, -3));
+		scatterGraph->addData(Eigen::Vector3f(app::mouse_x, app::mouse_y, -3));
 
 		// debug
 		//---------------------------------
@@ -305,6 +297,8 @@ namespace app {
 	//================================================================
 	void onMouseDrag(int u, int v)
 	{
+		mouse_x = u;
+		mouse_y = WINDOW_SIZE_Y - v;
 	}
 
 	//================================================================

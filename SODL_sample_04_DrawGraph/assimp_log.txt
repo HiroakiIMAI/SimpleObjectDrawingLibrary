@@ -1,0 +1,36 @@
+Info,  T22652: Load C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\head_cone.stl
+Info,  T22652: Found a matching importer for this file format: Stereolithography (STL) Importer.
+Info,  T22652: Import root directory is 'C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\'
+Info,  T22652: Entering post processing pipeline
+Info,  T22652: Points: 0, Lines: 0, Triangles: 1, Polygons: 0 (Meshes, X = removed)
+Error, T22652: Failed to compute tangents; need UV data in channel0
+Info,  T22652: JoinVerticesProcess finished | Verts in: 5352 out: 2124 | ~60.3%
+Info,  T22652: Cache relevant are 1 meshes (1784 faces). Average output ACMR is 1.224215
+Info,  T22652: Leaving post processing pipeline
+2652: Load C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\head_cone.stl
+Info,  T22652: Found a matching importer for this file format: Stereolithography (STL) Importer.
+Info,  T22652: Import root directory is 'C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\'
+Info,  T22652: Entering post processing pipeline
+Info,  T22652: Points: 0, Lines: 0, Triangles: 1, Polygons: 0 (Meshes, X = removed)
+Error, T22652: Failed to compute tangents; need UV data in channel0
+Info,  T22652: JoinVerticesProcess finished | Verts in: 5352 out: 2124 | ~60.3%
+Info,  T22652: Cache relevant are 1 meshes (1784 faces). Average output ACMR is 1.224215
+Info,  T22652: Leaving post processing pipeline
+2652: Load C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\head_cone.stl
+Info,  T22652: Found a matching importer for this file format: Stereolithography (STL) Importer.
+Info,  T22652: Import root directory is 'C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\'
+Info,  T22652: Entering post processing pipeline
+Info,  T22652: Points: 0, Lines: 0, Triangles: 1, Polygons: 0 (Meshes, X = removed)
+Error, T22652: Failed to compute tangents; need UV data in channel0
+Info,  T22652: JoinVerticesProcess finished | Verts in: 5352 out: 2124 | ~60.3%
+Info,  T22652: Cache relevant are 1 meshes (1784 faces). Average output ACMR is 1.224215
+Info,  T22652: Leaving post processing pipeline
+2652: Load C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\head_cone.stl
+Info,  T22652: Found a matching importer for this file format: Stereolithography (STL) Importer.
+Info,  T22652: Import root directory is 'C:\Users\Hiroaki\Documents\Visual Studio 2015\Projects\SimpleObjectDrawLib\Debug\3dModel\'
+Info,  T22652: Entering post processing pipeline
+Info,  T22652: Points: 0, Lines: 0, Triangles: 1, Polygons: 0 (Meshes, X = removed)
+Error, T22652: Failed to compute tangents; need UV data in channel0
+Info,  T22652: JoinVerticesProcess finished | Verts in: 5352 out: 2124 | ~60.3%
+Info,  T22652: Cache relevant are 1 meshes (1784 faces). Average output ACMR is 1.224215
+Info,  T22652: Leaving post processing pipeline

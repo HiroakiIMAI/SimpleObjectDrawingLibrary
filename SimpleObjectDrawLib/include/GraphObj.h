@@ -38,7 +38,9 @@ namespace SmplObjDrwLib {
 	public:
 		static std::shared_ptr<TypeOfSelf> create(
 			std::string name,
-			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>(),
+			float size_x = 100,
+			float size_y = 100
 		);
 
 		//--------------------------------------------
@@ -91,7 +93,7 @@ namespace SmplObjDrwLib {
 		std::shared_ptr<LabelObj>		yMaxLabel;		// y最小値ラベル
 		std::shared_ptr<LabelObj>		yMinLabel;		// y最小値ラベル
 
-		void initSelf();
+		void initSelf(float size_x=100, float size_y=100);
 	};
 
 }
