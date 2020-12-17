@@ -84,10 +84,13 @@ namespace SmplObjDrwLib {
 			GRAPH_RANGE_CTL z = GRAPH_RANGE_CTL::AUTO;
 		}rangeCtl;
 
+		void AddAtrData(std::shared_ptr < std::deque<float> > atr);
+
 	protected:
-		std::deque< Eigen::Vector3f>	_data;			// グラフのプロットデータ
-		std::shared_ptr<PointsObj>		_dataToDraw;	// グラフのプロットデータ(描画用)
-		
+		std::deque< Eigen::Vector3f>			_data;			// グラフのプロットデータ
+		//std::shared_ptr<PointsObj>			_dataToDraw;	// グラフのプロットデータ(描画用)
+		std::shared_ptr<PointsWithAttributes>	_dataToDraw;	// グラフのプロットデータ(描画用)
+
 		std::shared_ptr<LabelObj>		xMaxLabel;		// x最大値ラベル
 		std::shared_ptr<LabelObj>		xMinLabel;		// x最大値ラベル
 		std::shared_ptr<LabelObj>		yMaxLabel;		// y最小値ラベル

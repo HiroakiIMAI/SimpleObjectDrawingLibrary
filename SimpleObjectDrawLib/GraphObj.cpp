@@ -84,7 +84,8 @@ void GraphObj::initSelf(float size_x, float size_y)
 	this->yMaxLabel = LabelObj::create(name + "_yMaxLabel", area);
 	this->yMinLabel = LabelObj::create(name + "_yMinLabel", area);
 
-	this->_dataToDraw = PointsObj::create(name + "_data", area);
+	this->_dataToDraw = PointsWithAttributes::create(name + "_data", area);
+	_dataToDraw->atrIdx_bar = 0;
 
 	//-------------------------------
 	// 背景の初期化
@@ -219,6 +220,15 @@ void GraphObj::initSelf(float size_x, float size_y)
 
 }
 
+//================================================================
+//
+//	<Summry>		プロットに対するアトリビュート配列を追加する
+//	<Description>
+//================================================================
+void GraphObj::AddAtrData(std::shared_ptr < std::deque<float> > atr)
+{
+	_dataToDraw->_sPtr_attributes.push_back(atr);
+}
 
 
 //================================================================
@@ -277,22 +287,25 @@ void GraphObj::_drawShapeOfSelf()
 	yMinLabel->text = std::to_string(rangeMin.y());
 
 	// 内部プロットデータをクリア
-	_dataToDraw->points.clear();
-
-	// 内部プロットデータを再構成
-	for (auto itr = _data.begin();
-		itr != _data.end();
-		++itr
-		)
+	if (auto sPtr_points = _dataToDraw->_sPtr_points)
 	{
-		auto point = *itr;
+		sPtr_points->clear();
 
-		// グラフプロット範囲がAUTOに設定されている場合
-		// pointの軸座標値を軸最大値で正規化して描画エリアサイズに合わせる。
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { point.x() = ((point.x() - rangeMin.x()) / (rangeMax.x() - rangeMin.x())) * area->boxSize.x(); }
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { point.y() = ((point.y() - rangeMin.y()) / (rangeMax.y() - rangeMin.y())) * area->boxSize.y(); }
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { point.z() = ((point.z() - rangeMin.z()) / (rangeMax.z() - rangeMin.z())) * area->boxSize.z(); }
+		// 内部プロットデータを再構成
+		for (auto itr = _data.begin();
+			itr != _data.end();
+			++itr
+			)
+		{
+			auto point = *itr;
 
-		_dataToDraw->points.push_back(point);
+			// グラフプロット範囲がAUTOに設定されている場合
+			// pointの軸座標値を軸最大値で正規化して描画エリアサイズに合わせる。
+			if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { point.x() = ((point.x() - rangeMin.x()) / (rangeMax.x() - rangeMin.x())) * area->boxSize.x(); }
+			if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { point.y() = ((point.y() - rangeMin.y()) / (rangeMax.y() - rangeMin.y())) * area->boxSize.y(); }
+			if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { point.z() = ((point.z() - rangeMin.z()) / (rangeMax.z() - rangeMin.z())) * area->boxSize.z(); }
+
+			sPtr_points->push_back(point);
+		}
 	}
 }

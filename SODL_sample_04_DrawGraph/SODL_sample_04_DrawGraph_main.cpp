@@ -7,27 +7,21 @@
 #include <iostream>
 
 
-#define			WINDOW_SIZE_X			(640 * 2)
-#define			WINDOW_SIZE_Y			(480)
-
-#define			VP_SIZE_X				(WINDOW_SIZE_X/2)
-#define			VP_SIZE_Y				(WINDOW_SIZE_Y)
-
 
 
 namespace sodl = SmplObjDrwLib;
 
 namespace app {
-
 	// グローバル変数
+	const int	WINDOW_SIZE_X = 1280;
+	const int	WINDOW_SIZE_Y = 480;
+
 	int mouse_x = 0;
 	int mouse_y = 0;
 
-	float Axez_X = 10;
-	float Axez_Y = -200;
-	float Axez_Z = -300;
-	float Axez_B = 0;
-	float Axez_C = 0;
+	float ax_X = 100; // [mm]
+	float ax_Y = 100; // [mm]
+	float ax_Z = 100; // [mm]
 
 	// Windowインタラクション関連コールバック関数
 	void keyFunc(unsigned char key, int u, int v);
@@ -48,7 +42,7 @@ namespace app {
 //================================================================
 int main(int argc, char ** argv) 
 {
-	sodl::DrawingManager::initMngr( &argc, argv, WINDOW_SIZE_X, WINDOW_SIZE_Y);
+	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X,app::WINDOW_SIZE_Y);
 	
 	sodl::drwMngr->SetMouseFunc(app::onMouseBtn);
 	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
@@ -58,25 +52,84 @@ int main(int argc, char ** argv)
 
 	//////////////////////////////////////////////////////
 	//
-	// ビューポートとカメラの設定
+	// ビューポート1とカメラ1を調整する。(デフォルトの描画空間[0]を撮影する)
+	// 3Dモデルをロードし、デフォルトの描画空間[0]に配置する。
 	//
-
+	//////////////////////////////////////////////////////
 	// ビューポート1
 	auto vp1 = sodl::drwMngr->viewPorts[0];
 	vp1->setVpSize(
 		0,			// left
 		0,			// bottom
-		VP_SIZE_X,	// width
-		VP_SIZE_Y	// height
+		app::WINDOW_SIZE_X/2,	// width
+		app::WINDOW_SIZE_Y	// height
 	);
 	auto cam1 = vp1->getCam();
-	cam1->camPos = Eigen::Vector3f(600.f, -2000.f, -0.f);
-	cam1->camTgt = Eigen::Vector3f(300.f, -300.f, -300.f);
-	cam1->zoomRatio = 0.5;
+	cam1->camPos = Eigen::Vector3f(400.f, -400.f, 400.f);
+	cam1->camTgt = Eigen::Vector3f(100.f, 100.f, 100.f);
+	cam1->zoomRatio = 0.8;
 	vp1->attachCam(cam1);
 
-	
- 	// 時系列グラフの作成
+	//-----------------------------------------------------
+	// ワールド座標系原点から連鎖するJ1~4座標系オブジェクトを定義
+	//-----------------------------------------------------
+	// ワールド座標系原点を定義
+	auto World_Origin = sodl::CoordChainObj::create("World_Origin");
+	World_Origin->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 0.f);
+
+	// J1~4座標系を定義
+	auto X_Link = sodl::CoordChainObj::create("X_Link", World_Origin);
+	auto Y_Link = sodl::CoordChainObj::create("Y_Link", X_Link);
+	auto Z_Link = sodl::CoordChainObj::create("Z_Link", Y_Link);
+
+	//-----------------------------------------------------
+	// 3Dモデルオブジェクトを座標系オブジェクトにアタッチする
+	//-----------------------------------------------------
+	// 実行ファイルのパスを取得する(モデルファイルの位置を相対パスで指定するため)
+	std::string exePath = app::GetModulePath();
+	// 3Dモデル描画付き座標系オブジェクトを生成
+	auto model_Crd = sodl::CoordChain3dMdl::create(exePath + "3dModel\\miku.obj", "model_Crd", Z_Link);
+	// アタッチしたZ_Linkとの相対位置を調整する
+	model_Crd->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 10.f);
+
+	//-----------------------------------------------------
+	// 定義したオブジェクトを描画対象として描画マネージャに登録
+	//-----------------------------------------------------
+	// 定義した座標系連鎖を描画マネージャの持つデフォルトの描画空間にセット
+	sodl::drwMngr->AddObjTree_ToDrwSpace(World_Origin);
+
+
+
+	//////////////////////////////////////////////////////
+	//
+	// 追加の描画空間[1]を作成し、
+	// ビューポート, カメラを設定する。
+	//
+	// 時系列グラフ(2次元)を作成し、
+	// 追加の描画空間[1]に配置する。
+	//
+	//////////////////////////////////////////////////////
+	{
+		// グラフ用に描画空間[1]を追加
+		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
+
+		// ビューポート
+		auto vpGrph = sodl::drwMngr->addViewPort("vpTimeSerialGraph");
+		vpGrph->spaceAttached = spaceGrph;
+		vpGrph->setVpSize(
+			app::WINDOW_SIZE_X/2,		// left
+			app::WINDOW_SIZE_Y / 2,	// bottom
+			app::WINDOW_SIZE_X/2,		// width
+			app::WINDOW_SIZE_Y / 2		// height
+		);
+		// カメラ
+		auto camGrph = vpGrph->getCam();
+		camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
+		camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+		camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
+		camGrph->SetPrjMtx_As2DView(200, 100);
+	}
+	// 時系列グラフの作成
 	auto timeSerialGraph
 		= sodl::TimeSeriesGraph::create(
 			"TimeSerealGraph",
@@ -88,135 +141,68 @@ int main(int argc, char ** argv)
 	timeSerialGraph->rangeMin.x() = 0;
 	timeSerialGraph->rangeMax.y() = 100;
 	timeSerialGraph->rangeMin.y() = -100;
-	{
-		// グラフ用に描画空間を追加
-		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
-		{
-			// ビューポート3
-			auto vpGrph = sodl::drwMngr->addViewPort("vp3");
-			vpGrph->spaceAttached = spaceGrph;
-			vpGrph->setVpSize(
-				VP_SIZE_X,		// left
-				VP_SIZE_Y / 2,	// bottom
-				VP_SIZE_X,		// width
-				VP_SIZE_Y / 2		// height
-			);
-			auto camGrph = vpGrph->getCam();
-			camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
-			camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-			camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
-			camGrph->SetPrjMtx_As2DView(200, 100);
-		}
-	}
-	// 描画空間にグラフを追加
+	// 描画空間[1]にグラフを追加
 	sodl::drwMngr->AddObjTree_ToDrwSpace(timeSerialGraph, 1);
 	
 
-	
+	//////////////////////////////////////////////////////
+	//
+	// 追加の描画空間[2]を作成し、
+	// ビューポート, カメラを設定する。
+	//
+	// 散布図グラフ(2次元)を作成し、
+	// 追加の描画空間[2]に配置する。
+	//
+	//////////////////////////////////////////////////////
+	{
+		// グラフ用に描画空間[2]を追加
+		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
+		// ビューポート
+		auto vpGrph = sodl::drwMngr->addViewPort("vpScatterGraph");
+		vpGrph->spaceAttached = spaceGrph;
+		vpGrph->setVpSize(
+			app::WINDOW_SIZE_X / 2,		// left
+			0,							// bottom
+			app::WINDOW_SIZE_Y / 2,		// width
+			app::WINDOW_SIZE_Y / 2		// height
+		);
+		// カメラ
+		auto camGrph = vpGrph->getCam();
+		camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
+		camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+		camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
+		camGrph->SetPrjMtx_As2DView(100, 100);
+	}
 	// 散布図グラフの作成
 	auto scatterGraph = sodl::GraphObj::create("ScatterGraph");
-	scatterGraph->rangeMax.x() =  100;
+	scatterGraph->rangeMax.x() = 100;
 	scatterGraph->rangeMin.x() = -100;
-	scatterGraph->rangeMax.y() =  100;
+	scatterGraph->rangeMax.y() = 100;
 	scatterGraph->rangeMin.y() = -100;
-	{
-		// グラフ用に描画空間を追加
-		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
-		{
-			// ビューポート4
-			auto vpGrph = sodl::drwMngr->addViewPort("vp4");
-			vpGrph->spaceAttached = spaceGrph;
-			vpGrph->setVpSize(
-				VP_SIZE_X,			// left
-				0,					// bottom
-				VP_SIZE_Y / 2,		// width
-				VP_SIZE_Y / 2		// height
-			);
-			auto camGrph = vpGrph->getCam();
-			camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
-			camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-			camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
-			camGrph->SetPrjMtx_As2DView(100, 100);
-		}
-	}
 	// 描画空間にグラフを追加
 	sodl::drwMngr->AddObjTree_ToDrwSpace(scatterGraph, 2);
-	
-
+		
 
 	//////////////////////////////////////////////////////
 	//
-	// 描画対象オブジェクトの生成
+	// 周期処理の実施
 	//
-
-	//-----------------------------------------------------
-	// 機械座標原点を定義
-	//-----------------------------------------------------
-	auto Mch_Origin = sodl::CoordChainObj::create("Mch_Origin");
-	Mch_Origin->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f,0.f);
-
-	//-----------------------------------------------------
-	// 機械座標原点から連鎖するXYZリンクを定義
-	//-----------------------------------------------------
-	auto Y_Link = sodl::CoordChainObj::create("Y_Link", Mch_Origin);
-	auto X_Link = sodl::CoordChainObj::create("X_Link", Y_Link );
-	auto Z_Link = sodl::CoordChainObj::create("Z_Link", X_Link);
-
-	//-----------------------------------------------------
-	// 機械座標原点から連鎖するBCリンクを定義
-	//-----------------------------------------------------
-	auto B_Link = sodl::CoordChainObj::create("B_Link", Mch_Origin);
-	B_Link->CrdTrs.translation() = Eigen::Vector3f(300.f, 0.f, -300.f);
-	auto C_Link = sodl::CoordChainObj::create("C_Link", B_Link);
-	C_Link->CrdTrs.translation() = Eigen::Vector3f(0.f, -300.f, 0.f);	
-
-	//-----------------------------------------------------
-	// 3Dモデルオブジェクトをリンクにアタッチする
-	//-----------------------------------------------------
-	// 実行ファイルのパスを取得する(モデルファイルの位置を相対パスで指定するため)
-	std::string exePath = app::GetModulePath();
-
-	auto Mch_OriginModel = sodl::CoordChain3dMdl::create( exePath+"3dModel\\Y_Rail.stl", "Y_Rail", Mch_Origin);
-	Mch_OriginModel->CrdTrs.translation() = Eigen::Vector3f(-100.f,-800.f,-100.f);
-	
-	auto Y_LinkModel = sodl::CoordChain3dMdl::create( exePath + "3dModel\\X_Rail.stl", "X_Rail", Y_Link);
-	Y_LinkModel->CrdTrs.translation() = Eigen::Vector3f(-100.f, 0.f, 0.f);
-
-	auto X_LinkModel = sodl::CoordChain3dMdl::create( exePath + "3dModel\\Z_Rail.stl", "Z_Rail", X_Link);
-	X_LinkModel->CrdTrs.translation() = Eigen::Vector3f(-50.f, -10.f, 0.f);
-
-	auto Z_LinkModel = sodl::CoordChain3dMdl::create( exePath + "3dModel\\head_cone.stl", "head_cone", Z_Link);
-
-
-	////////////////////////////////////////////////////// 
-	//
-	// 定義した描画対象オブジェクトを描画マネージャに登録
-	//
-
-	// 定義した座標系連鎖を描画空間にセット
-	sodl::drwMngr->AddObjTree_ToDrwSpace(Mch_Origin);
 
 	int count = 0;
 	while(1)
 	{
-
-		X_Link->CrdTrs.translation() = Eigen::Vector3f(app::Axez_X, 0, 0);
-		Y_Link->CrdTrs.translation() = Eigen::Vector3f(0, app::Axez_Y, 0);
-		Z_Link->CrdTrs.translation() = Eigen::Vector3f(0, 0, app::Axez_Z);
-
-		B_Link->CrdTrs.linear() = Eigen::AngleAxisf(app::Axez_B, UnitY ).matrix();
-		C_Link->CrdTrs.linear() = Eigen::AngleAxisf(app::Axez_C, UnitZ ).matrix();
+		// モデル座標を更新
+		X_Link->CrdTrs.translation() = Eigen::Vector3f(app::ax_X, 0, 0);
+		Y_Link->CrdTrs.translation() = Eigen::Vector3f(0, app::ax_Y, 0);
+		Z_Link->CrdTrs.translation() = Eigen::Vector3f(0, 0, app::ax_Z);
 		
+		// モデルX座標＋ランダムノイズを時系列グラフにプロット
+		timeSerialGraph->addData(Eigen::Vector3f(count, app::ax_X + rand()%100 - 50, -3));
 
-		//---------------------------------
-		// debug  
-		
-		timeSerialGraph->addData(Eigen::Vector3f(count, app::Axez_X + rand()%100 - 50, -3));
+		// ドラッグ中のマウス位置X,Yを散布図グラフにプロット
 		scatterGraph->addData(Eigen::Vector3f(app::mouse_x, app::mouse_y, -3));
 
-		// debug
-		//---------------------------------
-
+		// 描画更新
 		sodl::drwMngr->drawUpdt();
 
 		++count;
@@ -244,35 +230,23 @@ namespace app {
 			exit(0);
 
 		case '1':
-			Axez_X += KEY_MOT_UNIT;
+			ax_X += KEY_MOT_UNIT;
 			break;
 		case '2':
-			Axez_Y += KEY_MOT_UNIT;
+			ax_Y += KEY_MOT_UNIT;
 			break;
 		case '3':
-			Axez_Z += KEY_MOT_UNIT;
-			break;
-		case '4':
-			Axez_B += KEY_MOT_UNIT * CNV_DEG2RAD;
-			break;
-		case '5':
-			Axez_C += KEY_MOT_UNIT * CNV_DEG2RAD;
+			ax_Z += KEY_MOT_UNIT;
 			break;
 
 		case 'q':
-			Axez_X -= KEY_MOT_UNIT;
+			ax_X -= KEY_MOT_UNIT;
 			break;
 		case 'w':
-			Axez_Y -= KEY_MOT_UNIT;
+			ax_Y -= KEY_MOT_UNIT;
 			break;
 		case 'e':
-			Axez_Z -= KEY_MOT_UNIT;
-			break;
-		case 'r':
-			Axez_B -= KEY_MOT_UNIT * CNV_DEG2RAD;
-			break;
-		case 't':
-			Axez_C -= KEY_MOT_UNIT * CNV_DEG2RAD;
+			ax_Z -= KEY_MOT_UNIT;
 			break;
 
 

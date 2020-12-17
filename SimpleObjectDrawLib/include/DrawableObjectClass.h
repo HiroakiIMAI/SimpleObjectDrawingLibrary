@@ -156,6 +156,67 @@ namespace SmplObjDrwLib {
 		DRAWTYPE drawType = WIRE;
 	};
 
+
+	/////////////////////////////////////////////////////////////////////
+	//
+	//	PointsWithAttibutes
+	//	属性データ付き点列
+	//
+
+	class PointsWithAttributes : public virtual CoordChainObj
+	{
+		typedef PointsWithAttributes TypeOfSelf;
+
+		//--------------------------------------------
+		// コンストラクタ
+		//--------------------------------------------
+		// 継承クラス外からのインスタンス化を禁止する
+		// →ファクトリの使用を強制し、shared_ptr以外に
+		// 　インスタンスを保持させない。
+	protected:
+		PointsWithAttributes(
+			std::string name,
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
+		);
+
+		//--------------------------------------------
+		// デストラクタ
+		//--------------------------------------------
+	public:
+		virtual ~PointsWithAttributes() {};
+
+		//--------------------------------------------
+		// ファクトリ関数
+		//--------------------------------------------
+	public:
+		static std::shared_ptr<TypeOfSelf> create(
+			std::string name,
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<TypeOfSelf>()
+		);
+
+		//--------------------------------------------
+		// CoordChainObjの描画関数の実装
+		//--------------------------------------------
+	public:
+		virtual void _drawShapeOfSelf();
+
+
+		//--------------------------------------------
+		// その他
+		//--------------------------------------------
+	public:
+		std::shared_ptr< std::deque<Eigen::Vector3f> > _sPtr_points;
+		std::vector< std::shared_ptr< std::deque<float> > > _sPtr_attributes;
+
+		DRAWTYPE drawType = WIRE;
+		int atrIdx_pointColor = -1;
+		int atrIdx_bar = -1;
+		int atrIdx_Size = -1;
+		Eigen::Vector3f atrBarDirec = UnitY;
+
+	};
+
+
 	/////////////////////////////////////////////////////////////////////
 	//
 	//	Label

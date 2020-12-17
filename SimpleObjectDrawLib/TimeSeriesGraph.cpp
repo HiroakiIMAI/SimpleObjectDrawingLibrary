@@ -87,9 +87,25 @@ void TimeSeriesGraph::_drawShapeOfSelf()
 	for (int i = 0; i < sizeDraw; i++)
 	{
 		--itr;
-		_data.push_back( *itr );
+		_data.push_front( *itr );
 	}
 	
+	// 属性群のサイズもチェックする-------------------------------------------------------debug
+	for (auto atr = _dataToDraw->_sPtr_attributes.begin();
+		atr != _dataToDraw->_sPtr_attributes.end();
+		atr++
+		)
+	{
+		if (*atr)
+		{
+			// データ保持数オーバの場合は最古のデータを捨てる
+			if ((*atr)->size() > sizeDraw)
+			{
+				(*atr)->pop_front();
+			}
+		}
+	}
+
 	// 描画する
 	GraphObj::_drawShapeOfSelf();
 
