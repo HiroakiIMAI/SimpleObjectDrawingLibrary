@@ -1,7 +1,7 @@
 #define  _USE_MATH_DEFINES
 
-#include "include/SimpleObjectDrawingLibrary.h"
-#pragma comment( lib, "SimpleObjectDrawLib.lib" )
+#include "SimpleObjectDrawingLibrary.h"
+#pragma comment( lib, "SimpleObjectDrawingLibrary.lib" )
 
 #include <math.h>
 #include <iostream>

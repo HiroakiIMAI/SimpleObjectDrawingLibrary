@@ -2,8 +2,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "include/SimpleObjectDrawingLibrary.h"
-#pragma comment( lib, "SimpleObjectDrawLib.lib" )
+#include "SimpleObjectDrawingLibrary.h"
+#pragma comment( lib, "SimpleObjectDrawingLibrary.lib" )
 
 
 // ライブラリ名のエイリアスを設定する
