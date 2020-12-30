@@ -20,8 +20,8 @@ CoordChain3dMdl::CoordChain3dMdl(
 )
 	: Drawable3dMdlClass(modelFilePath)
 	, CoordChainObj(coordName, parent)
-	, IDrawableObjBase(name)
-	, ISodlObjBase(name)
+	, IDrawableObjBase(coordName)
+	, ISodlObjBase(coordName)
 {
 	;
 }
