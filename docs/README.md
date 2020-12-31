@@ -1,40 +1,40 @@
 
-# "SimpleObjectDrawingLibrary"�ɂ���
+# "SimpleObjectDrawingLibrary"について
 
-## "SimpleObjectDrawingLibrary"�Ƃ�
+## "SimpleObjectDrawingLibrary"とは
 
-SimpleObjectDrawingLibrary(�ȉ��ASODL)�́Aglut(���ۂɂ�freeglut)�̃��b�p�[���C�u�����ł��B
+SimpleObjectDrawingLibrary(以下、SODL)は、glut(実際にはfreeglut)のラッパーライブラリです。
 
-�{���C�u�����́A3D���f���t�@�C��(.stl, .obj�Ȃ�)��ȒP��2D�O���t��
-�Z���R�[�h�ŕ\��(����)���邱�Ƃ�ړI�Ƃ���C++��������̃��C�u�����ł��B
-2020�N�����݂łƂ肠�����������̂��o���オ�����̂Ō��J���J�n���܂����B
+本ライブラリは、3Dモデルファイル(.stl, .objなど)や簡単な2Dグラフを
+短いコードで表示(可視化)することを目的としたC++言語向けのライブラリです。
+2020年末現在でとりあえず動くものが出来上がったので公開を開始しました。
 
-���J���Ă���\�[�X�R�[�h��.lib�𐶐����܂��B
-.dll�p�̃C���^�[�t�F�[�X�����̗\��͍��̂Ƃ��날��܂���B
+公開しているソースコードは.libを生成します。
+.dll用のインターフェース整備の予定は今のところありません。
 
-## �^�[�Q�b�g���[�U
-���L�̍��ڂ�and�œ��Ă͂܂�悤�ȃ��[�U��z�肵�Ă��܂��B
-- C++���ŊȒP��3D���f����`�悵����
-- glut��GLFW��API�R�[���������̂悤�ɋL�q�������Ȃ�
-- ���C�e�B���O�⃌���_�����O�̐ݒ�͂ǂ��ł��悢
-- �ȒP��2D�O���t���v���b�g���A�f�[�^�������������B
+## ターゲットユーザ
+下記の項目にandで当てはまるようなユーザを想定しています。
+- C++環境で簡単に3Dモデルを描画したい
+- glutやGLFWのAPIコールを呪文のように記述したくない
+- ライティングやレンダリングの設定はどうでもよい
+- 簡単な2Dグラフをプロットし、データを可視化したい。
 
-�Ⴆ�΁A���{�b�g�A�[����ړ��ԗ��̐���J�������Ă��邪�A
-����Ώۂ̃��f���ƈړ��O�Ղ�3�����I�ɕ\�����A
-�Z���T�f�[�^�Ȃǂ�2D�O���t�ɉ�������悤��S/W��
-���s�b�h�Ƀv���g�^�C�v�������ꍇ�Ȃǂ��^�[�Q�b�g�Ƃ��Ă��܂��B
+例えば、ロボットアームや移動車両の制御開発をしているが、
+制御対象のモデルと移動軌跡を3次元的に表示しつつ、
+センサデータなどを2Dグラフに可視化するようなS/Wを
+ラピッドにプロトタイプしたい場合などをターゲットとしています。
 
-## �ˑ��֌W
-SODL�͈ˑ����C�u�����Ƃ��ĉ��L���C�u�����ɓ��I�����N���܂��B
-- Assimp (�e��3D���f���̃��[�_���C�u����)
-- fleeglut (glut�݊���3D�`�惉�C�u����)
-- glew (glut���g������3D�`�惉�C�u����)
-- Eigen (�s��v�Z���C�u���� �w�b�_���C�u�����Ȃ̂œ��I�����N�łȂ�)
+## 依存関係
+SODLは依存ライブラリとして下記ライブラリに動的リンクします。
+- Assimp (各種3Dモデルのローダライブラリ)
+- fleeglut (glut互換の3D描画ライブラリ)
+- glew (glutを拡張する3D描画ライブラリ)
+- Eigen (行列計算ライブラリ ヘッダライブラリなので動的リンクでない)
 
-## �����
-���L���ŊJ���A�e�X�g���Ă��܂��B
-(OS�ˑ��̃R�[�h�͎g�p���Ă��Ȃ�����Ȃ̂ŁA����OS�ł����삷��Ɗ��҂��Ă��܂�)
+## 動作環境
+下記環境で開発、テストしています。
+(OS依存のコードは使用していないつもりなので、他のOSでも動作すると期待しています)
 - OS:Windows10 64bit
-- �R���p�C��:Visual Studio 2019 Community
+- コンパイラ:Visual Studio 2019 Community
 
 
