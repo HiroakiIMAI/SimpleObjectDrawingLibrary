@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.0)
 
 #-------------------------------------
-set( TARGET_NAME_LOCAL sample_00 )
+set( TARGET_NAME_LOCAL sample_015_6AxRobot )
 #-------------------------------------
+
 
 add_executable(
 	# exe name
 	${TARGET_NAME_LOCAL}
 	
 	#SourceCodeList
-	Source.cpp
+	SODL_sample_015_6AxRobot_main.cpp
 	)
 
 target_include_directories(
@@ -38,5 +39,4 @@ target_link_libraries(
 	${FREEGLUT_LIB_PATH}/freeglut.lib
 	${GLEW_LIB_PATH}/glew32.lib
 	)
-
 

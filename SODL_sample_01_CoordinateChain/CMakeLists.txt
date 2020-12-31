@@ -35,7 +35,7 @@ target_link_libraries(
 
 	# libraries
 	SimpleObjectDrawingLibrary
-	${ASSIMP_LIB_PATH}/assimp-vc140-mt.lib
+	${ASSIMP_LIB_PATH}/assimp.lib
 	${FREEGLUT_LIB_PATH}/freeglut.lib
 	${GLEW_LIB_PATH}/glew32.lib
 	)
