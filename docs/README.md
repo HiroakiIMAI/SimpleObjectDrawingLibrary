@@ -1,7 +1,7 @@
 
-#"SimpleObjectDrawingLibrary"について
+# "SimpleObjectDrawingLibrary"について
 
-##"SimpleObjectDrawingLibrary"とは
+## "SimpleObjectDrawingLibrary"とは
 
 SimpleObjectDrawingLibrary(以下、SODL)は、glut(実際にはfreeglut)のラッパーライブラリです。
 
@@ -12,7 +12,7 @@ SimpleObjectDrawingLibrary(以下、SODL)は、glut(実際にはfreeglut)のラッパーライブ
 公開しているソースコードは.libを生成します。
 .dll用のインターフェース整備の予定は今のところありません。
 
-##ターゲットユーザ
+## ターゲットユーザ
 下記の項目にandで当てはまるようなユーザを想定しています。
 - C++環境で簡単に3Dモデルを描画したい
 - glutやGLFWのAPIコールを呪文のように記述したくない
@@ -24,14 +24,14 @@ SimpleObjectDrawingLibrary(以下、SODL)は、glut(実際にはfreeglut)のラッパーライブ
 センサデータなどを2Dグラフに可視化するようなS/Wを
 ラピッドにプロトタイプしたい場合などをターゲットとしています。
 
-##依存関係
+## 依存関係
 SODLは依存ライブラリとして下記ライブラリに動的リンクします。
 - Assimp (各種3Dモデルのローダライブラリ)
 - fleeglut (glut互換の3D描画ライブラリ)
 - glew (glutを拡張する3D描画ライブラリ)
 - Eigen (行列計算ライブラリ ヘッダライブラリなので動的リンクでない)
 
-##動作環境
+## 動作環境
 下記環境で開発、テストしています。
 (OS依存のコードは使用していないつもりなので、他のOSでも動作すると期待しています)
 - OS:Windows10 64bit
