@@ -193,10 +193,13 @@ namespace SmplObjDrwLib {
 		int _windowSizeX;
 		int _windowSizeY;
 
+		static void OnDispFunc();
+		static void OnReshapeFunc(int u, int v);
 		static void OnKeyboardFunc (unsigned char key, int u, int v);
 		static void OnMouseBtn (int button, int state, int u, int v);
 		static void OnMouseDrag (int u, int v);
 		static void OnMouseHover(int u, int v);
+		static void OnMouseWheel(int wheelNum, int dir, int u, int v);
 
 		static void(*usrKeyboardFunc)(unsigned char key, int u, int v);
 		static void(*usrMouseBtnFunc)(int button, int state, int u, int v);

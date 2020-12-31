@@ -15,7 +15,6 @@
 
 namespace SmplObjDrwLib {
 
-	
 	// extern しない変数
 	int mouseU_prv = 0;
 	int mouseV_prv = 0;
@@ -24,59 +23,6 @@ namespace SmplObjDrwLib {
 	std::unique_ptr<DrawingManager> drwMngr;
 	int mouseBtnSt[3];
 	unsigned char key;
-	int reshapeWindowSize[2];
-
-	namespace glCallBack {
-		void keyboard(unsigned char key, int x, int y)
-		{
-			SmplObjDrwLib::key = key;
-			// 後でmutex処理を足す予定
-		}
-
-		void disp()
-		{
-		}
-
-		void reshape(int x, int y)
-		{
-			;
-		}
-
-		void onMouseBtn(int button, int state, int x, int y)
-		{
-			mouseBtnSt[button] = state;
-		}
-
-		void onMouseDrag(int u, int v)
-		{
-			const int du = u - mouseU_prv;
-			const int dv = v - mouseV_prv;
-
-			Eigen::Vector3f mv;
-
-			if (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
-			{
-				Eigen::Vector3f* cPos = &SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached->camPos;
-				Eigen::Vector3f* tPos = &SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached->camTgt;
-				Eigen::Vector3f dir_p2t = *cPos - *tPos;
-				dir_p2t.normalize();
-				Eigen::Vector3f uDir3D = dir_p2t.cross(UnitZ);
-				Eigen::Vector3f vDir3D = dir_p2t.cross(uDir3D);
-
-				*cPos += 2 * ((uDir3D * du) + (-vDir3D * dv));
-			}
-
-			mouseU_prv = u;
-			mouseV_prv = v;
-
-		}
-
-		void onMouseHover(int u, int v)
-		{
-			mouseU_prv = u;
-			mouseV_prv = v;
-		}
-	};
 	
 };
 
@@ -276,12 +222,13 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	// コールバック関数の設定
 	// 注意：displayfuncのコールバック関数を登録しておかないと、
 	// glutMainLoopEvent()をコールしたときにエラーが発生してプログラムが終了してしまう。
-	glutDisplayFunc(glCallBack::disp);
-	glutReshapeFunc(glCallBack::reshape);
+	glutDisplayFunc( OnDispFunc );
+	glutReshapeFunc( OnReshapeFunc);
 	glutKeyboardFunc( OnKeyboardFunc );
-	glutMouseFunc(OnMouseBtn);
-	glutMotionFunc(OnMouseDrag);
-	glutPassiveMotionFunc(OnMouseHover);
+	glutMouseFunc( OnMouseBtn );
+	glutMotionFunc( OnMouseDrag );
+	glutPassiveMotionFunc( OnMouseHover );
+	glutMouseWheelFunc( OnMouseWheel);
 
 	// 描画空間ベクタを初期化する
 	drawingSpace = sPtr_vector< sPtr_vector< sPtr_IDrawableObjBase > >(
@@ -490,6 +437,17 @@ void DrawingManager::AddObjTree_ToDrwSpace(std::shared_ptr<CoordChainObj> obj, i
 	}
 }
 
+void DrawingManager::OnDispFunc()
+{
+	;
+}
+
+void DrawingManager::OnReshapeFunc(int x, int y)
+{
+	;
+}
+
+
 void DrawingManager::OnKeyboardFunc(unsigned char key, int u, int v)
 {
 	SmplObjDrwLib::key = key;
@@ -562,7 +520,25 @@ void DrawingManager::OnMouseHover(int u, int v)
 	}
 }
 
+void DrawingManager::OnMouseWheel(int wheelNum, int dir, int u, int v)
+{
+	// デフォルト処理:
+	//  デフォルトvp のデフォルトcam に対してズームイン、ズームアウトを実施する
+	auto dfltCam = drwMngr->viewPorts[0]->getCam();
 
+	// 正回転 → 拡大
+	if (dir > 0)
+	{
+		dfltCam->zoomRatio *= 1.1;
+	}
+	// 負回転 → 縮小
+	else
+	{
+		dfltCam->zoomRatio *= 0.9;
+	}
+
+	drwMngr->viewPorts[0]->attachCam(dfltCam);
+}
 
 void DrawingManager::SetKeyboardFunc(void(*func)(unsigned char key, int u, int v))
 {

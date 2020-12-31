@@ -3,7 +3,7 @@
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#pragma comment( lib, "assimp-vc140-mt.lib" )
+#pragma comment( lib, "assimp.lib" )
 
 
 
