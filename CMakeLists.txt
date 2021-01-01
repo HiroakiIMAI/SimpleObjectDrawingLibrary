@@ -17,16 +17,15 @@ find_path(GLEW_LIB_PATH REQUIRED)
 
 
 project(SimpleObjectDrawingLibrary CXX)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE C:/work/SODL/SimpleObjectDrawingLibrary/bin )
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG C:/work/SODL/SimpleObjectDrawingLibrary/bin )
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin )
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${PROJECT_SOURCE_DIR}/bin )
 
 add_subdirectory( SimpleObjectDrawLib )
 add_subdirectory( SODL_sample_00 )
-add_subdirectory( SODL_sample_01_CoordinateChain )
-add_subdirectory( SODL_sample_02_LoadModel )
+add_subdirectory( SODL_sample_01_LoadModel )
+add_subdirectory( SODL_sample_02_6AxRobot )
 add_subdirectory( SODL_sample_03_MultiViewPort )
 add_subdirectory( SODL_sample_04_DrawGraph )
-
 
 
 	

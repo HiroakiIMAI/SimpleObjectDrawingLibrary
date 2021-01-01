@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 #-------------------------------------
-set( TARGET_NAME_LOCAL sample_015_6AxRobot )
+set( TARGET_NAME_LOCAL sample_01_LoadModel )
 #-------------------------------------
 
 
@@ -10,7 +10,7 @@ add_executable(
 	${TARGET_NAME_LOCAL}
 	
 	#SourceCodeList
-	SODL_sample_015_6AxRobot_main.cpp
+	SODL_sample_01_LoadModel_main.cpp
 	)
 
 target_include_directories(

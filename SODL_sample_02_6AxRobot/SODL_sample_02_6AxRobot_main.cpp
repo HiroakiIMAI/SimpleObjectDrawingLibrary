@@ -12,8 +12,8 @@ namespace sodl = SmplObjDrwLib;
 // アプリケーションのグローバルシンボルをappネームスペースに収める
 namespace app {
 
-	const int	WINDOW_SIZE_X = 1280;
-	const int	WINDOW_SIZE_Y = 960;
+	const int	WINDOW_SIZE_X = 640;
+	const int	WINDOW_SIZE_Y = 480;
 	float ax_J1 =  0.0 * (M_PI / 180); // [rad]
 	float ax_J2 = 45.0 * (M_PI / 180); // [rad]
 	float ax_J3 = 90.0 * (M_PI / 180); // [rad]
@@ -22,9 +22,7 @@ namespace app {
 	float ax_J6 =  0.0 * (M_PI / 180); // [rad]
 
 	void keyFunc(unsigned char key, int u, int v);
-
-	// その他のサブ関数
-	std::string GetModulePath();	// 実行ファイルのパスを取得
+	std::string GetModulePath();
 
 };
 
@@ -52,140 +50,13 @@ int main(int argc, char ** argv)
 	// 描画マネージャにコールバック関数を設定する
 	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
 
-
-	//-----------------------------------------------------
-	// ビューポートとカメラの設定
-	//-----------------------------------------------------
-	// ビューポートとカメラは描画マネージャdrwMngrのメソッドを介して追加できる。
-	// その時点で描画マネージャ側にshared_ptrとして保持されるので
-	// mainソース側のshared_ptrは不要になった時点で破棄して構わない。
-	{
-		//-----------------------------------------------------
-		// ビューポート1
-		//-----------------------------------------------------
-		{
-			//	デフォルトのビューポートは描画マネージャの初期化時にインスタンス化され、
-			//	viewPorts[0]にstd::shared_ptrで保持されている。
-			//	これを一時変数に受け取ってサイズや関連付けられたカメラ設定を操作する
-
-			// ビューポート1へのshared_ptr取得
-			auto vp1 = sodl::drwMngr->viewPorts[0];
-
-			// ビューポート1のサイズを設定する
-			//	ウィンドウを4分割した左上領域にビューポートを張る
-			//	(OpenGL画像座標系に従うので、ウィンドウ左下原点、上方向がY+、右方向がX+)
-			vp1->setVpSize(
-				0,								// left
-				app::WINDOW_SIZE_Y / 2,			// bottom
-				app::WINDOW_SIZE_X / 2,			// width
-				app::WINDOW_SIZE_Y / 2			// height
-			);
-
-			// ビューポート1に関連付けられたカメラへのshared_ptrを取得する
-			auto cam1 = vp1->getCam();
-
-			// カメラの位置を設定する
-			cam1->camPos = Eigen::Vector3f(600.f, -2000.f, 300.f);
-			// カメラの撮影対象位置を設定する
-			cam1->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-			// カメラのズーム比率を設定する
-			cam1->zoomRatio = 0.8;
-			// カメラ設定を反映するために、調整したカメラを再度ビューポート1に関連付けし直す
-			vp1->attachCam(cam1);
-		}
-
-		//-----------------------------------------------------
-		// ビューポート2
-		//-----------------------------------------------------
-		{
-			// ビューポートを追加する。
-			//	追加されたビューポートインスタンスは
-			//	drwMngr->viewPorts[]にもshared_ptrを介して保持される
-			auto vp2 = sodl::drwMngr->addViewPort("vp2");
-
-			// ウィンドウを4分割した右上領域にビューポートを張る
-			vp2->setVpSize(
-				app::WINDOW_SIZE_X / 2,			// left
-				app::WINDOW_SIZE_Y / 2,			// bottom
-				app::WINDOW_SIZE_X / 2,			// width
-				app::WINDOW_SIZE_Y / 2			// height
-			);
-
-			// ビューポート2に関連付けられたカメラへのshared_ptrを取得する
-			auto cam2 = vp2->getCam();
-			// 上面図を撮影する
-			cam2->camPos = Eigen::Vector3f(0.f, -0.f, 5000.f);
-			cam2->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-			cam2->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
-			// カメラのズーム比率を設定する
-			cam2->zoomRatio = 0.3;
-			// カメラ設定を反映するために、調整したカメラを再度ビューポート1に関連付けし直す
-			vp2->attachCam(cam2);
-		}
-
-		//-----------------------------------------------------
-		// ビューポート3
-		//-----------------------------------------------------
-		{
-			// ビューポートを追加する。
-			auto vp3 = sodl::drwMngr->addViewPort("vp3");
-
-			// ウィンドウを4分割した左下領域にビューポートを張る
-			vp3->setVpSize(
-				0,								// left
-				0,								// bottom
-				app::WINDOW_SIZE_X / 2,			// width
-				app::WINDOW_SIZE_Y / 2			// height
-			);
-
-			// ビューポート3に関連付けられたカメラへのshared_ptrを取得する
-			auto cam3 = vp3->getCam();
-			// 側面図を撮影する
-			cam3->camPos = Eigen::Vector3f(-1000.f, 0.f, 0.f);
-			cam3->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-			cam3->camUpVec = Eigen::Vector3f(0.f, 0.f, 1.f);
-			// カメラのズーム比率を設定する
-			cam3->zoomRatio = 0.3;
-			// カメラ設定を反映するために、調整したカメラを再度ビューポート1に関連付けし直す
-			vp3->attachCam(cam3);
-		}
-
-		//-----------------------------------------------------
-		// ビューポート4
-		//-----------------------------------------------------
-		{
-			// ビューポートを追加する。
-			auto vp4 = sodl::drwMngr->addViewPort("vp4");
-
-			// ウィンドウを4分割した右下領域にビューポートを張る
-			vp4->setVpSize(
-				app::WINDOW_SIZE_X / 2, 		// left
-				0,								// bottom
-				app::WINDOW_SIZE_X / 2,			// width
-				app::WINDOW_SIZE_Y / 2			// height
-			);
-
-			// ビューポート4に関連付けられたカメラへのshared_ptrを取得する
-			auto cam4 = vp4->getCam();
-			// 側面図を撮影する
-			cam4->camPos = Eigen::Vector3f(0.f, -1000.f, 0.f);
-			cam4->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-			cam4->camUpVec = Eigen::Vector3f(0.f, 0.f, 1.f);
-			// カメラのズーム比率を設定する
-			cam4->zoomRatio = 0.3;
-			// カメラ設定を反映するために、調整したカメラを再度ビューポート1に関連付けし直す
-			vp4->attachCam(cam4);
-		}
-	}
-
-
 	//-----------------------------------------------------
 	// ワールド座標系原点から連鎖するJ1~6座標系オブジェクトを定義
 	//   J1~6座標系が6軸ロボットアームの各関節の位置姿勢を表現する
 	//-----------------------------------------------------
 	// ワールド座標原点を定義
 	auto World_Origin = sodl::CoordChainObj::create("World_Origin");
-	World_Origin->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 0.f);
+	World_Origin->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f,0.f);
 
 	// J1(Joint1)座標系オブジェクトを作成、ワールド座標系にアタッチする
 	auto J1_Crd = sodl::CoordChainObj::create("J1_Crd", World_Origin);
@@ -193,7 +64,7 @@ int main(int argc, char ** argv)
 	J1_Crd->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 30.f);
 
 	// J2座標系オブジェクトを作成、親(J1)座標系にアタッチする
-	auto J2_Crd = sodl::CoordChainObj::create("J2_Crd", J1_Crd);
+	auto J2_Crd = sodl::CoordChainObj::create("J2_Crd", J1_Crd );
 	// J2座標系の親座標系に対するオフセット量を設定する
 	J2_Crd->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 230.f);
 
@@ -256,7 +127,7 @@ int main(int argc, char ** argv)
 		auto RobotWrist3 = sodl::CoordChain3dMdl::create(exePath + "\\3dModel\\SimpleRobot6Ax\\W3.stl", "W3", J6_Crd);
 		// モデルの表示位置を調整するために、親座標系に対する座標系オフセットを設定する
 		RobotWrist3->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 0.f);
-
+		
 
 		//-----------------------------------------------------
 		// 定義したオブジェクトを描画対象として描画マネージャに登録
@@ -266,6 +137,7 @@ int main(int argc, char ** argv)
 		// ここで描画空間に追加したオブジェクトは、shared_ptrとしてdrwMngr側に共有されるため、
 		// 今後アクセスる必要がなければ、mainソース側のshared_ptrはここで破棄してしまっても構わない。
 	}
+
 
 
 	////////////////////////////////////////////////////// 
@@ -306,8 +178,8 @@ namespace app {
 	//================================================================
 	void keyFunc(unsigned char key, int u, int v)
 	{
-		const float		KEY_MOT_UNIT = 5.f;
-		const float		CNV_DEG2RAD = (M_PI / 180.f);
+		const float		KEY_MOT_UNIT	=	5.f;
+		const float		CNV_DEG2RAD		=	(M_PI / 180.f);
 
 		switch (key) {
 		case '\033':	// '\033' は ESC の ASCII コード
@@ -380,4 +252,5 @@ namespace app {
 
 		return modulePath;
 	}
+
 };
