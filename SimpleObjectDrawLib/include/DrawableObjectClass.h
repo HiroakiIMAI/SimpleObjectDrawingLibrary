@@ -269,16 +269,16 @@ namespace SmplObjDrwLib {
 		// その他
 		//--------------------------------------------
 	public:
-		static void SetVpSizeToChildrenLabel(
+		static void SetPrjMtxSizeToChildrenLabel(
 			std::shared_ptr<CoordChainObj> obj,
 			float size_x,
 			float size_y
 		);
 
 		std::string text;						// ラベル内容のテキスト
-		float size = 5;							// ラベルのフォントサイズ
-		float vpSizeX = 100.f;					// ビューポートサイズ X
-		float vpSizeY = 100.f;					// ビューポートサイズ Y
+		float size = 15;						// ラベルのフォントサイズ(縦)[pix]
+		float prjMtxRangeX = 100.f;				// プロジェクションマトリックスの投影幅(ortho前提)
+		float prjMtxRangeY = 100.f;				// プロジェクションマトリックスの投影高(ortho前提)
 		LabelAlign align = LabelAlign::LEFT;	// ラベルのアラインメント
 	};
 }

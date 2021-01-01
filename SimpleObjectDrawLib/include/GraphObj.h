@@ -1,5 +1,6 @@
 #pragma once
 #include "DrawableObjectClass.h"
+#include "DrawingManager.h"
 
 namespace SmplObjDrwLib {
 
@@ -38,9 +39,8 @@ namespace SmplObjDrwLib {
 	public:
 		static std::shared_ptr<TypeOfSelf> create(
 			std::string name,
-			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>(),
-			float size_x = 100,
-			float size_y = 100
+			std::weak_ptr<CamClass> cam,
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
 		);
 
 		//--------------------------------------------
@@ -96,7 +96,10 @@ namespace SmplObjDrwLib {
 		std::shared_ptr<LabelObj>		yMaxLabel;		// y最小値ラベル
 		std::shared_ptr<LabelObj>		yMinLabel;		// y最小値ラベル
 
-		void initSelf(float size_x=100, float size_y=100);
+		void initSelf(std::weak_ptr<CamClass> cam = std::weak_ptr<CamClass>() );
+
+	public:
+
 	};
 
 }

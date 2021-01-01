@@ -1,5 +1,6 @@
 #pragma once
 #include "GraphObj.h"
+#include "DrawingManager.h"
 
 namespace SmplObjDrwLib {
 
@@ -28,9 +29,8 @@ namespace SmplObjDrwLib {
 	public:
 		static std::shared_ptr<TypeOfSelf> create(
 			std::string name,
-			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>(),
-			float size_x = 100,
-			float size_y = 100
+			std::weak_ptr<CamClass> cam,
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
 		);
 
 		//--------------------------------------------
@@ -53,7 +53,7 @@ namespace SmplObjDrwLib {
 		int dataNumToDraw = 100;
 
 	protected:
-		void initSelf(float size_x, float size_y);
+		void initSelf(std::weak_ptr<CamClass> cam = std::weak_ptr<CamClass>() );
 		void refleshRangeAsScroll();
 
 	};

@@ -433,17 +433,20 @@ void LabelObj::_drawShapeOfSelf()
 	glPushMatrix();
 	glLoadIdentity();
 
+	//----------------------------------------------
+	// カメラのズームへの対応
+	//----------------------------------------------
 	// 無調整で印字した場合の文字サイズを取得する
-	float rawHgt = glutStrokeHeight(GLUT_STROKE_ROMAN);
-
+	const float rawHgt = glutStrokeHeight(GLUT_STROKE_ROMAN);
 	// 文字サイズ調整用の拡縮倍率を取得する
-	float rate = rawHgt / size;
+	const float rate = rawHgt / size;
 	// 拡縮の中心位置を取得
-	float x = GetTf_root2self().translation().x();
-	float y = GetTf_root2self().translation().y();	
+	const float x = GetTf_root2self().translation().x();
+	const float y = GetTf_root2self().translation().y();	
+		
 	glOrtho(
-		x - (x*rate), x + ((vpSizeX - x)*rate), 
-		y - (y*rate), y + ((vpSizeY - y)*rate),
+		x - (x*rate), x + ((prjMtxRangeX - x)*rate), 
+		y - (y*rate), y + ((prjMtxRangeY - y)*rate),
 		-1000, 1000);
 	
 	
@@ -494,17 +497,17 @@ void LabelObj::_drawShapeOfSelf()
 //	<Description>	
 //					
 //================================================================
-void LabelObj::SetVpSizeToChildrenLabel(
+void LabelObj::SetPrjMtxSizeToChildrenLabel(
 	std::shared_ptr<CoordChainObj> obj,
 	float size_x,
 	float size_y
 )
 {
-	// 与えられたオブジェクトがLabelObjならば、vpSizeにグラフサイズを設定する
+	// 与えられたオブジェクトがLabelObjならば、prjMtxRangeにサイズを設定する
 	if (auto sPtr_labelObj = std::dynamic_pointer_cast<LabelObj>(obj))
 	{
-		sPtr_labelObj->vpSizeX = size_x;
-		sPtr_labelObj->vpSizeY = size_y;
+		sPtr_labelObj->prjMtxRangeX = size_x;
+		sPtr_labelObj->prjMtxRangeY = size_y;
 	}
 
 	// 全ての子要素を探索し、再帰する
@@ -515,7 +518,7 @@ void LabelObj::SetVpSizeToChildrenLabel(
 		auto sPtr_child = child->lock();
 		if (sPtr_child)
 		{
-			SetVpSizeToChildrenLabel(sPtr_child, size_x, size_y);
+			SetPrjMtxSizeToChildrenLabel(sPtr_child, size_x, size_y);
 		}
 	}
 }

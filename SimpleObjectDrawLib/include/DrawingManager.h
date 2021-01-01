@@ -1,3 +1,6 @@
+#ifndef __DRAWING_MANAGER_H__
+#define __DRAWING_MANAGER_H__
+
 #include <memory>
 #include <vector>
 #include <list>
@@ -67,6 +70,12 @@ namespace SmplObjDrwLib {
 		float zoomRatio = 1.0;
 		GLfloat m_prjection[16];
 		bool isOrthoMode = true;
+		bool is2DGraphMode = false;
+
+		float prjMtxOrthWdt = 100.f;
+		float prjMtxOrthHgt = 100.f;
+		float widthHalfZoomed = 50.f;
+		float heightHalfZoomed = 50.f;
 
 		// 正射影マトリクス設定メソッド
 		void SetPrjMtx_As2DView(
@@ -105,8 +114,6 @@ namespace SmplObjDrwLib {
 		int bottom;
 		int width;
 		int height;
-		int widthHalfZoomed;
-		int heightHalfZoomed;
 
 
 //		std::string name;
@@ -190,9 +197,16 @@ namespace SmplObjDrwLib {
 
 		void draw(void);
 
+		// 描画オブジェクトの種別毎の描画前処理
+		//void DrawingManager::preDrawProc4GraphObj(
+		//	sPtr_IDrawableObjBase obj,
+		//	std::weak_ptr<CamClass> cam
+		//);
+
 		int _windowSizeX;
 		int _windowSizeY;
 
+		// default call back
 		static void OnDispFunc();
 		static void OnReshapeFunc(int u, int v);
 		static void OnKeyboardFunc (unsigned char key, int u, int v);
@@ -201,11 +215,12 @@ namespace SmplObjDrwLib {
 		static void OnMouseHover(int u, int v);
 		static void OnMouseWheel(int wheelNum, int dir, int u, int v);
 
+		// user call back
 		static void(*usrKeyboardFunc)(unsigned char key, int u, int v);
 		static void(*usrMouseBtnFunc)(int button, int state, int u, int v);
 		static void(*usrMouseDragFunc)(int u, int v);
 		static void(*usrMouseHoverFunc)(int u, int v);
-
+	
 	};
 
 };
@@ -218,6 +233,5 @@ namespace SmplObjDrwLib {
 };
 
 
-
-
+#endif
 

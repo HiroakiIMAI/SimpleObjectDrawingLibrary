@@ -1,5 +1,6 @@
 #include "include/DrawingManager.h"
 #include "include/DrawableObjectClass.h"
+#include "include/GraphObj.h"
 #include "include/glDrawExt.h"
 
 #include <cstdio>
@@ -78,11 +79,39 @@ void CamClass::SetPrjMtx_As2DView(
 	float _far
 )
 {
-	glPushMatrix();
 
+	prjMtxOrthWdt = width  / zoomRatio;
+	prjMtxOrthHgt = height / zoomRatio;
+	widthHalfZoomed  = prjMtxOrthWdt / 2.f;
+	heightHalfZoomed = prjMtxOrthHgt / 2.f;
+
+	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho( 0 , width, 0, height, _near, _far );
+
+	if (is2DGraphMode)
+	{
+		glOrtho(
+			0,
+			prjMtxOrthWdt,
+			0,
+			prjMtxOrthHgt,
+			0.f,
+			50000.f
+		);
+	}
+	else
+	{
+		glOrtho(
+			-widthHalfZoomed,
+			widthHalfZoomed,
+			-heightHalfZoomed,
+			heightHalfZoomed,
+			0.f,
+			50000.f
+		);
+	}
+
 	glGetFloatv(GL_PROJECTION_MATRIX, m_prjection);
 
 	glPopMatrix();
@@ -175,20 +204,7 @@ void ViewPortClass::attachCam(std::shared_ptr<CamClass> cam)
 
 void ViewPortClass::fitCamMatrixToOrthView()
 {
-	widthHalfZoomed  = (width  >> 1) / camAttached->zoomRatio;
-	heightHalfZoomed = (height >> 1) / camAttached->zoomRatio;
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(
-		-widthHalfZoomed, 
-		 widthHalfZoomed,
-		-heightHalfZoomed,
-		 heightHalfZoomed,
-		0,
-		50000.f
-	);
-	glGetFloatv(GL_PROJECTION_MATRIX, camAttached->m_prjection);
+	camAttached->SetPrjMtx_As2DView(width, height);
 }
 
 
@@ -288,6 +304,7 @@ void DrawingManager::draw(void)
 		itr++)
 	{
 		auto vp = *itr;
+		auto cam = vp->camAttached;
 
 		//------------------------
 		// ビューポートの配置
@@ -309,8 +326,8 @@ void DrawingManager::draw(void)
 
 		{
 			// カメラを配置する前にviewPortに縁を描く
-			float _w = vp->widthHalfZoomed;
-			float _h = vp->heightHalfZoomed;
+			float _w = cam->widthHalfZoomed;
+			float _h = cam->heightHalfZoomed;
 			// ズーム比に応じて、最終的に1[pix]で線が書けるように調整
 			float _a = 1.0 / (vp->camAttached->zoomRatio);
 			glColor3d(1.0, 1.0, 1.1); // white
@@ -340,6 +357,10 @@ void DrawingManager::draw(void)
 				obj != grnd->end();
 				obj++)
 			{
+				// オブジェクト種別による特別な前処理
+				
+
+				// 描画
 				(*obj)->draw();
 			}
 		}
@@ -348,6 +369,23 @@ void DrawingManager::draw(void)
 	glutSwapBuffers();
 
 }
+
+//================================================================
+//
+//	<Summary>		描画更新前処理 グラフ専用
+//	<Description>
+//================================================================
+/*
+void DrawingManager::preDrawProc4GraphObj(
+	sPtr_IDrawableObjBase obj, 
+	std::weak_ptr<CamClass> cam
+)
+{
+	if (auto grph = std::dynamic_pointer_cast<GraphObj>(obj))
+	{
+	}
+}
+*/
 
 //================================================================
 //

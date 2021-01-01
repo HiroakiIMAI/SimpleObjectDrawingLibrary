@@ -21,7 +21,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin_samples )
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${PROJECT_SOURCE_DIR}/bin_samples )
 
 add_subdirectory( SimpleObjectDrawLib )
-add_subdirectory( SODL_sample_00 )
 add_subdirectory( SODL_sample_01_LoadModel )
 add_subdirectory( SODL_sample_02_6AxRobot )
 add_subdirectory( SODL_sample_03_MultiViewPort )

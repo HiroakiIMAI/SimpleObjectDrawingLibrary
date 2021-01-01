@@ -1,4 +1,5 @@
 #include "include/GraphObj.h"
+#include <iomanip>
 
 using namespace SmplObjDrwLib;
 
@@ -34,9 +35,8 @@ GraphObj::~GraphObj()
 //================================================================
 std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 	std::string name,
-	std::weak_ptr<CoordChainObj> parent,
-	float size_x,
-	float size_y
+	std::weak_ptr<CamClass> cam,
+	std::weak_ptr<CoordChainObj> parent
 )
 {
 	// インスタンスの生成
@@ -52,7 +52,7 @@ std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 	}
 
 	// メンバの初期化
-	ptr->initSelf(size_x, size_y);
+	ptr->initSelf(cam);
 
 	return  ptr;
 }
@@ -62,8 +62,16 @@ std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 //	<Summary>		メンバ初期化関数
 //	<Description>
 //================================================================
-void GraphObj::initSelf(float size_x, float size_y)
+void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
 {
+	float size_x = 100.f;
+	float size_y = 100.f;
+	if (auto sPtr_cam = cam.lock())
+	{
+		size_x = sPtr_cam->prjMtxOrthWdt;
+		size_y = sPtr_cam->prjMtxOrthHgt;
+	}
+
 	//-----------------------------------
 	// メンバ DrawableObj の初期化 
 	//-----------------------------------
@@ -91,9 +99,11 @@ void GraphObj::initSelf(float size_x, float size_y)
 	// 背景の初期化
 	//-------------------------------
 	auto grph_back = this->back;
-	grph_back->boxSize.x() = size_x;
-	grph_back->boxSize.y() = size_y;
+	grph_back->boxSize.x() = size_x-2;
+	grph_back->boxSize.y() = size_y-2;
 	grph_back->boxSize.z() = 0;
+	grph_back->CrdTrs.translation() =
+		Eigen::Vector3f( 1, 1, 0 );
 	grph_back->drawType = POLYGON;
 	copyColor4fv(color4fv::LGRAY, grph_back->color.fv4);
 
@@ -101,10 +111,15 @@ void GraphObj::initSelf(float size_x, float size_y)
 	// グラフエリアの初期化
 	//-------------------------------
 	auto grph_area = this->area;
-	grph_area->boxSize.x() = 0.9 * size_x;
-	grph_area->boxSize.y() = 0.7 * size_y;
+	grph_area->boxSize.x() = 0.9 * back->boxSize.x();
+	grph_area->boxSize.y() = 0.7 * back->boxSize.y();
 	grph_area->boxSize.z() = 0;
-	grph_area->CrdTrs.translation() = Eigen::Vector3f(0.05 * size_x, 0.10 * size_y, 0);
+	grph_area->CrdTrs.translation() = 
+		Eigen::Vector3f(
+			0.05 * back->boxSize.x(), 
+			0.10 * back->boxSize.y(), 
+			0
+		);
 	grph_area->drawType = POLYGON;
 	copyColor4fv(color4fv::WHITE, grph_area->color.fv4);
 
@@ -112,7 +127,7 @@ void GraphObj::initSelf(float size_x, float size_y)
 	// グラフタイトルの初期化
 	//-------------------------------
 	this->title->text = "\"" + name + "\"";
-	this->title->size = 10;
+	this->title->size = 20;
 	this->title->align = LabelAlign::CENTER;
 	this->title->CrdTrs.translation() = Eigen::Vector3f(
 		back->boxSize.x() / 2,
@@ -137,14 +152,13 @@ void GraphObj::initSelf(float size_x, float size_y)
 	//-------------------------------
 	// ラベル群の一括初期化
 	//-------------------------------
-	LabelObj::SetVpSizeToChildrenLabel(back, back->boxSize.x(), back->boxSize.y());
+	LabelObj::SetPrjMtxSizeToChildrenLabel(back, back->boxSize.x(), back->boxSize.y());
 
 	//-------------------------------
 	// x軸ラベルの初期化
 	//-------------------------------
 	// x軸ラベル
 	this->xAxisLabel->text = "xLabel [unit]";
-	this->xAxisLabel->size = 5;
 	this->xAxisLabel->align = LabelAlign::CENTER;
 	this->xAxisLabel->CrdTrs.translation() =
 		Eigen::Vector3f(
@@ -178,7 +192,6 @@ void GraphObj::initSelf(float size_x, float size_y)
 	//-------------------------------
 	// y軸ラベル
 	this->yAxisLabel->text = "yLabel [unit]";
-	this->yAxisLabel->size = 5;
 	this->yAxisLabel->align = LabelAlign::CENTER;
 	this->yAxisLabel->CrdTrs.translation() =
 		Eigen::Vector3f(
@@ -282,10 +295,12 @@ void GraphObj::_drawShapeOfSelf()
 		yAxis->points[1].x() = -rangeMin.x() / (rangeMax.x() - rangeMin.x())* area->boxSize.x();
 
 	// 軸最[大/小]値の表示を更新
-	xMaxLabel->text = std::to_string(rangeMax.x());
-	xMinLabel->text = std::to_string(rangeMin.x());
-	yMaxLabel->text = std::to_string(rangeMax.y());
-	yMinLabel->text = std::to_string(rangeMin.y());
+	std::stringstream ss;
+	ss << std::fixed << std::setprecision(2);
+	ss << rangeMax.x(); xMaxLabel->text = ss.str();	ss.str("");
+	ss << rangeMax.y(); yMaxLabel->text = ss.str(); ss.str("");		
+	ss << rangeMin.x();	xMinLabel->text = ss.str(); ss.str("");
+	ss << rangeMin.y();	yMinLabel->text = ss.str(); ss.str("");
 
 	// 内部プロットデータをクリア
 	if (auto sPtr_points = _dataToDraw->_sPtr_points)

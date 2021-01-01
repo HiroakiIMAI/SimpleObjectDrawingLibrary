@@ -34,9 +34,8 @@ TimeSeriesGraph::~TimeSeriesGraph()
 //================================================================
 std::shared_ptr < TimeSeriesGraph::TypeOfSelf > TimeSeriesGraph::create(
 	std::string name,
-	std::weak_ptr<CoordChainObj> parent,
-	float size_x,
-	float size_y
+	std::weak_ptr<CamClass> cam,
+	std::weak_ptr<CoordChainObj> parent
 )
 {
 	// インスタンスの生成
@@ -52,7 +51,7 @@ std::shared_ptr < TimeSeriesGraph::TypeOfSelf > TimeSeriesGraph::create(
 	}
 
 	// メンバの初期化
-	ptr->initSelf(size_x, size_y);
+	ptr->initSelf(cam);
 
 	return  ptr;
 }
@@ -63,9 +62,9 @@ std::shared_ptr < TimeSeriesGraph::TypeOfSelf > TimeSeriesGraph::create(
 //	<Summary>		メンバ初期化関数
 //	<Description>
 //================================================================
-void TimeSeriesGraph::initSelf(float size_x, float size_y)
+void TimeSeriesGraph::initSelf(std::weak_ptr<CamClass> cam)
 {
-	GraphObj::initSelf(size_x, size_y);
+	GraphObj::initSelf(cam);
 }
 
 
