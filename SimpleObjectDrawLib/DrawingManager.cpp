@@ -68,7 +68,7 @@ void CamClass::addSelfToCamList()
 
 //================================================================
 //
-//	<Summry>		カメラに正射影マトリクスを設定する
+//	<Summary>		カメラに正射影マトリクスを設定する
 //	<Description>
 //================================================================
 void CamClass::SetPrjMtx_As2DView(
@@ -199,7 +199,7 @@ void ViewPortClass::fitCamMatrixToOrthView()
 
 //================================================================
 //
-//	<Summry>		コンストラクタ
+//	<Summary>		コンストラクタ
 //	<Description>
 //================================================================
 DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle) :
@@ -261,7 +261,7 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 
 //================================================================
 //
-//	<Summry>		ファクトリ関数(シングルトンパターン)
+//	<Summary>		ファクトリ関数(シングルトンパターン)
 //	<Description>
 //================================================================
 DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle)
@@ -276,7 +276,7 @@ DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int
 
 //================================================================
 //
-//	<Summry>		描画関数
+//	<Summary>		描画関数
 //	<Description>
 //================================================================
 void DrawingManager::draw(void)
@@ -348,7 +348,7 @@ void DrawingManager::draw(void)
 
 //================================================================
 //
-//	<Summry>		描画更新
+//	<Summary>		描画更新
 //	<Description>
 //================================================================
 void DrawingManager::drawUpdt(void)
@@ -359,7 +359,7 @@ void DrawingManager::drawUpdt(void)
 
 //================================================================
 //
-//	<Summry>		カメラ移動
+//	<Summary>		カメラ移動
 //	<Description>
 //================================================================
 void DrawingManager::mvCam( Eigen::Vector3f mv )
@@ -369,7 +369,7 @@ void DrawingManager::mvCam( Eigen::Vector3f mv )
 
 //================================================================
 //
-//	<Summry>		ビューポートの追加
+//	<Summary>		ビューポートの追加
 //	<Description>
 //================================================================
 std::shared_ptr<ViewPortClass> DrawingManager::addViewPort(std::string name, int vpSizeX, int vpSizeY)
@@ -386,7 +386,7 @@ std::shared_ptr<ViewPortClass> DrawingManager::addViewPort(std::string name, int
 
 //================================================================
 //
-//	<Summry>		描画空間の追加
+//	<Summary>		描画空間の追加
 //	<Description>
 //================================================================
 sPtr_vector< sPtr_IDrawableObjBase > DrawingManager::addDrawingSpace()
@@ -401,7 +401,7 @@ sPtr_vector< sPtr_IDrawableObjBase > DrawingManager::addDrawingSpace()
 
 //================================================================
 //
-//	<Summry>		描画空間へのオブジェクトの追加
+//	<Summary>		描画空間へのオブジェクトの追加
 //	<Description>
 //================================================================
 void DrawingManager::AddObj_ToDrwSpace(sPtr_IDrawableObjBase obj, int numGround)
@@ -415,7 +415,7 @@ void DrawingManager::AddObj_ToDrwSpace(sPtr_IDrawableObjBase obj, int numGround)
 
 //================================================================
 //
-//	<Summry>		描画空間へのオブジェクトツリーの追加
+//	<Summary>		描画空間へのオブジェクトツリーの追加
 //	<Description>
 //================================================================
 void DrawingManager::AddObjTree_ToDrwSpace(std::shared_ptr<CoordChainObj> obj, int numGround)

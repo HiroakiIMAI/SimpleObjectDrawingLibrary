@@ -11,7 +11,7 @@ using namespace SmplObjDrwLib;
 
 //================================================================
 //
-//	<Summry>		コンストラクタ
+//	<Summary>		コンストラクタ
 //	<Description>
 //================================================================
 CoordChainObj::CoordChainObj(std::string name, std::weak_ptr<CoordChainObj> parent)
@@ -26,7 +26,7 @@ CoordChainObj::CoordChainObj(std::string name, std::weak_ptr<CoordChainObj> pare
 
 //================================================================
 //
-//	<Summry>		デストラクタ
+//	<Summary>		デストラクタ
 //	<Description>
 //================================================================
 CoordChainObj::~CoordChainObj()
@@ -37,7 +37,7 @@ CoordChainObj::~CoordChainObj()
 
 //================================================================
 //
-//	<Summry>		ファクトリ関数
+//	<Summary>		ファクトリ関数
 //	<Description>
 //================================================================
 std::shared_ptr<CoordChainObj> CoordChainObj::create(
@@ -57,7 +57,7 @@ std::shared_ptr<CoordChainObj> CoordChainObj::create(
 
 //================================================================
 //
-//	<Summry>		draw()
+//	<Summary>		draw()
 //	<Description>
 //================================================================
 void CoordChainObj::draw()
@@ -104,7 +104,7 @@ void CoordChainObj::draw()
 
 //================================================================
 //
-//	<Summry>		座標系連鎖の親との関係を削除する
+//	<Summary>		座標系連鎖の親との関係を削除する
 //	<Description>
 //================================================================
 void CoordChainObj::DetachSelf_fromParentsCoordChain()
@@ -132,7 +132,7 @@ void CoordChainObj::DetachSelf_fromParentsCoordChain()
 
 //================================================================
 //
-//	<Summry>		座標系連鎖の親子関係に子を追加する
+//	<Summary>		座標系連鎖の親子関係に子を追加する
 //	<Description>
 //================================================================
 void CoordChainObj::AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> parent)
@@ -148,7 +148,7 @@ void CoordChainObj::AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> 
 
 //================================================================
 //
-//	<Summry>		自己形状の描画
+//	<Summary>		自己形状の描画
 //	<Description>
 //================================================================
 void CoordChainObj::_drawShapeOfSelf()
@@ -158,7 +158,7 @@ void CoordChainObj::_drawShapeOfSelf()
 
 //================================================================
 //
-//	<Summry>		GetTf_root2self()
+//	<Summary>		GetTf_root2self()
 //	<Description>
 //================================================================
 Eigen::Affine3f CoordChainObj::GetTf_root2self()

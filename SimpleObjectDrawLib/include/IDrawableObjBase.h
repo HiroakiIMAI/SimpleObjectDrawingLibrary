@@ -3,7 +3,7 @@
 
 namespace SmplObjDrwLib {
 
-	enum DRAWTYPE {
+	enum DRAWTYPE{
 		WIRE = 0,
 		POLYGON,
 		WIRE_POLYGON,

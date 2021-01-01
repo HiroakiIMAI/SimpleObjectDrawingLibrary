@@ -6,7 +6,7 @@ using namespace SmplObjDrwLib;
 
 //================================================================
 //
-//	<Summry>		コンストラクタ
+//	<Summary>		コンストラクタ
 //	<Description>
 //================================================================
 GraphObj::GraphObj(std::string name, std::weak_ptr<CoordChainObj> parent)
@@ -18,7 +18,7 @@ GraphObj::GraphObj(std::string name, std::weak_ptr<CoordChainObj> parent)
 
 //================================================================
 //
-//	<Summry>		デストラクタ
+//	<Summary>		デストラクタ
 //	<Description>
 //================================================================
 GraphObj::~GraphObj()
@@ -29,7 +29,7 @@ GraphObj::~GraphObj()
 
 //================================================================
 //
-//	<Summry>		ファクトリ関数
+//	<Summary>		ファクトリ関数
 //	<Description>
 //================================================================
 std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
@@ -59,7 +59,7 @@ std::shared_ptr < GraphObj::TypeOfSelf > GraphObj::create(
 
 //================================================================
 //
-//	<Summry>		メンバ初期化関数
+//	<Summary>		メンバ初期化関数
 //	<Description>
 //================================================================
 void GraphObj::initSelf(float size_x, float size_y)
@@ -93,7 +93,8 @@ void GraphObj::initSelf(float size_x, float size_y)
 	auto grph_back = this->back;
 	grph_back->boxSize.x() = size_x;
 	grph_back->boxSize.y() = size_y;
-	grph_back->drawType = DRAWTYPE::POLYGON;
+	grph_back->boxSize.z() = 0;
+	grph_back->drawType = POLYGON;
 	copyColor4fv(color4fv::LGRAY, grph_back->color.fv4);
 
 	//-------------------------------
@@ -104,7 +105,7 @@ void GraphObj::initSelf(float size_x, float size_y)
 	grph_area->boxSize.y() = 0.7 * size_y;
 	grph_area->boxSize.z() = 0;
 	grph_area->CrdTrs.translation() = Eigen::Vector3f(0.05 * size_x, 0.10 * size_y, 0);
-	grph_area->drawType = DRAWTYPE::POLYGON;
+	grph_area->drawType = POLYGON;
 	copyColor4fv(color4fv::WHITE, grph_area->color.fv4);
 
 	//-------------------------------
@@ -222,7 +223,7 @@ void GraphObj::initSelf(float size_x, float size_y)
 
 //================================================================
 //
-//	<Summry>		プロットに対するアトリビュート配列を追加する
+//	<Summary>		プロットに対するアトリビュート配列を追加する
 //	<Description>
 //================================================================
 void GraphObj::AddAtrData(std::shared_ptr < std::deque<float> > atr)
@@ -233,7 +234,7 @@ void GraphObj::AddAtrData(std::shared_ptr < std::deque<float> > atr)
 
 //================================================================
 //
-//	<Summry>		プロットデータの追加
+//	<Summary>		プロットデータの追加
 //	<Description>	
 //================================================================
 void GraphObj::addData( Eigen::Vector3f &point )
@@ -261,7 +262,7 @@ void GraphObj::addData( Eigen::Vector3f &point )
 
 //================================================================
 //
-//	<Summry>		自己形状描画
+//	<Summary>		自己形状描画
 //	<Description>	実際の描画はChildrenCoordObjに任せる。
 //					ここではCheldrenCoordObjのdraw()の前処理を実施する。
 //================================================================

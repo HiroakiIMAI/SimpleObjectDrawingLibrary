@@ -5,7 +5,7 @@ using namespace SmplObjDrwLib;
 
 //================================================================
 //
-//	<Summry>		コンストラクタ
+//	<Summary>		コンストラクタ
 //	<Description>
 //================================================================
 TimeSeriesGraph::TimeSeriesGraph(std::string name, std::weak_ptr<CoordChainObj> parent)
@@ -18,7 +18,7 @@ TimeSeriesGraph::TimeSeriesGraph(std::string name, std::weak_ptr<CoordChainObj> 
 
 //================================================================
 //
-//	<Summry>		デストラクタ
+//	<Summary>		デストラクタ
 //	<Description>
 //================================================================
 TimeSeriesGraph::~TimeSeriesGraph()
@@ -29,7 +29,7 @@ TimeSeriesGraph::~TimeSeriesGraph()
 
 //================================================================
 //
-//	<Summry>		ファクトリ関数
+//	<Summary>		ファクトリ関数
 //	<Description>
 //================================================================
 std::shared_ptr < TimeSeriesGraph::TypeOfSelf > TimeSeriesGraph::create(
@@ -60,7 +60,7 @@ std::shared_ptr < TimeSeriesGraph::TypeOfSelf > TimeSeriesGraph::create(
 
 //================================================================
 //
-//	<Summry>		メンバ初期化関数
+//	<Summary>		メンバ初期化関数
 //	<Description>
 //================================================================
 void TimeSeriesGraph::initSelf(float size_x, float size_y)
@@ -71,7 +71,7 @@ void TimeSeriesGraph::initSelf(float size_x, float size_y)
 
 //================================================================
 //
-//	<Summry>		自己形状描画
+//	<Summary>		自己形状描画
 //	<Description>	
 //================================================================
 void TimeSeriesGraph::_drawShapeOfSelf()
@@ -116,7 +116,7 @@ void TimeSeriesGraph::_drawShapeOfSelf()
 
 //================================================================
 //
-//	<Summry>		時系列プロットをスクロールさせる
+//	<Summary>		時系列プロットをスクロールさせる
 //	<Description>	
 //================================================================
 void TimeSeriesGraph::refleshRangeAsScroll()
