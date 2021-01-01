@@ -165,11 +165,9 @@ int main(int argc, char ** argv)
 	std::shared_ptr< sodl::TimeSeriesGraph > timeSerialGraph;
 	//////////////////////////////////////////////////////
 	//
-	// 追加の描画空間[1]を作成し、
-	// ビューポート, カメラを設定する。
+	// 追加の描画空間[1]を作成し、ビューポート, カメラを設定する。
 	//
-	// 時系列グラフ(2次元)を作成し、
-	// 追加の描画空間[1]に配置する。
+	// 時系列グラフ(2次元)を作成し、描画空間[1]に配置する。
 	//
 	//////////////////////////////////////////////////////
 	{
@@ -177,58 +175,68 @@ int main(int argc, char ** argv)
 		// 描画空間、ビューポート、カメラの追加と設定
 		//----------------------------------------------------
 
+		//----------------------------------------------------
 		// グラフ用に描画空間[1]を追加
+		//----------------------------------------------------
 		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
 
-		// ビューポート
+		//----------------------------------------------------
+		// ビューポート作成
+		//----------------------------------------------------
 		auto vpGrph = sodl::drwMngr->addViewPort("vpTimeSerialGraph");
-		vpGrph->spaceAttached = spaceGrph;
 		vpGrph->setVpSize(
 			app::WINDOW_SIZE_X / 2,		// left
 			app::WINDOW_SIZE_Y / 2,		// bottom
 			app::WINDOW_SIZE_X / 2,		// width
 			app::WINDOW_SIZE_Y / 2		// height
 		);
-		// カメラ
+		//----------------------------------------------------
+		// カメラ設定
+		//----------------------------------------------------
 		auto camGrph = vpGrph->getCam();
+		// カメラが描画空間[1]を撮影するように関連付ける
+		camGrph->spaceAttached = spaceGrph;
+
+		// カメラを2Dグラフモードに設定する
+		//   is2DGraph = true に設定したカメラは、グラフ平面を固定的に撮影するように
+		//   vp->attachCam()したとき、自動的に位置姿勢が初期化される。
+		//   ユーザコード側でいちいちカメラの位置姿勢を設定しなくてよい。
 		camGrph->is2DGraphMode = true;
-		camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
-		camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-		camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
+
+		// ビューポートに設定を更新したカメラを関連付ける。
 		vpGrph->attachCam(camGrph);
 
 		//----------------------------------------------------
 		// 時系列グラフ(2次元)の作成と描画空間[1]への配置
 		//----------------------------------------------------
 		// 時系列グラフの作成
-		timeSerialGraph
+		std::shared_ptr< sodl::TimeSeriesGraph > tsGrph;
+
+		tsGrph
 			= sodl::TimeSeriesGraph::create(
-				"ax_J1 position[deg] + noize",			// オブジェクト名称 = グラフタイトル
+				"Ax_J1 Position[deg] + Noize",			// オブジェクト名称 = グラフタイトル
 				camGrph									// 関連付けるカメラ(カメラ投影行列などの設定が済んでいること)
 			);
-		// 表示範囲(初期値)の指定
-		timeSerialGraph->rangeMax.x() = 0;
-		timeSerialGraph->rangeMin.x() = 0;
-		timeSerialGraph->rangeMax.y() = 100;
-		timeSerialGraph->rangeMin.y() = -100;
 		// ラベルの設定
-		timeSerialGraph->xAxisLabel->text = "time";
-		timeSerialGraph->yAxisLabel->text = "position[deg]";
+		tsGrph->xAxisLabel->text = "time";
+		tsGrph->yAxisLabel->text = "position[deg]";
 
 		// 描画空間[1]にグラフを追加
-		sodl::drwMngr->AddObjTree_ToDrwSpace(timeSerialGraph, 1);
+		sodl::drwMngr->AddObjTree_ToDrwSpace(tsGrph, 1);
+
+		// グラフの内容をメインループ内で更新したいので、
+		// {}の外で宣言したshared_ptrに作成したグラフのオブジェクトを渡しておく。
+		timeSerialGraph = tsGrph;
 	}
 	
 
 	// 散布図グラフ アクセス用shared_ptrを用意
-	std::shared_ptr<sodl::GraphObj> scatterGraph;
+	std::shared_ptr<sodl::GraphObj> scatterGraph_mouseDrag;
 	//////////////////////////////////////////////////////
 	//
-	// 追加の描画空間[2]を作成し、
-	// ビューポート, カメラを設定する。
-	//
-	// 散布図グラフ(2次元)を作成し、
-	// 追加の描画空間[2]に配置する。
+	// 追加の描画空間[2]を作成し、ビューポート, カメラを設定する。
+	// 
+	// 散布図グラフ"マウスドラッグ軌跡"を作成し、描画空間[2]に配置する。
 	//
 	//////////////////////////////////////////////////////
 	{
@@ -238,40 +246,85 @@ int main(int argc, char ** argv)
 
 		// グラフ用に描画空間[2]を追加
 		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
-		// ビューポート
+		// ビューポート作成
 		auto vpGrph = sodl::drwMngr->addViewPort("vpScatterGraph");
-		vpGrph->spaceAttached = spaceGrph;
 		vpGrph->setVpSize(
 			app::WINDOW_SIZE_X / 2,		// left
 			0,							// bottom
 			app::WINDOW_SIZE_Y / 2,		// width
 			app::WINDOW_SIZE_Y / 2		// height
 		);
-		// カメラ
+		// カメラ設定
 		auto camGrph = vpGrph->getCam();
+		camGrph->spaceAttached = spaceGrph;
 		camGrph->is2DGraphMode = true;
-		camGrph->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
-		camGrph->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
-		camGrph->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
 		vpGrph->attachCam(camGrph);
-		//camGrph->SetPrjMtx_As2DView(100, 100);
 
 		//----------------------------------------------------
-		// 散布図グラフ(2次元)の作成と描画空間[1]への配置
+		// 散布図グラフ(2次元)の作成と描画空間[2]への配置
 		//----------------------------------------------------
 		// 散布図グラフの作成
-		scatterGraph = sodl::GraphObj::create(
-			"mouse drag trajectory",				// オブジェクト名称 = グラフタイトル
+		auto scttrGrph = sodl::GraphObj::create(
+			"Mouse Drag Trajectory",				// オブジェクト名称 = グラフタイトル
 			camGrph									// 関連付けるカメラ(カメラ投影行列などの設定が済んでいること)
 		);
-		scatterGraph->rangeMax.x() = 100;
-		scatterGraph->rangeMin.x() = -100;
-		scatterGraph->rangeMax.y() = 100;
-		scatterGraph->rangeMin.y() = -100;
-		// 描画空間にグラフを追加
-		sodl::drwMngr->AddObjTree_ToDrwSpace(scatterGraph, 2);
+		// ラベルの設定
+		scttrGrph->xAxisLabel->text = "X [pix]";
+		scttrGrph->yAxisLabel->text = "Y [pix]";
+		// 描画空間[2]にグラフを追加
+		sodl::drwMngr->AddObjTree_ToDrwSpace(scttrGrph, 2);
+
+		// グラフの内容をメインループ内で更新したいので、
+		// {}の外で宣言したshared_ptrに作成したグラフのオブジェクトを渡しておく。
+		scatterGraph_mouseDrag = scttrGrph;
 	}
-		
+
+
+	// 散布図グラフ アクセス用shared_ptrを用意
+	std::shared_ptr<sodl::GraphObj> scatterGraph_RobotHandXY;
+	//////////////////////////////////////////////////////
+	//
+	// 追加の描画空間[3]を作成し、ビューポート, カメラを設定する。
+	//
+	// 散布図グラフ"ロボットハンドXY"を作成し、描画空間[3]に配置する。
+	//
+	//////////////////////////////////////////////////////
+	{
+		// グラフ用に描画空間[3]を追加
+		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
+		// ビューポート作成
+		auto vpGrph = sodl::drwMngr->addViewPort("vpRobotHandXY");
+		vpGrph->setVpSize(
+			(app::WINDOW_SIZE_X / 2) + (app::WINDOW_SIZE_Y / 2),		// left
+			0,							// bottom
+			app::WINDOW_SIZE_Y / 2,		// width
+			app::WINDOW_SIZE_Y / 2		// height
+		);
+		// カメラ設定
+		auto camGrph = vpGrph->getCam();
+		camGrph->spaceAttached = spaceGrph;
+		camGrph->is2DGraphMode = true;
+		vpGrph->attachCam(camGrph);
+
+		//----------------------------------------------------
+		// 散布図グラフ(2次元)の作成と描画空間[3]への配置
+		//----------------------------------------------------
+		// 散布図グラフの作成
+		auto scttrGrph = sodl::GraphObj::create(
+			"Robot Hand XY",						// オブジェクト名称 = グラフタイトル
+			camGrph									// 関連付けるカメラ(カメラ投影行列などの設定が済んでいること)
+		);
+		// ラベルの設定
+		scttrGrph->xAxisLabel->text = "X [mm]";
+		scttrGrph->yAxisLabel->text = "Y [mm]";
+		// 描画空間[3]にグラフを追加
+		sodl::drwMngr->AddObjTree_ToDrwSpace(scttrGrph, 3);
+
+		// グラフの内容をメインループ内で更新したいので、
+		// {}の外で宣言したshared_ptrに作成したグラフのオブジェクトを渡しておく。
+		scatterGraph_RobotHandXY = scttrGrph;
+	}
+
 
 	//////////////////////////////////////////////////////
 	//
@@ -292,14 +345,20 @@ int main(int argc, char ** argv)
 		J6_Crd->CrdTrs.linear() = Eigen::AngleAxisf(app::ax_J6, UnitZ).matrix();
 
 		//-----------------------------------------------------
-		// モデルX座標＋ランダムノイズを時系列グラフにプロット
+		// J1関節角度＋ランダムノイズを時系列グラフにプロット
 		//-----------------------------------------------------
 		timeSerialGraph->addData(Eigen::Vector3f(count, app::ax_J1*180.0/M_PI + ((rand()%100 - 50)/10.0), 0));
 
 		//-----------------------------------------------------
+		// ロボットハンド位置X,Yを散布図グラフにプロット
+		//-----------------------------------------------------
+		Eigen::Vector3f handPos = J6_Crd->GetTf_root2self().translation();
+		scatterGraph_RobotHandXY->addData( handPos );
+
+		//-----------------------------------------------------
 		// ドラッグ中のマウス位置X,Yを散布図グラフにプロット
 		//-----------------------------------------------------
-		scatterGraph->addData(Eigen::Vector3f(app::mouse_x, app::mouse_y, 0));
+		scatterGraph_mouseDrag->addData(Eigen::Vector3f(app::mouse_x, app::mouse_y, 0));
 
 		//-----------------------------------------------------
 		// 描画マネージャから描画更新を実行する
