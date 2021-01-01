@@ -307,14 +307,17 @@ void DrawingManager::draw(void)
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		// カメラを配置する前にviewPortに縁を描く
-		int _w = vp->widthHalfZoomed;
-		int _h = vp->heightHalfZoomed;
-		glColor3d(1.0, 1.0, 1.1); // white
-		glRecti(-_w, -_h, _w, _w);
-		glColor3d(0.0, 0.0, 0.1); // navy
-		glRecti(-_w+1, -_h+1, _w-1, _w-1);
-	
+		{
+			// カメラを配置する前にviewPortに縁を描く
+			float _w = vp->widthHalfZoomed;
+			float _h = vp->heightHalfZoomed;
+			// ズーム比に応じて、最終的に1[pix]で線が書けるように調整
+			float _a = 1.0 / (vp->camAttached->zoomRatio);
+			glColor3d(1.0, 1.0, 1.1); // white
+			glRectf(-_w, -_h, _w, _w);
+			glColor3d(0.0, 0.0, 0.1); // navy
+			glRectf(-_w + _a, -_h + _a, _w - _a, _w - _a);
+		}
 
 		// カメラの配置
 		gluLookAt(
