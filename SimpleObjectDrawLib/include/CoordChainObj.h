@@ -76,8 +76,9 @@ namespace SmplObjDrwLib {
 	public:
 		wPtr_CoordObj wPtr_prnt;
 		std::vector< wPtr_CoordObj >wPtr_chldrn;
-		Eigen::Affine3f CrdTrs;
 		bool visible_CoordChain = true;
+		Eigen::Affine3f CrdTrs;
+		Eigen::Affine3f GetTf_root2self();
 
 		void DetachSelf_fromParentsCoordChain();
 		void AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> parent);
@@ -90,8 +91,6 @@ namespace SmplObjDrwLib {
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		//-<<<----------------------------------------
 
-	protected:
-		Eigen::Affine3f GetTf_root2self();
 	};
 
 

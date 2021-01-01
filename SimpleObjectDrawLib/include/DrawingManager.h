@@ -91,6 +91,12 @@ namespace SmplObjDrwLib {
 	public:
 		int cam_id;
 
+		std::weak_ptr<
+			std::vector<
+			sPtr_IDrawableObjBase
+			>
+		> spaceAttached;
+
 	private:
 		void addSelfToCamList();
 	};
@@ -103,11 +109,6 @@ namespace SmplObjDrwLib {
 		static std::list<std::weak_ptr<ViewPortClass> > vpInstanceList;
 
 		int vp_id;
-		std::weak_ptr<
-			std::vector< 
-				sPtr_IDrawableObjBase 
-			> 
-		> spaceAttached;
 
 		// protected ‚ÉˆÚ“®—\’è
 		int left;

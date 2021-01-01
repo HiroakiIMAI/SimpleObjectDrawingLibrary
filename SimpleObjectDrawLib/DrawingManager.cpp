@@ -42,8 +42,17 @@ std::list<std::weak_ptr<CamClass> > CamClass::camInstanceList;
 std::shared_ptr<CamClass> CamClass::create(std::string name)
 {
 	auto ptr = std::shared_ptr<CamClass>(new CamClass(name));
-//	ptr->addSelfToList();
 	ptr->addSelfToCamList();
+
+	// 作成したインスタンスが最初の一つでない場合、
+	// 最後の作成済インスタンスが参照している描画グラウンドと
+	// 同じものをデフォルト参照とする。
+	auto itr_self = (--camInstanceList.end());
+	if (itr_self != camInstanceList.begin())
+	{
+		ptr->spaceAttached = (--itr_self)->lock()->spaceAttached;
+	}
+
 	return ptr;
 }
 
@@ -132,14 +141,6 @@ std::shared_ptr<ViewPortClass> ViewPortClass::create(std::string name, int vpSiz
 	auto ptr = std::shared_ptr<ViewPortClass>(new ViewPortClass(name, vpSizeX, vpSizeY));
 	ptr->addSelfToVpList();
 
-	// 作成したインスタンスが最初の一つでない場合、
-	// 最後の作成済インスタンスが参照している描画グラウンドと
-	// 同じものをデフォルト参照とする。
-	auto itr_self = (--vpInstanceList.end());
-	if (itr_self != vpInstanceList.begin())
-	{
-		ptr->spaceAttached = (--itr_self)->lock()->spaceAttached;
-	}
 
 	return ptr;
 }
@@ -195,6 +196,16 @@ void ViewPortClass::setVpSize(int left_, int bottom_, int width_, int height_)
 void ViewPortClass::attachCam(std::shared_ptr<CamClass> cam)
 {
 	camAttached = cam;
+
+	if (cam->is2DGraphMode)
+	{
+		// 2DGraphに関連付けられたカメラは、グラフ平面を固定的に撮影するので
+		// vpにattachしたタイミングで位置姿勢を初期化する。
+		// ユーザコード側でいちいちカメラの位置姿勢を設定しなくてよい。
+		cam->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
+		cam->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
+		cam->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
+	}
 
 	if (camAttached->isOrthoMode)
 	{
@@ -259,7 +270,7 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	// init ViewPortData
 
 	auto vpDiag = addViewPort(DIAG_VIEW);
-	vpDiag->spaceAttached = (*drawingSpace)[0];
+	vpDiag->camAttached->spaceAttached = (*drawingSpace)[0];
 
 	// init ViewPortData
 	//--------------------------------------------------------
@@ -316,7 +327,7 @@ void DrawingManager::draw(void)
 		//------------------------
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glLoadMatrixf(vp->camAttached->m_prjection);
+		glLoadMatrixf(cam->m_prjection);
 
 		//------------------------
 		// カメラの配置(カメラの外部パラ設定)
@@ -329,7 +340,7 @@ void DrawingManager::draw(void)
 			float _w = cam->widthHalfZoomed;
 			float _h = cam->heightHalfZoomed;
 			// ズーム比に応じて、最終的に1[pix]で線が書けるように調整
-			float _a = 1.0 / (vp->camAttached->zoomRatio);
+			float _a = 1.0 / (cam->zoomRatio);
 			glColor3d(1.0, 1.0, 1.1); // white
 			glRectf(-_w, -_h, _w, _w);
 			glColor3d(0.0, 0.0, 0.1); // navy
@@ -338,9 +349,9 @@ void DrawingManager::draw(void)
 
 		// カメラの配置
 		gluLookAt(
-			vp->camAttached->camPos.x(),		vp->camAttached->camPos.y(),		vp->camAttached->camPos.z(),	// camPos
-			vp->camAttached->camTgt.x(),		vp->camAttached->camTgt.y(),		vp->camAttached->camTgt.z(),	// camTargetCentor
-			vp->camAttached->camUpVec.x(),		vp->camAttached->camUpVec.y(),		vp->camAttached->camUpVec.z()	// upVec
+			cam->camPos.x(),		cam->camPos.y(),		cam->camPos.z(),	// camPos
+			cam->camTgt.x(),		cam->camTgt.y(),		cam->camTgt.z(),	// camTargetCentor
+			cam->camUpVec.x(),		cam->camUpVec.y(),		cam->camUpVec.z()	// upVec
 		);
 
 		//------------------------
@@ -349,7 +360,7 @@ void DrawingManager::draw(void)
 
 		// 描画対象のグラウンドが有効に設定されているかをチェックする
 		// (ポインタ参照先が未設定or破棄されていいないか?)
-		auto grnd = vp->spaceAttached.lock();
+		auto grnd = cam->spaceAttached.lock();
 		if( NULL != grnd )
 		{
 			// グラウンドに配置されたオブジェクトを順に描画する
