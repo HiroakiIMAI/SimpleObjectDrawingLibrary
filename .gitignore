@@ -243,3 +243,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+##################################################
+# add manualy 
+*.dll
+*.exe
