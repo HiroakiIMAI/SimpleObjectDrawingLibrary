@@ -46,3 +46,10 @@ SODLが提供する機能を下記に列挙します。
 - いくつかのプリミティブ形状を描画する機能
 - 描画対象オブジェクト間に親子関係を定義し、親の移動に子を連動させる機能
 - glut相当のマウスやキーボードのコールバック関数によるインタラクション機能
+
+## ライブラリとサンプルプログラムのビルド
+[SimpleObjectDrawingLibraryとサンプルプログラムのビルド手順](BuildLibraryAndSamples.md)へ
+
+## ライブラリ機能とサンプルプログラムの説明
+[SimpleObjectDrawingLibraryの機能概要とサンプルプログラムの説明](FeaturesExplaindWithSamples.md)へ
+
