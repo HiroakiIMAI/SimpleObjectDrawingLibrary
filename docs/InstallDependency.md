@@ -75,4 +75,4 @@ D:\tmp\assimp-5.0.1\build\code\ の Debug または Release にassimp-vcXXX-mt.d
 
 以上で依存関係ライブラリのインストールは完了です。
 
-[クイックスタートガイドに戻る](GettingStartedWithSampleProgram.md)
+[SimpleObjectDrawingLibraryとサンプルプログラムのビルド手順 に戻る](BuildLibraryAndSamples.md)

@@ -1,54 +1,48 @@
+# SimpleObjectDrawingLibraryとサンプルプログラムのビルド手順
 
-# "SimpleObjectDrawingLibrary"について
+ここでは、SimpleObjectDrawingLibrary(以下、SODL)の使い方をサンプルプログラムのビルドを通して説明します。
+(Windows環境を想定して説明します。)
 
-## "SimpleObjectDrawingLibrary"とは
-![image_SODL_RobotAndGraph](fig/GraphPlot.PNG)
-
-SimpleObjectDrawingLibrary(以下、SODL)は、glut(実際にはfreeglut)のラッパーライブラリです。
-SODLは、3Dモデルファイル(.stl, .objなど)や簡単な2Dグラフを
-短いコードで表示(可視化)することを目的としたC++言語向けのライブラリです。
+![image_HowLibraryWorksOverview](fig/HowLibraryWorksOverview.PNG)
 
 
-2020年末現在でとりあえず動くものが出来上がったので公開を開始しました。公開しているソースコードは.libを生成します。
-.dll用のインターフェース整備の予定は今のところありません。
+以下に手順を示します。
 
-## ターゲットユーザ
-下記の項目にandで当てはまるようなユーザを想定しています。
-- C++環境で簡単に3Dモデルを描画したい
-- glutやGLFWのAPIコールを呪文のように記述したくない
-- ライティングやレンダリングの設定はどうでもよい
-- 簡単な2Dグラフをプロットし、データを可視化したい。
+1. [ダウンロード](ダウンロード)
+1. [依存ライブラリのインストール](依存ライブラリのインストール)
+1. [cmakeによるVisualStudioプロジェクトの作成](cmakeによるVisualStudioプロジェクトの作成)
+1. [ライブラリとサンプルプログラムのビルド](ライブラリとサンプルプログラムのビルド)
 
-例えば、ロボットアームや移動車両の制御開発をしているが、
-制御対象のモデルと移動軌跡を3次元的に表示しつつ、
-センサデータなどを2Dグラフに可視化するようなS/Wを
-ラピッドにプロトタイプしたい場合などが当てはまると考えています。
+## ダウンロード
+次のGitHubのリポジトリトップにアクセスしてgit clone や zip でダウンロードしてください。
+https://github.com/HiroakiIMAI/SimpleObjectDrawingLibrary
+![StartGuide_01_Download](fig/StartGuide_01_Download.PNG)
 
-## 依存関係
-SODLは依存ライブラリとして下記ライブラリに動的リンクします。
-- [fleeglut](http://freeglut.sourceforge.net/) (glut互換の3D描画ライブラリ)
-- [glew](http://glew.sourceforge.net/) (glutを拡張する3D描画ライブラリ)
-- [Assimp](http://assimp.org/) (各種3Dモデルのローダライブラリ)
-- [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) (行列計算ライブラリ ヘッダライブラリなので動的リンクでない)
-
-## 動作環境
-下記環境で開発、テストしています。
-- OS:Windows10 64bit
-- コンパイラ:Visual Studio 2019 Community
-
-OS依存のコードは使用していないつもりなので、他のOSでも動作すると期待しています。
-コンパイラはC++11をサポートするものが必要です。
+## 依存ライブラリのインストール
+下記4つのライブラリをインストールしてください。
+インストール作業の詳細は[こちらのページ](InstallDependency.md)を参照して下さい。
+一般的なインストール方法を説明しているだけなので、このような作業に慣れている方は
+読み飛ばして頂いて構いません。
 
 
-## 機能概要
-SODLが提供する機能を下記に列挙します。
-- 3Dモデルファイルを読み込み、描画する機能
-- いくつかのプリミティブ形状を描画する機能
-- 描画対象オブジェクト間に親子関係を定義し、親の移動に子を連動させる機能
-- glut相当のマウスやキーボードのコールバック関数によるインタラクション機能
+### fleeglut
+http://freeglut.sourceforge.net/index.php#download
+
+### glew
+http://glew.sourceforge.net/
+
+### Eigen
+http://eigen.tuxfamily.org/index.php?title=Main_Page
+
+### Assimp
+http://assimp.org/index.php/downloads
+
+
+
+## cmakeによるVisualStudioプロジェクトの作成
+以下では、 D:\tmp の下に SODL のソースコードを置いた場合の例を示します。
+cmakeを起動して下記のようにパスを指定します
+![](fig)
+
 
 ## ライブラリとサンプルプログラムのビルド
-[SimpleObjectDrawingLibraryとサンプルプログラムのビルド手順](BuildLibraryAndSamples.md)へ
-
-## ライブラリ機能とサンプルプログラムの説明
-[SimpleObjectDrawingLibraryの機能概要とサンプルプログラムの説明](FeaturesExplaindWithSamples.md)へ
