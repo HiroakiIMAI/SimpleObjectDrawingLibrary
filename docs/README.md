@@ -51,4 +51,4 @@ SODLが提供する機能を下記に列挙します。
 [SimpleObjectDrawingLibraryとサンプルプログラムのビルド手順](BuildLibraryAndSamples.md)へ
 
 ## ライブラリ機能とサンプルプログラムの説明
-[SimpleObjectDrawingLibraryの機能概要とサンプルプログラムの説明](FeaturesExplaindWithSamples.md)へ
+[SimpleObjectDrawingLibraryの機能概要とサンプルプログラムの説明](FunctionExplainedWithSamples.md)へ
