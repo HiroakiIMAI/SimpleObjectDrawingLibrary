@@ -248,3 +248,4 @@ ModelManifest.xml
 # add manualy 
 *.dll
 *.exe
+!bin_samples\3dModel\teapot\teapot.obj
