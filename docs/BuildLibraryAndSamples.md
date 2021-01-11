@@ -51,7 +51,7 @@ Configure を押すと、include, lib のパスが見つからないというエ
 
 ![StartGuide_03_BuildSodl_cmake2_findErr](fig/StartGuide_03_BuildSodl_cmake2_findErr.PNG)
 
-図の例では、 D:\Dibraries 以下に各種ライブラリのlibとincludeを置いていますが、
+図の例では、 D:\Libraries 以下に各種ライブラリのlibとincludeを置いていますが、
 各自のインストールした環境に合わせて設定してください。
 
 ![StartGuide_03_BuildSodl_cmake3_fixPath](fig/StartGuide_03_BuildSodl_cmake3_fixPath.PNG)
