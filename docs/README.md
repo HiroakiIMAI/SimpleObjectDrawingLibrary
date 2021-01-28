@@ -2,7 +2,7 @@
 # "SimpleObjectDrawingLibrary"について
 
 ## "SimpleObjectDrawingLibrary"とは
-![image_SODL_RobotAndGraph](fig/GraphPlot.PNG)
+![FncAndSample_04_DrawGraph_exeWindow.PNG](fig/FncAndSample_04_DrawGraph_exeWindow.PNG)
 
 SimpleObjectDrawingLibrary(以下、SODL)は、glut(実際にはfreeglut)のラッパーライブラリです。
 SODLは、3Dモデルファイル(.stl, .objなど)や簡単な2Dグラフを

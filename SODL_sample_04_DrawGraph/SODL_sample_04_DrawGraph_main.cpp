@@ -210,10 +210,7 @@ int main(int argc, char ** argv)
 		// 時系列グラフ(2次元)の作成と描画空間[1]への配置
 		//----------------------------------------------------
 		// 時系列グラフの作成
-		std::shared_ptr< sodl::TimeSeriesGraph > tsGrph;
-
-		tsGrph
-			= sodl::TimeSeriesGraph::create(
+		auto tsGrph = sodl::TimeSeriesGraph::create(
 				"Ax_J1 Position[deg] + Noize",			// オブジェクト名称 = グラフタイトル
 				camGrph									// 関連付けるカメラ(カメラ投影行列などの設定が済んでいること)
 			);
