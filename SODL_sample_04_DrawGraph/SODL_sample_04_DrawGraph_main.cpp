@@ -49,7 +49,6 @@ int main(int argc, char ** argv)
 	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
 	sodl::drwMngr->SetPassiveMotionFunc(app::onMouseHover);
 	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
-	
 
 	//////////////////////////////////////////////////////
 	//

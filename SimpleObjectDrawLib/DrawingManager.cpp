@@ -366,7 +366,11 @@ void DrawingManager::draw()
 		//------------------------
 		// 描画対象オブジェクトを描画する
 		//------------------------
-		glEnable( GL_DEPTH_TEST );
+		if( depthBufferIsEnable )
+		{
+			// Zバッファを有効化
+			glEnable( GL_DEPTH_TEST );
+		}
 		// 描画対象のグラウンドが有効に設定されているかをチェックする
 		// (ポインタ参照先が未設定or破棄されていいないか?)
 		auto grnd = cam->spaceAttached.lock();

@@ -59,6 +59,7 @@ namespace app {
 int main(int argc, char ** argv)
 {
 	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X,app::WINDOW_SIZE_Y);
+	sodl::drwMngr->depthBufferIsEnable = true;
 	sodl::drwMngr->SetMouseFunc(app::onMouseBtn);
 	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
 	sodl::drwMngr->SetPassiveMotionFunc(app::onMouseHover);

@@ -185,6 +185,9 @@ namespace SmplObjDrwLib {
 		// ビューポートの追加
 		std::shared_ptr<ViewPortClass> addViewPort(std::string, int vpSizeX = -1, int vpSizeY = -1);
 
+		// Zバッファ有効フラグ
+		bool depthBufferIsEnable = false;
+
 		// コールバック関数の設定I/F
 		void SetKeyboardFunc(void(*func)(unsigned char key, int u, int v));
 		void SetMouseFunc(void(*func)(int button, int state, int u, int v));
