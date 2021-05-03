@@ -157,12 +157,60 @@ namespace SmplObjDrwLib {
 	};
 
 
-	/////////////////////////////////////////////////////////////////////
-	//
-	//	PointsWithAttibutes
-	//	属性データ付き点列
-	//
+	/** ***************************************************************
+	 *
+	 * @brief	属性データクラス
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	template <typename T>
+	class AttributeClass
+	{
+	public:
+		T max;
+		T min;
+		T dynmcRange;
+		virtual ~AttributeClass(){};
+		int dataNumMax = 1000;
 
+	protected:
+		std::deque<T> _data;
+
+	public:
+		const std::deque<T>& data = _data;
+
+		// アトリビュートデータ追加メソッド
+		virtual void AddAtrData( T dat )
+		{
+			// max, min の作成
+			if( 0 == _data.size() )
+			{
+				max = min = dat;
+			}
+			else
+			{
+				max = MAX(max, dat);
+				min = MIN(min, dat);
+			}
+			dynmcRange = max - min;
+			// データの保持
+			_data.push_back( dat );
+
+			// データ数が最大値を超えていたら最古データを捨てる
+			for( ; _data.size() > dataNumMax; )
+			{
+				_data.pop_front();
+			}
+		}
+
+	};
+
+	/** ***************************************************************
+	 *
+	 * @brief	属性データ付き点列
+	 * <pre>	PointsWithAttibutes
+	 * </pre>
+	 ******************************************************************/
 	class PointsWithAttributes : public virtual CoordChainObj
 	{
 		typedef PointsWithAttributes TypeOfSelf;
@@ -198,7 +246,7 @@ namespace SmplObjDrwLib {
 		// CoordChainObjの描画関数の実装
 		//--------------------------------------------
 	public:
-		virtual void _drawShapeOfSelf();
+		virtual void _drawShapeOfSelf() override;
 
 
 		//--------------------------------------------
@@ -206,12 +254,20 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	public:
 		std::shared_ptr< std::deque<Eigen::Vector3f> > _sPtr_points;
-		std::vector< std::shared_ptr< std::deque<float> > > _sPtr_attributes;
+		std::shared_ptr< std::deque<Eigen::Vector3f> > _sPtr_ptVctrs;
+		//std::vector< std::shared_ptr< std::deque<float> > > _sPtr_attributes;
+		std::vector< std::shared_ptr< AttributeClass<float> > > _sPtr_attributes;
+
+
 
 		DRAWTYPE drawType = WIRE;
-		int atrIdx_pointColor = -1;
-		int atrIdx_bar = -1;
-		int atrIdx_Size = -1;
+		float pointTickness = 1.0;
+
+		const int ATRIDX_NONE = -1;
+		int atrIdx_pointColor	= ATRIDX_NONE;
+		int atrIdx_pointTickness= ATRIDX_NONE;
+		int atrIdx_bar			= ATRIDX_NONE;
+		int atrIdx_barColor		= ATRIDX_NONE;
 		Eigen::Vector3f atrBarDirec = UnitY;
 
 	};
@@ -231,6 +287,8 @@ namespace SmplObjDrwLib {
 
 	class LabelObj : public virtual CoordChainObj
 	{
+		typedef LabelObj TypeOfSelf;
+
 		//--------------------------------------------
 		// コンストラクタ
 		//--------------------------------------------
@@ -253,9 +311,9 @@ namespace SmplObjDrwLib {
 		// ファクトリ関数
 		//--------------------------------------------
 	public:
-		static std::shared_ptr<LabelObj> create(
+		static std::shared_ptr<TypeOfSelf> create(
 			std::string name,
-			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<PointsObj>()
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
 		);
 
 		//--------------------------------------------
@@ -281,5 +339,62 @@ namespace SmplObjDrwLib {
 		float prjMtxRangeY = 100.f;				// プロジェクションマトリックスの投影高(ortho前提)
 		LabelAlign align = LabelAlign::LEFT;	// ラベルのアラインメント
 	};
+
+	/////////////////////////////////////////////////////////////////////
+	//
+	//	LabelSimple
+	//	テキストラベル(軽量版)
+	//
+
+	class LabelSimple : public LabelObj
+	{
+		typedef LabelSimple TypeOfSelf;
+		//--------------------------------------------
+		// コンストラクタ
+		//--------------------------------------------
+		// 継承クラス外からのインスタンス化を禁止する
+		// →ファクトリの使用を強制し、shared_ptr以外に
+		//   インスタンスを保持させない。
+	protected:
+		LabelSimple(
+			std::string name,
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
+		);
+
+		//--------------------------------------------
+		// デストラクタ
+		//--------------------------------------------
+	public:
+		virtual ~LabelSimple() {};
+
+		//--------------------------------------------
+		// ファクトリ関数
+		//--------------------------------------------
+	public:
+		static std::shared_ptr<LabelSimple> create(
+			std::string name,
+			std::weak_ptr<CoordChainObj> parent = std::weak_ptr<CoordChainObj>()
+		);
+
+		//--------------------------------------------
+		// LabelObjの描画関数の実装
+		//--------------------------------------------
+	public:
+		virtual void _drawShapeOfSelf() override;
+
+		//--------------------------------------------
+		// LabelObjの実装を隠蔽
+		//--------------------------------------------
+	private:
+		static void SetPrjMtxSizeToChildrenLabel(
+			std::shared_ptr<CoordChainObj> obj,
+			float size_x,
+			float size_y
+		){}
+		float prjMtxRangeX = 100.f;				// プロジェクションマトリックスの投影幅(ortho前提)
+		float prjMtxRangeY = 100.f;				// プロジェクションマトリックスの投影高(ortho前提)
+		LabelAlign align = LabelAlign::LEFT;	// ラベルのアラインメント
+	};
+
 }
 

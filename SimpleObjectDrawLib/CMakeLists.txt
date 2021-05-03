@@ -20,6 +20,7 @@ add_library(
 	DrawingManager.cpp
 	glDrawExt.cpp
 	GraphObj.cpp
+	GraphObj3D.cpp
 	IDrawableObjBase.cpp
 	ISodlObjBase.cpp
 	TimeSeriesGraph.cpp

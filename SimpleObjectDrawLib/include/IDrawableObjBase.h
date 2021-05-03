@@ -25,6 +25,31 @@ namespace SmplObjDrwLib {
 	}
 
 	extern void copyColor4fv(const float src[4], float* dst);
+	extern void CvtHsv2Rgb(
+		const float& h,
+		const float& s,
+		const float& v,
+		const float& a,
+		float rgba_fv4[4]
+	);
+
+	extern void GetNormalizedHeatColor(
+		const float& dat,
+		const float& max,
+		const float& min,
+		float rgba_fv4[4]
+		);
+
+
+	union ST_COLOR{
+		float fv4[4] = { 1,1,1,1 };
+		struct {
+			float r;
+			float g;
+			float b;
+			float a;
+		};
+	};
 
 	class IDrawableObjBase
 		: public virtual ISodlObjBase
@@ -56,16 +81,6 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	public:
 		bool visible;
-
-		union ST_COLOR{
-			float fv4[4] = { 1,1,1,1 };
-			struct {
-				float r;
-				float g;
-				float b;
-				float a;
-			};
-		};
 
 		ST_COLOR color;
 		ST_COLOR colorWire;

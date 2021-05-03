@@ -19,7 +19,7 @@
 
 #define			DIAG_VIEW				"DiagonalView"
 #define			HEAD_VIEW				"HeadView"
-	
+
 
 
 namespace SmplObjDrwLib {
@@ -142,11 +142,11 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	private:
 		DrawingManager(
-			int* argc, 
-			char** argv, 
-			int windowSizeX, 
+			int* argc,
+			char** argv,
+			int windowSizeX,
 			int windowSizeY,
-			std::string windowTitle 
+			std::string windowTitle
 		);
 
 		//--------------------------------------------
@@ -154,8 +154,8 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	public:
 		static TypeOfSelf* initMngr(
-			int* argc, char** argv, 
-			int windowSizeX = 640 * 2, 
+			int* argc, char** argv,
+			int windowSizeX = 640 * 2,
 			int windowSizeY = 480 * 2,
 			std::string windowTitle = "SimpleObjectDrawingLibrary Window"
 		);
@@ -196,7 +196,7 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	private:
 
-		void draw(void);
+		void draw();
 
 		// 描画オブジェクトの種別毎の描画前処理
 		//void DrawingManager::preDrawProc4GraphObj(
@@ -221,7 +221,7 @@ namespace SmplObjDrwLib {
 		static void(*usrMouseBtnFunc)(int button, int state, int u, int v);
 		static void(*usrMouseDragFunc)(int u, int v);
 		static void(*usrMouseHoverFunc)(int u, int v);
-	
+
 	};
 
 };

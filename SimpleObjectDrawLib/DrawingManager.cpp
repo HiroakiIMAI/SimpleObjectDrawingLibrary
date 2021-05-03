@@ -24,10 +24,10 @@ namespace SmplObjDrwLib {
 	std::unique_ptr<DrawingManager> drwMngr;
 	int mouseBtnSt[3];
 	unsigned char key;
-	
+
 };
 
-
+void voidFunc(){}
 
 using namespace SmplObjDrwLib;
 
@@ -61,7 +61,7 @@ std::shared_ptr<CamClass> CamClass::create(std::string name)
 CamClass::CamClass(std::string name)
 	: ISodlObjBase(name)
 {
-	//　set default external cam param
+	// set default external cam param
 	camPos = Eigen::Vector3f(1000.f, -1000.f, 1000.f);
 	camTgt = Eigen::Vector3f(0.f, 0.f, -0.f);
 	camUpVec = Eigen::Vector3f(0.f, 0.f, 1.f);
@@ -69,7 +69,7 @@ CamClass::CamClass(std::string name)
 
 void CamClass::addSelfToCamList()
 {
-	camInstanceList.push_back( 
+	camInstanceList.push_back(
 		std::dynamic_pointer_cast<CamClass>(
 			shared_from_this()
 		)
@@ -105,8 +105,8 @@ void CamClass::SetPrjMtx_As2DView(
 			prjMtxOrthWdt,
 			0,
 			prjMtxOrthHgt,
-			0.f,
-			50000.f
+			CULLING_FORE,
+			CULLING_BACK
 		);
 	}
 	else
@@ -116,8 +116,8 @@ void CamClass::SetPrjMtx_As2DView(
 			widthHalfZoomed,
 			-heightHalfZoomed,
 			heightHalfZoomed,
-			0.f,
-			50000.f
+			CULLING_FORE,
+			CULLING_BACK
 		);
 	}
 
@@ -233,12 +233,20 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	_windowSizeX(windowSizeX),
 	_windowSizeY(windowSizeY)
 {
+	//char arg1[] = "exeName";
+	char arg2[] = "-gldebug";
+	char* argArr[] = { arg2 };
+	//argv = (char**)&arg;
+
+	int num = 1;
+	argc = &num;
+
 	// init Glut
-	glutInit(argc, argv);
+	glutInit(argc, argArr);
 	glutInitWindowPosition(100, 50);
 	glutInitWindowSize(windowSizeX, windowSizeY);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_EXIT);	// test for exit program
 	glutCreateWindow( windowTitle.c_str() );
 
 	// init GLEW
@@ -250,6 +258,7 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	// 注意：displayfuncのコールバック関数を登録しておかないと、
 	// glutMainLoopEvent()をコールしたときにエラーが発生してプログラムが終了してしまう。
 	glutDisplayFunc( OnDispFunc );
+//	glutDisplayFunc( voidFunc );
 	glutReshapeFunc( OnReshapeFunc);
 	glutKeyboardFunc( OnKeyboardFunc );
 	glutMouseFunc( OnMouseBtn );
@@ -294,7 +303,7 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle)
 {
 	static auto ptr = new TypeOfSelf( argc, argv , windowSizeX, windowSizeY, windowTitle);
-	drwMngr.reset(ptr);
+	SmplObjDrwLib::drwMngr.reset(ptr);
 
 	return  ptr;
 
@@ -306,9 +315,9 @@ DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int
 //	<Summary>		描画関数
 //	<Description>
 //================================================================
-void DrawingManager::draw(void)
+void DrawingManager::draw()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto itr = viewPorts.begin();
 		itr != viewPorts.end();
@@ -357,7 +366,7 @@ void DrawingManager::draw(void)
 		//------------------------
 		// 描画対象オブジェクトを描画する
 		//------------------------
-
+		glEnable( GL_DEPTH_TEST );
 		// 描画対象のグラウンドが有効に設定されているかをチェックする
 		// (ポインタ参照先が未設定or破棄されていいないか?)
 		auto grnd = cam->spaceAttached.lock();
@@ -369,12 +378,13 @@ void DrawingManager::draw(void)
 				obj++)
 			{
 				// オブジェクト種別による特別な前処理
-				
+
 
 				// 描画
 				(*obj)->draw();
 			}
 		}
+		glDisable( GL_DEPTH_TEST );
 	}
 
 	glutSwapBuffers();
@@ -388,7 +398,7 @@ void DrawingManager::draw(void)
 //================================================================
 /*
 void DrawingManager::preDrawProc4GraphObj(
-	sPtr_IDrawableObjBase obj, 
+	sPtr_IDrawableObjBase obj,
 	std::weak_ptr<CamClass> cam
 )
 {
@@ -446,7 +456,7 @@ sPtr_vector< sPtr_IDrawableObjBase > DrawingManager::addDrawingSpace()
 	drawingSpace->emplace_back(
 		sPtr_vector< sPtr_IDrawableObjBase >(
 			new std::vector< sPtr_IDrawableObjBase >()
-		) 
+		)
 	);
 	return drawingSpace->back();
 }

@@ -25,6 +25,7 @@ add_subdirectory( SODL_sample_01_LoadModel )
 add_subdirectory( SODL_sample_02_6AxRobot )
 add_subdirectory( SODL_sample_03_MultiViewPort )
 add_subdirectory( SODL_sample_04_DrawGraph )
+add_subdirectory( SODL_sample_05_DrawGraph3D )
 
 
 	

@@ -153,7 +153,7 @@ void CoordChainObj::AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> 
 //================================================================
 void CoordChainObj::_drawShapeOfSelf()
 {
-	drawCoordSymbol((u_char*)name.c_str(), 100.0);
+	drawCoordSymbol((unsigned char*)name.c_str(), 100.0);
 }
 
 //================================================================

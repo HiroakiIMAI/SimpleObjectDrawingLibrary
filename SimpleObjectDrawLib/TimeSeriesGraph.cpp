@@ -71,7 +71,7 @@ void TimeSeriesGraph::initSelf(std::weak_ptr<CamClass> cam)
 //================================================================
 //
 //	<Summary>		自己形状描画
-//	<Description>	
+//	<Description>
 //================================================================
 void TimeSeriesGraph::_drawShapeOfSelf()
 {
@@ -79,48 +79,48 @@ void TimeSeriesGraph::_drawShapeOfSelf()
 
 	// 描画範囲外のデータを表示しないために
 	// 一旦データを退避してから削減する
-	auto tmp = _data;
-	_data.clear();
-	int sizeDraw = min(dataNumToDraw, tmp.size());
+	auto tmp = _lines[0];
+	_lines[0].clear();
+	int sizeDraw = MIN(dataNumToDraw, tmp.size());
 	auto itr = tmp.end();
 	for (int i = 0; i < sizeDraw; i++)
 	{
 		--itr;
-		_data.push_front( *itr );
+		_lines[0].push_front( *itr );
 	}
-	
-	// 属性群のサイズもチェックする-------------------------------------------------------debug
-	for (auto atr = _dataToDraw->_sPtr_attributes.begin();
-		atr != _dataToDraw->_sPtr_attributes.end();
-		atr++
-		)
-	{
-		if (*atr)
-		{
-			// データ保持数オーバの場合は最古のデータを捨てる
-			if ((*atr)->size() > sizeDraw)
-			{
-				(*atr)->pop_front();
-			}
-		}
-	}
+
+//	// 属性群のサイズもチェックする-------------------------------------------------------debug
+//	for (auto atr = _dataToDraw->_sPtr_attributes.begin();
+//		atr != _dataToDraw->_sPtr_attributes.end();
+//		atr++
+//		)
+//	{
+//		if (*atr)
+//		{
+//			// データ保持数オーバの場合は最古のデータを捨てる
+//			if ((*atr)->data.size() > sizeDraw)
+//			{
+//				(*atr)->data.pop_front();
+//			}
+//		}
+//	}
 
 	// 描画する
 	GraphObj::_drawShapeOfSelf();
 
 	// 退避したデータを復帰させる
-	_data = tmp;
+	_lines[0] = tmp;
 }
 
 
 //================================================================
 //
 //	<Summary>		時系列プロットをスクロールさせる
-//	<Description>	
+//	<Description>
 //================================================================
 void TimeSeriesGraph::refleshRangeAsScroll()
 {
-	if (_data.size() > dataNumToDraw)
+	if (_lines[0].size() > dataNumToDraw)
 	{
 		rangeMin.x() = rangeMax.x() - dataNumToDraw;
 	}

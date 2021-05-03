@@ -10,7 +10,11 @@ namespace SmplObjDrwLib {
 		FIXED	= 1,
 	};
 
-
+	/** ***************************************************************
+	 * @brief グラフオブジェクト
+	 * <pre>  GraphObj
+	 * </pre>
+	 ******************************************************************/
 	class GraphObj :
 		public CoordChainObj
 	{
@@ -70,12 +74,10 @@ namespace SmplObjDrwLib {
 		std::shared_ptr<PointsObj>		xAxis;			// x軸
 		std::shared_ptr<PointsObj>		yAxis;			// y軸
 
-		Eigen::Vector3f rangeMax = Eigen::Vector3f(1, 1, 1);	// プロットデータの最大値保持用
-		Eigen::Vector3f rangeMin = Eigen::Vector3f(0, 0, 0);	// プロットデータの最小値保持用
+		Eigen::Vector3f rangeMax = Eigen::Vector3f(1, 1, 1);	// プロットデータの最大値保持用(系列間共通)
+		Eigen::Vector3f rangeMin = Eigen::Vector3f(0, 0, 0);	// プロットデータの最小値保持用(系列間共通)
 		long dataNumMax = 1000;
-
-		virtual void addData( Eigen::Vector3f &point );	// プロットデータの追加
-
+		bool normarize_direcVec = true;
 
 		// グラフプロット範囲の制御方法
 		struct {
@@ -84,21 +86,81 @@ namespace SmplObjDrwLib {
 			GRAPH_RANGE_CTL z = GRAPH_RANGE_CTL::AUTO;
 		}rangeCtl;
 
-		void AddAtrData(std::shared_ptr < std::deque<float> > atr);
+		virtual int AddPlotLine();
+
+		virtual void AddData( 							// プロットデータの追加
+			const Eigen::Vector3f &point,				// プロットデータ(座標値)
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		int AddAtr(										// アトリビュートデータ列の追加
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void AddAtrData( 								// アトリビュートデータの追加
+			int atrIdx,									// アトリビュートindex
+			const float& atrDat,						// アトリビュートデータ
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void AddPtVct( 									// プロット点の方向ベクトル追加
+			const Eigen::Vector3f &direcVector,			// プロット点の方向ベクトル
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void CnfgAtrDisp_PtColorIdx( 					// 点列の色に割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void CnfgAtrDisp_PtLnWdtIdx( 					// プロット点の幅に割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void CnfgAtrDisp_BarIdx( 						// バー長さに割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void CnfgAtrDisp_BarColorIdx( 					// バーの色に割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void SetPlotLineColor( 							// プロット系列にデフォルト表示色を設定する
+			const ST_COLOR& color,						// 設定色
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void SetPlotLineOffset( 						// プロット系列の表示位置のオフセットを設定する
+			const Eigen::Vector3f& ofs,					// オフセットベクトル
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void SetPlotLineWidth( 							// プロット系列の線幅を設定する
+			const float& width,							// 線幅
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		void SetPlotLineDrawType( 						// プロット系列の描画タイプを設定する
+			DRAWTYPE type,								// 描画タイプ
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
 
 	protected:
-		std::deque< Eigen::Vector3f>			_data;			// グラフのプロットデータ
-		//std::shared_ptr<PointsObj>			_dataToDraw;	// グラフのプロットデータ(描画用)
-		std::shared_ptr<PointsWithAttributes>	_dataToDraw;	// グラフのプロットデータ(描画用)
+		//std::deque< Eigen::Vector3f>							_data;			// グラフのプロットデータ
+		std::vector< std::deque<Eigen::Vector3f> >				_lines;			// グラフのプロットデータ
+		//std::shared_ptr<PointsObj>							_dataToDraw;	// グラフのプロットデータ(描画用)
+		std::vector< std::shared_ptr<PointsWithAttributes> >	_linesToDraw;	// グラフのプロットデータ(描画用)
 
 		std::shared_ptr<LabelObj>		xMaxLabel;		// x最大値ラベル
 		std::shared_ptr<LabelObj>		xMinLabel;		// x最大値ラベル
 		std::shared_ptr<LabelObj>		yMaxLabel;		// y最小値ラベル
 		std::shared_ptr<LabelObj>		yMinLabel;		// y最小値ラベル
 
-		void initSelf(std::weak_ptr<CamClass> cam = std::weak_ptr<CamClass>() );
-
-	public:
+		virtual void initSelf(std::weak_ptr<CamClass> cam = std::weak_ptr<CamClass>() );
 
 	};
 

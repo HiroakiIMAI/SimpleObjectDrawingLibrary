@@ -4,6 +4,13 @@
 
 namespace SmplObjDrwLib {
 
+	/** ***************************************************************
+	 * @brief 時系列グラフ
+	 * <pre>  TimeSeriesGraph
+	 *  ・ToDo 複数プロットライン対応は未確認
+	 *  ・ToDo アトリビュート対応は未確認
+	 * </pre>
+	 ******************************************************************/
 	class TimeSeriesGraph :
 		public GraphObj
 	{

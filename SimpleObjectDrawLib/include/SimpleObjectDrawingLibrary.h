@@ -7,5 +7,6 @@
 
 #include "GraphObj.h"
 #include "TimeSeriesGraph.h"
+#include "GraphObj3D.h"
 
 #include "DrawingManager.h"

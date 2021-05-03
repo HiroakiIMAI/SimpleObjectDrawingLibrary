@@ -5,7 +5,7 @@
 
 #include <math.h>
 #include <iostream>
-
+#include <Windows.h>
 
 namespace sodl = SmplObjDrwLib;
 
@@ -344,18 +344,18 @@ int main(int argc, char ** argv)
 		//-----------------------------------------------------
 		// J1関節角度＋ランダムノイズを時系列グラフにプロット
 		//-----------------------------------------------------
-		timeSerialGraph->addData(Eigen::Vector3f(count, app::ax_J1*180.0/M_PI + ((rand()%100 - 50)/10.0), 0));
+		timeSerialGraph->AddData(Eigen::Vector3f(count, app::ax_J1*180.0/M_PI + ((rand()%100 - 50)/10.0), 0));
 
 		//-----------------------------------------------------
 		// ロボットハンド位置X,Yを散布図グラフにプロット
 		//-----------------------------------------------------
 		Eigen::Vector3f handPos = J6_Crd->GetTf_root2self().translation();
-		scatterGraph_RobotHandXY->addData( handPos );
+		scatterGraph_RobotHandXY->AddData( handPos );
 
 		//-----------------------------------------------------
 		// ドラッグ中のマウス位置X,Yを散布図グラフにプロット
 		//-----------------------------------------------------
-		scatterGraph_mouseDrag->addData(Eigen::Vector3f(app::mouse_x, app::mouse_y, 0));
+		scatterGraph_mouseDrag->AddData(Eigen::Vector3f(app::mouse_x, app::mouse_y, 0));
 
 		//-----------------------------------------------------
 		// 描画マネージャから描画更新を実行する

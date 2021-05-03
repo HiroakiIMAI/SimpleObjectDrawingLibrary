@@ -9,14 +9,24 @@
 #include <deque>
 #include <algorithm>
 
+#ifndef MAX
+#define MAX( a, b )		(a>b)?a:b
+#endif
+
+#ifndef MIN
+#define MIN( a, b )		(a<b)?a:b
+#endif
+
 
 namespace SmplObjDrwLib {
 
+	const float CULLING_BACK = 50000.f;
+	const float CULLING_FORE = 0.f;
 
 	//------------------------------------------------------------
 	//	class ISodlListedItem
 	//------------------------------------------------------------
-	class ISodlListedItem 
+	class ISodlListedItem
 		: public std::enable_shared_from_this<ISodlListedItem>
 	{
 	public:
