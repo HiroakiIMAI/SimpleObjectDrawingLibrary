@@ -51,6 +51,8 @@ namespace SmplObjDrwLib {
 		};
 	};
 
+
+
 	class IDrawableObjBase
 		: public virtual ISodlObjBase
 	{
@@ -59,7 +61,7 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 		// 継承クラス外からのインスタンス化を禁止する
 		// →ファクトリの使用を強制し、shared_ptr以外に
-		// 　インスタンスを保持させない。
+		//  インスタンスを保持させない。
 	protected:
 		IDrawableObjBase(std::string name);
 
@@ -87,6 +89,10 @@ namespace SmplObjDrwLib {
 
 		DRAWTYPE drawType = WIRE;
 
+		std::weak_ptr< std::map< int, std::shared_ptr<IDrawableObjBase > > > drawingSpace_belongTo;
+		int	drawingSpaceNum_belongTo = -1;
+		void RemoveSelf_FromDrawingSpace();
+
 	};
 
 	//----------------------------------------------------
@@ -95,9 +101,6 @@ namespace SmplObjDrwLib {
 	// std::shared_ptr< IDrawableObjBase > の短縮形
 	using sPtr_IDrawableObjBase = std::shared_ptr< IDrawableObjBase > ;
 
-	// std::shared_ptr< std::vector<T> > の短縮形
-	template <class T>
-	using sPtr_vector = std::shared_ptr< std::vector<T> > ;
 
 };
 

@@ -229,7 +229,7 @@ void ViewPortClass::fitCamMatrixToOrthView()
 //	<Summary>		コンストラクタ
 //	<Description>
 //================================================================
-DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle) :
+DrawingManager::DrawingManager(int windowSizeX, int windowSizeY, std::string windowTitle) :
 	_windowSizeX(windowSizeX),
 	_windowSizeY(windowSizeY)
 {
@@ -239,7 +239,7 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	//argv = (char**)&arg;
 
 	int num = 1;
-	argc = &num;
+	int* argc = &num;
 
 	// init Glut
 	glutInit(argc, argArr);
@@ -267,13 +267,10 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	glutMouseWheelFunc( OnMouseWheel);
 
 	// 描画空間ベクタを初期化する
-	drawingSpace = sPtr_vector< sPtr_vector< sPtr_IDrawableObjBase > >(
-		new std::vector< sPtr_vector< sPtr_IDrawableObjBase > >
-	);
-	// デフォルト描画空間を作成してベクタにプッシュする
-	drawingSpace->push_back(sPtr_vector< sPtr_IDrawableObjBase >(
-		new std::vector< sPtr_IDrawableObjBase >)
-	);
+	drawingSpace = std::make_shared< std::vector< sPtr_map< T_ID, sPtr_IDrawableObjBase > > >();
+
+	// デフォルト描画空間を作成
+	addDrawingSpace();
 
 	//--------------------------------------------------------
 	// init ViewPortData
@@ -300,9 +297,9 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 //	<Summary>		ファクトリ関数(シングルトンパターン)
 //	<Description>
 //================================================================
-DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle)
+DrawingManager::TypeOfSelf* DrawingManager::initMngr(int windowSizeX, int windowSizeY, std::string windowTitle)
 {
-	static auto ptr = new TypeOfSelf( argc, argv , windowSizeX, windowSizeY, windowTitle);
+	static auto ptr = new TypeOfSelf( windowSizeX, windowSizeY, windowTitle);
 	SmplObjDrwLib::drwMngr.reset(ptr);
 
 	return  ptr;
@@ -374,25 +371,18 @@ void DrawingManager::draw()
 		// 描画対象のグラウンドが有効に設定されているかをチェックする
 		// (ポインタ参照先が未設定or破棄されていいないか?)
 		auto grnd = cam->spaceAttached.lock();
-		if( NULL != grnd )
 		{
 			// グラウンドに配置されたオブジェクトを順に描画する
 			for (auto obj = grnd->begin();
 				obj != grnd->end();
 				obj++)
 			{
-				// オブジェクト種別による特別な前処理
-
-
 				// 描画
-				(*obj)->draw();
+				obj->second->draw();
 			}
 		}
 		glDisable( GL_DEPTH_TEST );
 	}
-
-	glutSwapBuffers();
-
 }
 
 //================================================================
@@ -419,7 +409,23 @@ void DrawingManager::preDrawProc4GraphObj(
 //================================================================
 void DrawingManager::drawUpdt(void)
 {
+
+	// アプリケーション側でセット可能な描画前処理を実施する
+	if( Func_PreDraw )
+	{
+		Func_PreDraw();
+	}
+
+	// SODLの描画処理メインルーチンを実施する
 	draw();
+
+	// アプリケーション側でセット可能な描画後処理を実施する
+	if( Func_PostDraw )
+	{
+		Func_PostDraw();
+	}
+
+	glutSwapBuffers();
 	glutMainLoopEvent(); // glutMainLoop() 等価な内容を実施してくれる
 }
 
@@ -455,28 +461,48 @@ std::shared_ptr<ViewPortClass> DrawingManager::addViewPort(std::string name, int
 //	<Summary>		描画空間の追加
 //	<Description>
 //================================================================
-sPtr_vector< sPtr_IDrawableObjBase > DrawingManager::addDrawingSpace()
+sPtr_map< T_ID, sPtr_IDrawableObjBase > DrawingManager::addDrawingSpace()
 {
 	drawingSpace->emplace_back(
-		sPtr_vector< sPtr_IDrawableObjBase >(
-			new std::vector< sPtr_IDrawableObjBase >()
-		)
+		std::make_shared< std::map< T_ID, sPtr_IDrawableObjBase > >()
 	);
 	return drawingSpace->back();
 }
 
-//================================================================
-//
-//	<Summary>		描画空間へのオブジェクトの追加
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief 描画空間へのオブジェクトの追加
+ *
+ ******************************************************************/
 void DrawingManager::AddObj_ToDrwSpace(sPtr_IDrawableObjBase obj, int numGround)
 {
 	if (numGround < drawingSpace->size())
 	{
-		(*drawingSpace)[numGround]->push_back(obj);
+		(*drawingSpace)[numGround]->insert( std::make_pair(obj->id_readOnly , obj) );
+		obj->drawingSpace_belongTo = (*drawingSpace)[numGround];
+		obj->drawingSpaceNum_belongTo = numGround;
 	}
 }
+
+
+/** ***************************************************************
+ * @brief 描画空間からオブジェクトを削除
+ *
+ * <pre>
+ * オブジェクトIDを指定して削除する
+ * </pre>
+ ******************************************************************/
+void DrawingManager::DeleteObj_FromDrwSpace(T_ID id, int numGround )
+{
+	if (numGround < drawingSpace->size())
+	{
+		// 対象オブジェクトの所属空間をクリア
+		(*drawingSpace)[numGround]->at(id)->drawingSpace_belongTo.reset();
+		(*drawingSpace)[numGround]->at(id)->drawingSpaceNum_belongTo = -1;
+		// 描画空間からオブジェクトを削除
+		(*drawingSpace)[numGround]->erase( id );
+	}
+}
+
 
 
 //================================================================
@@ -489,7 +515,7 @@ void DrawingManager::AddObjTree_ToDrwSpace(std::shared_ptr<CoordChainObj> obj, i
 	if (numGround < drawingSpace->size())
 	{
 		// 受け取ったobjを描画空間に追加する
-		(*drawingSpace)[numGround]->push_back(obj);
+		AddObj_ToDrwSpace(obj, numGround);
 		std::cout << obj->name << std::endl;
 
 		// 子要素に対して再帰する
@@ -510,9 +536,11 @@ void DrawingManager::OnDispFunc()
 
 void DrawingManager::OnReshapeFunc(int x, int y)
 {
-	;
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	(*usrReshapeFunc)( x, y );
 }
-
 
 void DrawingManager::OnKeyboardFunc(unsigned char key, int u, int v)
 {
@@ -524,6 +552,39 @@ void DrawingManager::OnKeyboardFunc(unsigned char key, int u, int v)
 	if (drwMngr->usrKeyboardFunc)
 	{
 		(*usrKeyboardFunc)(key, u, v);
+	}
+}
+
+void DrawingManager::OnKeyboardUpFunc(unsigned char key, int u, int v)
+{
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	if (drwMngr->usrKeyboardUpFunc)
+	{
+		(*usrKeyboardUpFunc)(key, u, v);
+	}
+}
+
+void DrawingManager::OnKeyboardSpFunc(unsigned char key, int u, int v)
+{
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	if (drwMngr->usrKeyboardSpFunc)
+	{
+		(*usrKeyboardSpFunc)(key, u, v);
+	}
+}
+
+void DrawingManager::OnKeyboardSpUpFunc(unsigned char key, int u, int v)
+{
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	if (drwMngr->usrKeyboardSpUpFunc)
+	{
+		(*usrKeyboardSpUpFunc)(key, u, v);
 	}
 }
 
@@ -548,17 +609,38 @@ void DrawingManager::OnMouseDrag(int u, int v)
 
 	Eigen::Vector3f mv;
 
-	if (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
+	auto& default_cam =SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached;
+
+	if( (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
+	||	(mouseBtnSt[MOUSE_RIGHT_BUTTON] == MOUSE_DOWN)
+	)
 	{
-		Eigen::Vector3f* cPos = &SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached->camPos;
-		Eigen::Vector3f* tPos = &SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached->camTgt;
+		Eigen::Vector3f* cPos = &default_cam->camPos;
+		Eigen::Vector3f* tPos = &default_cam->camTgt;
 		Eigen::Vector3f dir_p2t = *cPos - *tPos;
 		dir_p2t.normalize();
+
 		Eigen::Vector3f uDir3D = dir_p2t.cross(UnitZ);
+		uDir3D.normalize();
+
 		Eigen::Vector3f vDir3D = dir_p2t.cross(uDir3D);
 
-		*cPos += 2 * ((uDir3D * du) + (-vDir3D * dv));
+
+		// 通常ドラッグの場合、視点を中心にカメラを回転させる
+		if (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
+		{
+			*cPos += 2 * ((uDir3D * du) + (-vDir3D * dv));
+		}
+		// 右ドラッグの場合、視点とカメラ位置を並行移動させる
+		else if(mouseBtnSt[MOUSE_RIGHT_BUTTON] == MOUSE_DOWN)
+		{
+			float z = 1.f/default_cam->zoomRatio;
+			*tPos += z * ((uDir3D * du) + (-vDir3D * dv));
+			*cPos += z * ((uDir3D * du) + (-vDir3D * dv));
+		}
+
 	}
+
 
 	mouseU_prv = u;
 	mouseV_prv = v;
@@ -606,9 +688,29 @@ void DrawingManager::OnMouseWheel(int wheelNum, int dir, int u, int v)
 	drwMngr->viewPorts[0]->attachCam(dfltCam);
 }
 
+void DrawingManager::SetReshapeFunc(void(*func)(int u, int v))
+{
+	usrReshapeFunc = func;
+}
+
 void DrawingManager::SetKeyboardFunc(void(*func)(unsigned char key, int u, int v))
 {
 	usrKeyboardFunc = func;
+}
+
+void DrawingManager::SetKeyboardUpFunc(void(*func)(unsigned char key, int u, int v))
+{
+	usrKeyboardUpFunc = func;
+}
+
+void DrawingManager::SetKeyboardSpFunc(void(*func)(unsigned char key, int u, int v))
+{
+	usrKeyboardSpFunc = func;
+}
+
+void DrawingManager::SetKeyboardSpUpFunc(void(*func)(unsigned char key, int u, int v))
+{
+	usrKeyboardSpUpFunc = func;
 }
 
 void DrawingManager::SetMouseFunc(void(*func)(int button, int state, int u, int v))
@@ -621,15 +723,26 @@ void DrawingManager::SetMouseDrag(void(*func)(int u, int v))
 	usrMouseDragFunc=func;
 }
 
-void DrawingManager::SetPassiveMotionFunc(void(*func)(int u, int v))
+void DrawingManager::SetMouseHover(void(*func)(int u, int v))
 {
 	usrMouseHoverFunc=func;
 }
 
-void (*DrawingManager::usrKeyboardFunc)(unsigned char key, int u, int v) = NULL;
-void (*DrawingManager::usrMouseBtnFunc)(int button, int state, int u, int v) = NULL;
-void (*DrawingManager::usrMouseDragFunc)(int u, int v) = NULL;
-void (*DrawingManager::usrMouseHoverFunc)(int u, int v) = NULL;
+void DrawingManager::SetMouseWheelFunc(void(*func)(int wheelNum, int dir, int u, int v))
+{
+	usrMouseWheelFunc=func;
+}
+
+
+void (*DrawingManager::usrReshapeFunc)		(int u, int v)							= NULL;
+void (*DrawingManager::usrKeyboardFunc)		(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrKeyboardUpFunc)	(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrKeyboardSpFunc)	(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrKeyboardSpUpFunc)	(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrMouseBtnFunc)		(int button, int state, int u, int v)	= NULL;
+void (*DrawingManager::usrMouseDragFunc)	(int u, int v)							= NULL;
+void (*DrawingManager::usrMouseHoverFunc)	(int u, int v)							= NULL;
+void (*DrawingManager::usrMouseWheelFunc)	(int wheelNum, int dir, int u, int v)	= NULL;
 
 
 //-- 以下メモ ----------------------------------

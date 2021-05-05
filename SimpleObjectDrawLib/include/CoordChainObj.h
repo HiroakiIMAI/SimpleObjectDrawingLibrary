@@ -82,6 +82,8 @@ namespace SmplObjDrwLib {
 		void DetachSelf_fromParentsCoordChain();
 		void AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> parent);
 
+		void RemoveSelfRecursive_FromDrawingSpace();
+
 		//--------------------------------------------
 		// Eigen::Vector 等をメンバに持つクラスのための
 		// New演算子オーバライドマクロ

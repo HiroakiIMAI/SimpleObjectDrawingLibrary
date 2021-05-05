@@ -319,6 +319,7 @@ void PointsWithAttributes::_drawShapeOfSelf()
 	// 点群がセットされている場合
 	if (_sPtr_points)
 	{
+		// デフォルト色の設定
 		glColor4fv(this->color.fv4);
 
 		GLfloat tick_bk;
@@ -458,6 +459,11 @@ void PointsWithAttributes::_drawShapeOfSelf()
 		//-------------------------------------------------------------------
 		// 2. バーの描画
 		//-------------------------------------------------------------------
+		// デフォルト色の設定
+		glColor4fv( this->color.fv4 );
+		// デフォルト幅の設定
+		glLineWidth( this->barWidth );
+
 		// 色指定の有無をチェック
 		int size_barColors = 0;
 		auto sPtr_barColors = std::shared_ptr< SmplObjDrwLib::AttributeClass<float> >();
@@ -467,6 +473,18 @@ void PointsWithAttributes::_drawShapeOfSelf()
 		{
 			sPtr_barColors = _sPtr_attributes[atrIdx_barColor];
 			size_barColors = sPtr_barColors->data.size();
+		}
+
+
+		// 幅指定の有無をチェック
+		int size_barWidth = 0;
+		auto sPtr_barWidth = std::shared_ptr< SmplObjDrwLib::AttributeClass<float> >();
+		if(	( ATRIDX_NONE != atrIdx_barWidth )
+		&&	( _sPtr_attributes[atrIdx_barWidth] )
+		)
+		{
+			sPtr_barWidth = _sPtr_attributes[atrIdx_barWidth];
+			size_barWidth = sPtr_barWidth->data.size();
 		}
 
 
@@ -485,6 +503,9 @@ void PointsWithAttributes::_drawShapeOfSelf()
 				);
 				i++)
 			{
+				//-------------------------------------------------------------------
+				// 2.1 バー色の指定
+				//-------------------------------------------------------------------
 				if(	( sPtr_barColors )	// 色指定列が有効な場合
 				&&	( i < size_barColors )	// 座標値に対応する色データがある場合
 				)
@@ -498,6 +519,19 @@ void PointsWithAttributes::_drawShapeOfSelf()
 						sPtr_barColors->min,
 						colorRgb.fv4);
 					glColor4fv(colorRgb.fv4);
+				}
+
+				//-------------------------------------------------------------------
+				// 2.1 バー幅の指定
+				//-------------------------------------------------------------------
+				if(	( sPtr_barWidth )		// 幅指定列が有効な場合
+				&&	( i < size_barWidth )	// 座標値に対応する幅データがある場合
+				)
+				{
+					glEnd();
+					float mx = MAX( sPtr_barWidth->max, 0.0001);
+					glLineWidth( sPtr_barWidth->data[i] / sPtr_barWidth->max * 10.0);
+					glBegin(GL_LINES);
 				}
 
 				// バーの方向を固定値で初期化する

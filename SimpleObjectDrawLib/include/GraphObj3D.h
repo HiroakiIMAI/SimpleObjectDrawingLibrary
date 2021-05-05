@@ -73,7 +73,7 @@ namespace SmplObjDrwLib {
 		// GraphObj.h のオーバライド
 		//--------------------------------------------
 	public:
-		virtual int AddPlotLine() override;
+		virtual int AddPlotLine( std::string lineName ) override;
 
 	protected:
 		virtual void initSelf(std::weak_ptr<CamClass> cam = std::weak_ptr<CamClass>() )override{};

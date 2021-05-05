@@ -146,3 +146,14 @@ IDrawableObjBase::~IDrawableObjBase()
 {
 }
 
+void IDrawableObjBase::RemoveSelf_FromDrawingSpace()
+{
+	if( auto sPtr = drawingSpace_belongTo.lock() )
+	{
+		(*sPtr).erase( this->id_readOnly );
+		drawingSpace_belongTo.reset();
+		drawingSpaceNum_belongTo = -1;
+	}
+}
+
+

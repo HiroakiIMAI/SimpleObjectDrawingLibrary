@@ -86,74 +86,87 @@ namespace SmplObjDrwLib {
 			GRAPH_RANGE_CTL z = GRAPH_RANGE_CTL::AUTO;
 		}rangeCtl;
 
-		virtual int AddPlotLine();
+		virtual int AddPlotLine( std::string lineName );
+		virtual void DeletePlotLine( std::string lineName );
 
 		virtual void AddData( 							// プロットデータの追加
 			const Eigen::Vector3f &point,				// プロットデータ(座標値)
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		int AddAtr(										// アトリビュートデータ列の追加
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void AddAtrData( 								// アトリビュートデータの追加
 			int atrIdx,									// アトリビュートindex
 			const float& atrDat,						// アトリビュートデータ
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void AddPtVct( 									// プロット点の方向ベクトル追加
 			const Eigen::Vector3f &direcVector,			// プロット点の方向ベクトル
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void CnfgAtrDisp_PtColorIdx( 					// 点列の色に割り当てるアトリビュートindexを設定する
 			int atrIdx,									// アトリビュートindex
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void CnfgAtrDisp_PtLnWdtIdx( 					// プロット点の幅に割り当てるアトリビュートindexを設定する
 			int atrIdx,									// アトリビュートindex
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void CnfgAtrDisp_BarIdx( 						// バー長さに割り当てるアトリビュートindexを設定する
 			int atrIdx,									// アトリビュートindex
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void CnfgAtrDisp_BarColorIdx( 					// バーの色に割り当てるアトリビュートindexを設定する
 			int atrIdx,									// アトリビュートindex
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
+		);
+
+		void CnfgAtrDisp_BarWidthIdx( 					// バーの幅に割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void SetPlotLineColor( 							// プロット系列にデフォルト表示色を設定する
 			const ST_COLOR& color,						// 設定色
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void SetPlotLineOffset( 						// プロット系列の表示位置のオフセットを設定する
 			const Eigen::Vector3f& ofs,					// オフセットベクトル
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void SetPlotLineWidth( 							// プロット系列の線幅を設定する
 			const float& width,							// 線幅
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
 
 		void SetPlotLineDrawType( 						// プロット系列の描画タイプを設定する
 			DRAWTYPE type,								// 描画タイプ
-			const int& pltLineIdx = 0					// プロットデータ系列index
+			std::string pltLineName						// プロットデータ系列名
 		);
+
+		void SetBarWidth( 								// バーのデフォルト長さを指定する
+			const float& width,							// 幅
+			std::string pltLineName						// プロットデータ系列名
+		);
+
+		int GetNumPlotLines(); 							// プロット系列の数を取得する
 
 
 	protected:
-		//std::deque< Eigen::Vector3f>							_data;			// グラフのプロットデータ
-		std::vector< std::deque<Eigen::Vector3f> >				_lines;			// グラフのプロットデータ
-		//std::shared_ptr<PointsObj>							_dataToDraw;	// グラフのプロットデータ(描画用)
-		std::vector< std::shared_ptr<PointsWithAttributes> >	_linesToDraw;	// グラフのプロットデータ(描画用)
+		//std::deque< Eigen::Vector3f>									_data;			// グラフのプロットデータ
+		std::map< std::string, std::deque<Eigen::Vector3f> >			_lines;			// グラフのプロットデータ
+		//std::shared_ptr<PointsObj>									_dataToDraw;	// グラフのプロットデータ(描画用)
+		std::map< std::string, std::shared_ptr<PointsWithAttributes> >	_linesToDraw;	// グラフのプロットデータ(描画用)
 
 		std::shared_ptr<LabelObj>		xMaxLabel;		// x最大値ラベル
 		std::shared_ptr<LabelObj>		xMinLabel;		// x最大値ラベル

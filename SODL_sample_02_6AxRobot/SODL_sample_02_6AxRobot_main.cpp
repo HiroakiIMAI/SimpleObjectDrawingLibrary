@@ -22,7 +22,7 @@ namespace app {
 	float ax_J5 = 45.0 * (M_PI / 180); // [rad]
 	float ax_J6 =  0.0 * (M_PI / 180); // [rad]
 
-	void keyFunc(unsigned char key, int u, int v);
+	void onKeyboard(unsigned char key, int u, int v);
 	std::string GetModulePath();
 
 };
@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
 	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X, app::WINDOW_SIZE_Y);
 
 	// 描画マネージャにコールバック関数を設定する
-	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
+	sodl::drwMngr->SetKeyboardFunc(app::onKeyboard);
 
 	//-----------------------------------------------------
 	// ワールド座標系原点から連鎖するJ1~6座標系オブジェクトを定義
@@ -177,7 +177,7 @@ namespace app {
 	//	<Summary>		キー操作時のコールバック
 	//	<Description>
 	//================================================================
-	void keyFunc(unsigned char key, int u, int v)
+	void onKeyboard(unsigned char key, int u, int v)
 	{
 		const float		KEY_MOT_UNIT	=	5.f;
 		const float		CNV_DEG2RAD		=	(M_PI / 180.f);

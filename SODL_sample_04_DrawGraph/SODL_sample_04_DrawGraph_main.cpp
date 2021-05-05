@@ -25,7 +25,7 @@ namespace app {
 	float ax_J6 =  0.0 * (M_PI / 180); // [rad]
 
 	// Windowインタラクション関連コールバック関数
-	void keyFunc(unsigned char key, int u, int v);
+	void onKeyboard(unsigned char key, int u, int v);
 	void onMouseBtn(int button, int state, int x, int y);
 	void onMouseDrag(int u, int v);
 	void onMouseHover(int u, int v);
@@ -41,14 +41,14 @@ namespace app {
 //	<Summary>		アプリケーションのエントリポイント
 //	<Description>
 //================================================================
-int main(int argc, char ** argv) 
+int main(int argc, char ** argv)
 {
 	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X,app::WINDOW_SIZE_Y);
-	
+
 	sodl::drwMngr->SetMouseFunc(app::onMouseBtn);
 	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
-	sodl::drwMngr->SetPassiveMotionFunc(app::onMouseHover);
-	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
+	sodl::drwMngr->SetMouseHover(app::onMouseHover);
+	sodl::drwMngr->SetKeyboardFunc(app::onKeyboard);
 
 	//////////////////////////////////////////////////////
 	//
@@ -224,14 +224,14 @@ int main(int argc, char ** argv)
 		// {}の外で宣言したshared_ptrに作成したグラフのオブジェクトを渡しておく。
 		timeSerialGraph = tsGrph;
 	}
-	
+
 
 	// 散布図グラフ アクセス用shared_ptrを用意
 	std::shared_ptr<sodl::GraphObj> scatterGraph_mouseDrag;
 	//////////////////////////////////////////////////////
 	//
 	// 追加の描画空間[2]を作成し、ビューポート, カメラを設定する。
-	// 
+	//
 	// 散布図グラフ"マウスドラッグ軌跡"を作成し、描画空間[2]に配置する。
 	//
 	//////////////////////////////////////////////////////
@@ -376,7 +376,7 @@ namespace app {
 	//	<Summary>		キー操作時のコールバック
 	//	<Description>
 	//================================================================
-	void keyFunc(unsigned char key, int u, int v)
+	void onKeyboard(unsigned char key, int u, int v)
 	{
 		const float		KEY_MOT_UNIT	=	5.f;
 		const float		CNV_DEG2RAD		=	(M_PI / 180.f);

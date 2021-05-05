@@ -93,7 +93,7 @@ void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
 	this->yMinLabel = LabelObj::create(name + "_yMinLabel", area);
 
 	//this->_linesToDraw = PointsWithAttributes::create(name + "_data", area);
-	this->AddPlotLine();
+	this->AddPlotLine( name + "_plot_default" );
 
 	const int DEPTH_BACK				= -100;
 	const int DEPTH_AREA_FROM_BACK		= 10;
@@ -237,16 +237,16 @@ void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
  * @brief ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì’Ç‰Á
  *
  ******************************************************************/
-int GraphObj::AddPlotLine()
+int GraphObj::AddPlotLine( std::string lineName )
 {
 
 	// I/F”z—ñ‚Éƒf[ƒ^Œn—ñ‚ğ’Ç‰Á
-	_lines.push_back( std::deque< Eigen::Vector3f>() );
+	_lines.insert( std::make_pair( lineName, std::deque< Eigen::Vector3f>() ) );
 
 	// ƒf[ƒ^Œn—ñ‚Ì¶¬
 	int sz = _linesToDraw.size();
 	auto ptr =	PointsWithAttributes::create(
-					this->name+"_plot"+std::to_string(sz),
+					lineName,
 					this->area
 				);
 
@@ -266,10 +266,38 @@ int GraphObj::AddPlotLine()
 	ptr->CrdTrs.translation() = Eigen::Vector3f(0,0,10);
 
 	// ƒf[ƒ^Œn—ñ‚ğ”z—ñ‚ÉƒZƒbƒg‚·‚é
-	_linesToDraw.push_back( ptr	);
+	_linesToDraw.insert( std::make_pair( lineName, ptr ) );
+
+	// ƒOƒ‰ƒt‚ªŠù‚É•`‰æ‹óŠÔ‚É“o˜^‚³‚ê‚Ä‚¢‚éê‡A
+	// ’Ç‰Á‚µ‚½ƒvƒƒbƒgŒn—ñ‚à“¯ˆê‚Ì•`‰æ‹óŠÔ‚É’Ç‰Á‚·‚éB
+	if( -1 != drawingSpaceNum_belongTo )
+	{
+		drwMngr->AddObj_ToDrwSpace( ptr, drawingSpaceNum_belongTo );
+	}
+//	if( auto sPtr_dSpace = drawingSpace_belongTo.lock() )
+//	{
+//		//sPtr_dSpace->insert( std::make_pair(ptr->id_readOnly, ptr) );
+//
+//	}
 
 	return sz;
 }
+
+
+/** ***************************************************************
+ * @brief ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ìíœ
+ *
+ ******************************************************************/
+void GraphObj::DeletePlotLine( std::string lineName )
+{
+	_lines.erase(lineName);
+	if( _linesToDraw.count( lineName ) )
+	{
+		_linesToDraw[lineName]->RemoveSelfRecursive_FromDrawingSpace();
+		_linesToDraw.erase(lineName);
+	}
+}
+
 
 
 
@@ -278,11 +306,11 @@ int GraphObj::AddPlotLine()
  *
  ******************************************************************/
 void GraphObj::AddData(
-		const Eigen::Vector3f &point,				// ƒvƒƒbƒgƒf[ƒ^(À•W’l)
-		const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
-		)
+	const Eigen::Vector3f& point,				// ƒvƒƒbƒgƒf[ƒ^(À•W’l)
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
+	)
 {
-	if( _lines.size() > pltLineIdx)					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if( _lines.count( pltLineName ) )					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
 		// ƒOƒ‰ƒtƒvƒƒbƒg”ÍˆÍ‚ªAUTO‚Éİ’è‚³‚ê‚Ä‚¢‚éê‡AÅ‘å’l‚ğ©“®XV‚·‚é
 		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { rangeMax.x() = MAX(rangeMax.x(), point.x()); }
@@ -294,12 +322,12 @@ void GraphObj::AddData(
 		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { rangeMin.z() = MIN(rangeMin.z(), point.z()); }
 
 
-		_lines[pltLineIdx].push_back( point );
+		_lines[pltLineName].push_back( point );
 
 		// ƒf[ƒ^•Û”ƒI[ƒo‚Ìê‡‚ÍÅŒÃ‚Ìƒf[ƒ^‚ğÌ‚Ä‚é
-		if (_lines[pltLineIdx].size() > dataNumMax)
+		if (_lines[pltLineName].size() > dataNumMax)
 		{
-			_lines[pltLineIdx].pop_front();
+			_lines[pltLineName].pop_front();
 		}
 	}
 }
@@ -311,10 +339,10 @@ void GraphObj::AddData(
  *
  ******************************************************************/
 int GraphObj::AddAtr(
-	const int& pltLineIdx							// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
 		// ƒAƒgƒŠƒrƒ…[ƒg—ñ‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»
 		auto sPtr = std::make_shared< SmplObjDrwLib::AttributeClass<float> >();
@@ -323,11 +351,11 @@ int GraphObj::AddAtr(
 		sPtr->dataNumMax = dataNumMax;
 
 		// —ñ‚Ì”z—ñ‚ÉƒZƒbƒg
-		_linesToDraw[pltLineIdx]->_sPtr_attributes.push_back(
+		_linesToDraw[pltLineName]->_sPtr_attributes.push_back(
 			sPtr
 		);
 		// index‚ğ•Ô‚·
-		return _linesToDraw[pltLineIdx]->_sPtr_attributes.size() - 1;
+		return _linesToDraw[pltLineName]->_sPtr_attributes.size() - 1;
 	}
 	else
 	{
@@ -342,16 +370,16 @@ int GraphObj::AddAtr(
  *
  ******************************************************************/
 void GraphObj::AddAtrData(
-		int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
-		const float& atrDat,						// ƒAƒgƒŠƒrƒ…[ƒgƒf[ƒ^
-		const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
+	const float& atrDat,						// ƒAƒgƒŠƒrƒ…[ƒgƒf[ƒ^
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		if( _linesToDraw[pltLineIdx]->_sPtr_attributes.size() > atrIdx )
+		if( _linesToDraw[pltLineName]->_sPtr_attributes.size() > atrIdx )
 		{
-			_linesToDraw[pltLineIdx]->_sPtr_attributes[atrIdx]->AddAtrData(atrDat);
+			_linesToDraw[pltLineName]->_sPtr_attributes[atrIdx]->AddAtrData(atrDat);
 		}
 	}
 }
@@ -361,23 +389,23 @@ void GraphObj::AddAtrData(
  *
  ******************************************************************/
 void GraphObj::AddPtVct(
-		const Eigen::Vector3f &direcVector,			// ƒvƒƒbƒg“_‚Ì•ûŒüƒxƒNƒgƒ‹
-		const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	const Eigen::Vector3f &direcVector,			// ƒvƒƒbƒg“_‚Ì•ûŒüƒxƒNƒgƒ‹
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
 		auto dirVec = direcVector;
 		if(normarize_direcVec)
 		{
 			dirVec.normalize();
 		}
-		_linesToDraw[pltLineIdx]->_sPtr_ptVctrs->push_back(dirVec);
+		_linesToDraw[pltLineName]->_sPtr_ptVctrs->push_back(dirVec);
 
 		// ƒf[ƒ^”‚ªÅ‘å’l‚ğ’´‚¦‚Ä‚¢‚½‚çÅŒÃƒf[ƒ^‚ğÌ‚Ä‚é
-		for( ; _linesToDraw[pltLineIdx]->_sPtr_ptVctrs->size() > dataNumMax; )
+		for( ; _linesToDraw[pltLineName]->_sPtr_ptVctrs->size() > dataNumMax; )
 		{
-			_linesToDraw[pltLineIdx]->_sPtr_ptVctrs->pop_front();
+			_linesToDraw[pltLineName]->_sPtr_ptVctrs->pop_front();
 		}
 	}
 }
@@ -388,13 +416,13 @@ void GraphObj::AddPtVct(
  *
  ******************************************************************/
 void GraphObj::CnfgAtrDisp_PtColorIdx(
-		int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
-		const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->atrIdx_pointColor = atrIdx;
+		this->_linesToDraw[pltLineName]->atrIdx_pointColor = atrIdx;
 	}
 }
 
@@ -408,12 +436,12 @@ void GraphObj::CnfgAtrDisp_PtColorIdx(
  ******************************************************************/
 void GraphObj::CnfgAtrDisp_PtLnWdtIdx( 			// ƒvƒƒbƒg“_‚Ì•‚ÉŠ„‚è“–‚Ä‚éƒAƒgƒŠƒrƒ…[ƒgindex‚ğİ’è‚·‚é
 	int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
-	const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)		// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->atrIdx_pointTickness = atrIdx;
+		this->_linesToDraw[pltLineName]->atrIdx_pointTickness = atrIdx;
 	}
 }
 
@@ -424,13 +452,13 @@ void GraphObj::CnfgAtrDisp_PtLnWdtIdx( 			// ƒvƒƒbƒg“_‚Ì•‚ÉŠ„‚è“–‚Ä‚éƒAƒgƒŠƒrƒ
  *
  ******************************************************************/
 void GraphObj::CnfgAtrDisp_BarIdx(
-		int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
-		const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->atrIdx_bar = atrIdx;
+		this->_linesToDraw[pltLineName]->atrIdx_bar = atrIdx;
 	}
 }
 
@@ -439,29 +467,47 @@ void GraphObj::CnfgAtrDisp_BarIdx(
  *
  ******************************************************************/
 void GraphObj::CnfgAtrDisp_BarColorIdx(
-		int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
-		const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->atrIdx_barColor = atrIdx;
+		this->_linesToDraw[pltLineName]->atrIdx_barColor = atrIdx;
 	}
 }
+
+
+/** ***************************************************************
+ * @brief ƒo[‚Ì•‚ÉŠ„‚è“–‚Ä‚éƒAƒgƒŠƒrƒ…[ƒgindex‚ğİ’è‚·‚é
+ *
+ ******************************************************************/
+void GraphObj::CnfgAtrDisp_BarWidthIdx(
+	int atrIdx,									// ƒAƒgƒŠƒrƒ…[ƒgindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
+)
+{
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	{
+		this->_linesToDraw[pltLineName]->atrIdx_barWidth = atrIdx;
+	}
+}
+
+
 
 /** ***************************************************************
  * @brief ƒvƒƒbƒgŒn—ñ‚ÉƒfƒtƒHƒ‹ƒg•\¦F‚ğİ’è‚·‚é
  *
  ******************************************************************/
-void GraphObj::SetPlotLineColor( 					// ƒvƒƒbƒgŒn—ñ‚ÉƒfƒtƒHƒ‹ƒg•\¦F‚ğİ’è‚·‚é
-	const ST_COLOR& color,							// İ’èF
-	const int& pltLineIdx							// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+void GraphObj::SetPlotLineColor( 				// ƒvƒƒbƒgŒn—ñ‚ÉƒfƒtƒHƒ‹ƒg•\¦F‚ğİ’è‚·‚é
+	const ST_COLOR& color,						// İ’èF
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->color = color;
-		this->_linesToDraw[pltLineIdx]->colorWire = color;
+		this->_linesToDraw[pltLineName]->color = color;
+		this->_linesToDraw[pltLineName]->colorWire = color;
 	}
 }
 
@@ -469,14 +515,14 @@ void GraphObj::SetPlotLineColor( 					// ƒvƒƒbƒgŒn—ñ‚ÉƒfƒtƒHƒ‹ƒg•\¦F‚ğİ’è‚·‚
  * @brief ƒvƒƒbƒgŒn—ñ‚Ì•\¦ˆÊ’u‚ÌƒIƒtƒZƒbƒg
  *
  ******************************************************************/
-void GraphObj::SetPlotLineOffset( 					// ƒvƒƒbƒgŒn—ñ‚Ì•\¦ˆÊ’u‚ÌƒIƒtƒZƒbƒg
-	const Eigen::Vector3f& ofs,						// ƒIƒtƒZƒbƒgƒxƒNƒgƒ‹
-	const int& pltLineIdx							// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+void GraphObj::SetPlotLineOffset( 				// ƒvƒƒbƒgŒn—ñ‚Ì•\¦ˆÊ’u‚ÌƒIƒtƒZƒbƒg
+	const Eigen::Vector3f& ofs,					// ƒIƒtƒZƒbƒgƒxƒNƒgƒ‹
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)			// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->CrdTrs.translation() = ofs;
+		this->_linesToDraw[pltLineName]->CrdTrs.translation() = ofs;
 	}
 }
 
@@ -490,12 +536,12 @@ void GraphObj::SetPlotLineOffset( 					// ƒvƒƒbƒgŒn—ñ‚Ì•\¦ˆÊ’u‚ÌƒIƒtƒZƒbƒg
  ******************************************************************/
 void GraphObj::SetPlotLineWidth( 				// ƒvƒƒbƒgŒn—ñ‚Ìü•‚ğİ’è‚·‚é
 	const float& width,							// ü•
-	const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)		// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->pointTickness = width;
+		this->_linesToDraw[pltLineName]->pointTickness = width;
 	}
 }
 
@@ -505,13 +551,37 @@ void GraphObj::SetPlotLineWidth( 				// ƒvƒƒbƒgŒn—ñ‚Ìü•‚ğİ’è‚·‚é
  ******************************************************************/
 void GraphObj::SetPlotLineDrawType( 						// ƒvƒƒbƒgŒn—ñ‚Ì•`‰æƒ^ƒCƒv‚ğİ’è‚·‚é
 	DRAWTYPE type,								// •`‰æƒ^ƒCƒv
-	const int& pltLineIdx						// ƒvƒƒbƒgƒf[ƒ^Œn—ñindex
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
 )
 {
-	if( _linesToDraw.size() > pltLineIdx)		// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
 	{
-		this->_linesToDraw[pltLineIdx]->drawType = type;
+		this->_linesToDraw[pltLineName]->drawType = type;
 	}
+}
+
+
+/** ***************************************************************
+ * @brief ƒo[‚ÌƒfƒtƒHƒ‹ƒg’·‚³‚ğw’è‚·‚é
+ ******************************************************************/
+void GraphObj::SetBarWidth( 					// ƒo[‚ÌƒfƒtƒHƒ‹ƒg’·‚³‚ğw’è‚·‚é
+	const float& width,							// •
+	std::string pltLineName						// ƒvƒƒbƒgƒf[ƒ^Œn—ñ–¼
+)
+{
+	if (_lines.count(pltLineName))					// ƒvƒƒbƒgƒf[ƒ^Œn—ñ‚Ì‘¶İƒ`ƒFƒbƒN
+	{
+		this->_linesToDraw[pltLineName]->barWidth = width;
+	}
+}
+
+
+/** ***************************************************************
+ * @brief ƒvƒƒbƒgŒn—ñ‚Ì”‚ğæ“¾‚·‚é
+ ******************************************************************/
+int GraphObj::GetNumPlotLines()
+{
+	return  _linesToDraw.size();
 }
 
 
@@ -546,22 +616,23 @@ void GraphObj::_drawShapeOfSelf()
 	ss << rangeMin.y();	yMinLabel->text = ss.str(); ss.str("");
 
 	// ƒvƒƒbƒgƒf[ƒ^Œn—ñƒ‹[ƒv
-	for( int i = 0; i<_linesToDraw.size(); ++i)
+	for(auto pltMapItm = _linesToDraw.begin(); pltMapItm != _linesToDraw.end(); ++pltMapItm)
 	{
-		auto pltLine = _linesToDraw[i];
+		//auto pltLine = _linesToDraw[i];
 		// ƒf[ƒ^Œn—ñ‚Ì—LŒøƒ`ƒFƒbƒN
-		if (auto sPtr_points = pltLine->_sPtr_points)
+		if (auto sPtr_points = pltMapItm->second->_sPtr_points)
 		{
 			// “à•”ƒvƒƒbƒgƒf[ƒ^‚ğƒNƒŠƒA
 			sPtr_points->clear();
 
 			// “à•”ƒvƒƒbƒg‚É‘Î‰‚·‚éI/Fƒf[ƒ^‚Ì‘¶İƒ`ƒFƒbƒN
-			if( _lines.size() > i)
+			if( _lines.count( pltMapItm->first ) )
 			{
+				auto line = _lines[pltMapItm->first];
 				// “à•”ƒvƒƒbƒgƒf[ƒ^‚ğI/Fƒf[ƒ^‚©‚çÄ\¬
-				for (auto itr = _lines[i].begin();
-					itr != _lines[i].end();
-					++itr
+				for (auto	itr  = line.begin();
+							itr != line.end();
+						  ++itr
 					)
 				{
 					auto point = *itr;

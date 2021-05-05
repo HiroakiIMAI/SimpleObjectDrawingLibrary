@@ -82,7 +82,7 @@ void GraphObj3D::initSelf(Eigen::Vector3f graphBoxSize)
 	this->yMaxLabel = LabelSimple::create(name + "_yMaxLabel", area);
 	this->yMinLabel = LabelSimple::create(name + "_yMinLabel", area);
 
-	AddPlotLine();
+	this->AddPlotLine(name + "_plot_default");
 
 	//-------------------------------
 	// 背景の初期化
@@ -214,12 +214,12 @@ void GraphObj3D::initSelf(Eigen::Vector3f graphBoxSize)
  * @brief プロットデータ系列の追加
  *
  ******************************************************************/
-int GraphObj3D::AddPlotLine()
+int GraphObj3D::AddPlotLine( std::string lineName )
 {
-	int idx = GraphObj::AddPlotLine();
+	int idx = GraphObj::AddPlotLine( lineName );
 
 	// areaの原点から描画するようにオフセットをクリアする
-	this->_linesToDraw[idx]->CrdTrs.translation() = Eigen::Vector3f(0,0,0);
+	this->_linesToDraw[lineName]->CrdTrs.translation() = Eigen::Vector3f(0,0,0);
 
 	return idx;
 }

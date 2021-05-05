@@ -9,11 +9,10 @@
 using namespace SmplObjDrwLib;
 
 
-//================================================================
-//
-//	<Summary>		コンストラクタ
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief コンストラクタ
+ *
+ ******************************************************************/
 CoordChainObj::CoordChainObj(std::string name, std::weak_ptr<CoordChainObj> parent)
 	: ISodlObjBase(name)
 	, IDrawableObjBase(name)
@@ -24,22 +23,20 @@ CoordChainObj::CoordChainObj(std::string name, std::weak_ptr<CoordChainObj> pare
 	CrdTrs.translation() = Eigen::Vector3f(0, 0, 0);
 }
 
-//================================================================
-//
-//	<Summary>		デストラクタ
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief デストラクタ
+ *
+ ******************************************************************/
 CoordChainObj::~CoordChainObj()
 {
 
 }
 
 
-//================================================================
-//
-//	<Summary>		ファクトリ関数
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief ファクトリ関数
+ *
+ ******************************************************************/
 std::shared_ptr<CoordChainObj> CoordChainObj::create(
 	std::string name,
 	std::weak_ptr<CoordChainObj> parent
@@ -55,11 +52,10 @@ std::shared_ptr<CoordChainObj> CoordChainObj::create(
 	return  ptr;
 }
 
-//================================================================
-//
-//	<Summary>		draw()
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief draw()
+ *
+ ******************************************************************/
 void CoordChainObj::draw()
 {
 	if (!visible)
@@ -102,11 +98,10 @@ void CoordChainObj::draw()
 }
 
 
-//================================================================
-//
-//	<Summary>		座標系連鎖の親との関係を削除する
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief 座標系連鎖の親との関係を削除する
+ *
+ ******************************************************************/
 void CoordChainObj::DetachSelf_fromParentsCoordChain()
 {
 	auto sPtr_prnt = wPtr_prnt.lock();
@@ -130,11 +125,10 @@ void CoordChainObj::DetachSelf_fromParentsCoordChain()
 }
 
 
-//================================================================
-//
-//	<Summary>		座標系連鎖の親子関係に子を追加する
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief 座標系連鎖の親子関係に子を追加する
+ *
+ ******************************************************************/
 void CoordChainObj::AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> parent)
 {
 	auto prnt = parent.lock();
@@ -146,11 +140,10 @@ void CoordChainObj::AttachSelf_toParentsCoordChain(std::weak_ptr<CoordChainObj> 
 }
 
 
-//================================================================
-//
-//	<Summary>		自己形状の描画
-//	<Description>
-//================================================================
+/** ***************************************************************
+ * @brief 自己形状の描画
+ *
+ ******************************************************************/
 void CoordChainObj::_drawShapeOfSelf()
 {
 	drawCoordSymbol((unsigned char*)name.c_str(), 100.0);
@@ -173,4 +166,26 @@ Eigen::Affine3f CoordChainObj::GetTf_root2self()
 		return this->CrdTrs;
 	}
 }
+
+/** ***************************************************************
+ * @brief 描画空間へのオブジェクトの追加
+ *
+ ******************************************************************/
+void CoordChainObj::RemoveSelfRecursive_FromDrawingSpace()
+{
+	// 自身を描画空間から削除
+	this->RemoveSelf_FromDrawingSpace();
+
+	// 子への再帰処理
+	for( auto	it = wPtr_chldrn.begin();
+				it != wPtr_chldrn.end();
+			  ++it)
+	{
+		auto sPtr_child = it->lock();
+		sPtr_child->RemoveSelfRecursive_FromDrawingSpace();
+	}
+}
+
+
+
 
