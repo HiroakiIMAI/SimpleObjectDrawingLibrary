@@ -449,6 +449,24 @@ void GraphObj::CnfgAtrDisp_BarColorIdx(
 	}
 }
 
+
+/** ***************************************************************
+ * @brief バーの幅に割り当てるアトリビュートindexを設定する
+ *
+ ******************************************************************/
+void GraphObj::CnfgAtrDisp_BarWidthIdx(
+		int atrIdx,									// アトリビュートindex
+		const int& pltLineIdx						// プロットデータ系列index
+)
+{
+	if( _linesToDraw.size() > pltLineIdx)			// プロットデータ系列の存在チェック
+	{
+		this->_linesToDraw[pltLineIdx]->atrIdx_barWidth = atrIdx;
+	}
+}
+
+
+
 /** ***************************************************************
  * @brief プロット系列にデフォルト表示色を設定する
  *
@@ -512,6 +530,30 @@ void GraphObj::SetPlotLineDrawType( 						// プロット系列の描画タイプを設定する
 	{
 		this->_linesToDraw[pltLineIdx]->drawType = type;
 	}
+}
+
+
+/** ***************************************************************
+ * @brief バーのデフォルト長さを指定する
+ ******************************************************************/
+void GraphObj::SetBarWidth( 					// バーのデフォルト長さを指定する
+	const float& width,							// 幅
+	const int& pltLineIdx						// プロットデータ系列index
+)
+{
+	if( _linesToDraw.size() > pltLineIdx)		// プロットデータ系列の存在チェック
+	{
+		this->_linesToDraw[pltLineIdx]->barWidth = width;
+	}
+}
+
+
+/** ***************************************************************
+ * @brief プロット系列の数を取得する
+ ******************************************************************/
+int GraphObj::GetNumPlotLines()
+{
+	return  _linesToDraw.size();
 }
 
 

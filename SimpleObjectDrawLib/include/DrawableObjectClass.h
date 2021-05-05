@@ -262,12 +262,14 @@ namespace SmplObjDrwLib {
 
 		DRAWTYPE drawType = WIRE;
 		float pointTickness = 1.0;
+		float barWidth		= 1.0;
 
-		const int ATRIDX_NONE = -1;
+		static const int ATRIDX_NONE = -1;
 		int atrIdx_pointColor	= ATRIDX_NONE;
 		int atrIdx_pointTickness= ATRIDX_NONE;
 		int atrIdx_bar			= ATRIDX_NONE;
 		int atrIdx_barColor		= ATRIDX_NONE;
+		int atrIdx_barWidth		= ATRIDX_NONE;
 		Eigen::Vector3f atrBarDirec = UnitY;
 
 	};

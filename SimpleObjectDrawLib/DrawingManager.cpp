@@ -229,7 +229,7 @@ void ViewPortClass::fitCamMatrixToOrthView()
 //	<Summary>		コンストラクタ
 //	<Description>
 //================================================================
-DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle) :
+DrawingManager::DrawingManager(int windowSizeX, int windowSizeY, std::string windowTitle) :
 	_windowSizeX(windowSizeX),
 	_windowSizeY(windowSizeY)
 {
@@ -239,7 +239,7 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 	//argv = (char**)&arg;
 
 	int num = 1;
-	argc = &num;
+	int* argc = &num;
 
 	// init Glut
 	glutInit(argc, argArr);
@@ -300,9 +300,9 @@ DrawingManager::DrawingManager(int* argc, char** argv, int windowSizeX, int wind
 //	<Summary>		ファクトリ関数(シングルトンパターン)
 //	<Description>
 //================================================================
-DrawingManager::TypeOfSelf* DrawingManager::initMngr(int* argc, char** argv, int windowSizeX, int windowSizeY, std::string windowTitle)
+DrawingManager::TypeOfSelf* DrawingManager::initMngr(int windowSizeX, int windowSizeY, std::string windowTitle)
 {
-	static auto ptr = new TypeOfSelf( argc, argv , windowSizeX, windowSizeY, windowTitle);
+	static auto ptr = new TypeOfSelf( windowSizeX, windowSizeY, windowTitle);
 	SmplObjDrwLib::drwMngr.reset(ptr);
 
 	return  ptr;
@@ -390,9 +390,6 @@ void DrawingManager::draw()
 		}
 		glDisable( GL_DEPTH_TEST );
 	}
-
-	glutSwapBuffers();
-
 }
 
 //================================================================
@@ -419,7 +416,23 @@ void DrawingManager::preDrawProc4GraphObj(
 //================================================================
 void DrawingManager::drawUpdt(void)
 {
+
+	// アプリケーション側でセット可能な描画前処理を実施する
+	if( Func_PreDraw )
+	{
+		Func_PreDraw();
+	}
+
+	// SODLの描画処理メインルーチンを実施する
 	draw();
+
+	// アプリケーション側でセット可能な描画後処理を実施する
+	if( Func_PostDraw )
+	{
+		Func_PostDraw();
+	}
+
+	glutSwapBuffers();
 	glutMainLoopEvent(); // glutMainLoop() 等価な内容を実施してくれる
 }
 
@@ -510,9 +523,11 @@ void DrawingManager::OnDispFunc()
 
 void DrawingManager::OnReshapeFunc(int x, int y)
 {
-	;
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	(*usrReshapeFunc)( x, y );
 }
-
 
 void DrawingManager::OnKeyboardFunc(unsigned char key, int u, int v)
 {
@@ -524,6 +539,39 @@ void DrawingManager::OnKeyboardFunc(unsigned char key, int u, int v)
 	if (drwMngr->usrKeyboardFunc)
 	{
 		(*usrKeyboardFunc)(key, u, v);
+	}
+}
+
+void DrawingManager::OnKeyboardUpFunc(unsigned char key, int u, int v)
+{
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	if (drwMngr->usrKeyboardUpFunc)
+	{
+		(*usrKeyboardUpFunc)(key, u, v);
+	}
+}
+
+void DrawingManager::OnKeyboardSpFunc(unsigned char key, int u, int v)
+{
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	if (drwMngr->usrKeyboardSpFunc)
+	{
+		(*usrKeyboardSpFunc)(key, u, v);
+	}
+}
+
+void DrawingManager::OnKeyboardSpUpFunc(unsigned char key, int u, int v)
+{
+	//-------------------------------------
+	// ライブラリユーザ用コールバック
+	//-------------------------------------
+	if (drwMngr->usrKeyboardSpUpFunc)
+	{
+		(*usrKeyboardSpUpFunc)(key, u, v);
 	}
 }
 
@@ -606,9 +654,29 @@ void DrawingManager::OnMouseWheel(int wheelNum, int dir, int u, int v)
 	drwMngr->viewPorts[0]->attachCam(dfltCam);
 }
 
+void DrawingManager::SetReshapeFunc(void(*func)(int u, int v))
+{
+	usrReshapeFunc = func;
+}
+
 void DrawingManager::SetKeyboardFunc(void(*func)(unsigned char key, int u, int v))
 {
 	usrKeyboardFunc = func;
+}
+
+void DrawingManager::SetKeyboardUpFunc(void(*func)(unsigned char key, int u, int v))
+{
+	usrKeyboardUpFunc = func;
+}
+
+void DrawingManager::SetKeyboardSpFunc(void(*func)(unsigned char key, int u, int v))
+{
+	usrKeyboardSpFunc = func;
+}
+
+void DrawingManager::SetKeyboardSpUpFunc(void(*func)(unsigned char key, int u, int v))
+{
+	usrKeyboardSpUpFunc = func;
 }
 
 void DrawingManager::SetMouseFunc(void(*func)(int button, int state, int u, int v))
@@ -621,15 +689,26 @@ void DrawingManager::SetMouseDrag(void(*func)(int u, int v))
 	usrMouseDragFunc=func;
 }
 
-void DrawingManager::SetPassiveMotionFunc(void(*func)(int u, int v))
+void DrawingManager::SetMouseHover(void(*func)(int u, int v))
 {
 	usrMouseHoverFunc=func;
 }
 
-void (*DrawingManager::usrKeyboardFunc)(unsigned char key, int u, int v) = NULL;
-void (*DrawingManager::usrMouseBtnFunc)(int button, int state, int u, int v) = NULL;
-void (*DrawingManager::usrMouseDragFunc)(int u, int v) = NULL;
-void (*DrawingManager::usrMouseHoverFunc)(int u, int v) = NULL;
+void DrawingManager::SetMouseWheelFunc(void(*func)(int wheelNum, int dir, int u, int v))
+{
+	usrMouseWheelFunc=func;
+}
+
+
+void (*DrawingManager::usrReshapeFunc)		(int u, int v)							= NULL;
+void (*DrawingManager::usrKeyboardFunc)		(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrKeyboardUpFunc)	(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrKeyboardSpFunc)	(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrKeyboardSpUpFunc)	(unsigned char key, int u, int v)		= NULL;
+void (*DrawingManager::usrMouseBtnFunc)		(int button, int state, int u, int v)	= NULL;
+void (*DrawingManager::usrMouseDragFunc)	(int u, int v)							= NULL;
+void (*DrawingManager::usrMouseHoverFunc)	(int u, int v)							= NULL;
+void (*DrawingManager::usrMouseWheelFunc)	(int wheelNum, int dir, int u, int v)	= NULL;
 
 
 //-- 以下メモ ----------------------------------

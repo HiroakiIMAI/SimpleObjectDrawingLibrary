@@ -25,7 +25,7 @@ namespace app {
 	float ax_J6 =  0.0 * (M_PI / 180); // [rad]
 
 	// Windowインタラクション関連コールバック関数
-	void keyFunc(unsigned char key, int u, int v);
+	void onKeyboard(unsigned char key, int u, int v);
 	void onMouseBtn(int button, int state, int x, int y);
 	void onMouseDrag(int u, int v);
 	void onMouseHover(int u, int v);
@@ -47,8 +47,8 @@ int main(int argc, char ** argv)
 	
 	sodl::drwMngr->SetMouseFunc(app::onMouseBtn);
 	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
-	sodl::drwMngr->SetPassiveMotionFunc(app::onMouseHover);
-	sodl::drwMngr->SetKeyboardFunc(app::keyFunc);
+	sodl::drwMngr->SetMouseHover(app::onMouseHover);
+	sodl::drwMngr->SetKeyboardFunc(app::onKeyboard);
 
 	//////////////////////////////////////////////////////
 	//
@@ -376,7 +376,7 @@ namespace app {
 	//	<Summary>		キー操作時のコールバック
 	//	<Description>
 	//================================================================
-	void keyFunc(unsigned char key, int u, int v)
+	void onKeyboard(unsigned char key, int u, int v)
 	{
 		const float		KEY_MOT_UNIT	=	5.f;
 		const float		CNV_DEG2RAD		=	(M_PI / 180.f);

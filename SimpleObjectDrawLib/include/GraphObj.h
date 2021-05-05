@@ -128,6 +128,11 @@ namespace SmplObjDrwLib {
 			const int& pltLineIdx = 0					// プロットデータ系列index
 		);
 
+		void CnfgAtrDisp_BarWidthIdx( 					// バーの幅に割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
 		void SetPlotLineColor( 							// プロット系列にデフォルト表示色を設定する
 			const ST_COLOR& color,						// 設定色
 			const int& pltLineIdx = 0					// プロットデータ系列index
@@ -147,6 +152,13 @@ namespace SmplObjDrwLib {
 			DRAWTYPE type,								// 描画タイプ
 			const int& pltLineIdx = 0					// プロットデータ系列index
 		);
+
+		void SetBarWidth( 								// バーのデフォルト長さを指定する
+			const float& width,							// 幅
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
+		int GetNumPlotLines(); 							// プロット系列の数を取得する
 
 
 	protected:

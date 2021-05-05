@@ -142,8 +142,8 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	private:
 		DrawingManager(
-			int* argc,
-			char** argv,
+//			int* argc,
+//			char** argv,
 			int windowSizeX,
 			int windowSizeY,
 			std::string windowTitle
@@ -154,7 +154,7 @@ namespace SmplObjDrwLib {
 		//--------------------------------------------
 	public:
 		static TypeOfSelf* initMngr(
-			int* argc, char** argv,
+//			int* argc, char** argv,
 			int windowSizeX = 640 * 2,
 			int windowSizeY = 480 * 2,
 			std::string windowTitle = "SimpleObjectDrawingLibrary Window"
@@ -189,10 +189,18 @@ namespace SmplObjDrwLib {
 		bool depthBufferIsEnable = false;
 
 		// コールバック関数の設定I/F
+		void SetReshapeFunc(void(*func)(int u, int v));
 		void SetKeyboardFunc(void(*func)(unsigned char key, int u, int v));
+		void SetKeyboardUpFunc(void(*func)(unsigned char key, int u, int v));
+		void SetKeyboardSpFunc(void(*func)(unsigned char key, int u, int v));
+		void SetKeyboardSpUpFunc(void(*func)(unsigned char key, int u, int v));
 		void SetMouseFunc(void(*func)(int button, int state, int u, int v));
 		void SetMouseDrag(void(*func)(int u, int v));
-		void SetPassiveMotionFunc(void(*func)(int u, int v));
+		void SetMouseHover(void(*func)(int u, int v));
+		void SetMouseWheelFunc(void(*func)(int wheelNum, int dir, int u, int v));
+
+		std::function <void (void) >Func_PreDraw;
+		std::function <void (void) >Func_PostDraw;
 
 		//--------------------------------------------
 		// 以下、本クラス固有の非公開メンバ
@@ -212,18 +220,26 @@ namespace SmplObjDrwLib {
 
 		// default call back
 		static void OnDispFunc();
-		static void OnReshapeFunc(int u, int v);
-		static void OnKeyboardFunc (unsigned char key, int u, int v);
-		static void OnMouseBtn (int button, int state, int u, int v);
-		static void OnMouseDrag (int u, int v);
-		static void OnMouseHover(int u, int v);
-		static void OnMouseWheel(int wheelNum, int dir, int u, int v);
+		static void OnReshapeFunc			(int u, int v);
+		static void OnKeyboardFunc 			(unsigned char key, int u, int v);
+		static void OnKeyboardUpFunc		(unsigned char key, int u, int v);
+		static void OnKeyboardSpFunc		(unsigned char key, int u, int v);
+		static void OnKeyboardSpUpFunc		(unsigned char key, int u, int v);
+		static void OnMouseBtn 				(int button, int state, int u, int v);
+		static void OnMouseDrag 			(int u, int v);
+		static void OnMouseHover			(int u, int v);
+		static void OnMouseWheel			(int wheelNum, int dir, int u, int v);
 
 		// user call back
-		static void(*usrKeyboardFunc)(unsigned char key, int u, int v);
-		static void(*usrMouseBtnFunc)(int button, int state, int u, int v);
-		static void(*usrMouseDragFunc)(int u, int v);
-		static void(*usrMouseHoverFunc)(int u, int v);
+		static void(*usrReshapeFunc)		(int u, int v);
+		static void(*usrKeyboardFunc)		(unsigned char key, int u, int v);
+		static void(*usrKeyboardUpFunc)		(unsigned char key, int u, int v);
+		static void(*usrKeyboardSpFunc)		(unsigned char key, int u, int v);
+		static void(*usrKeyboardSpUpFunc)	(unsigned char key, int u, int v);
+		static void(*usrMouseBtnFunc)		(int button, int state, int u, int v);
+		static void(*usrMouseDragFunc)		(int u, int v);
+		static void(*usrMouseHoverFunc)		(int u, int v);
+		static void(*usrMouseWheelFunc)		(int wheelNum, int dir, int u, int v);
 
 	};
 
