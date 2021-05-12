@@ -134,6 +134,11 @@ namespace SmplObjDrwLib {
 			std::string pltLineName						// プロットデータ系列名
 		);
 
+		void CnfgAtrDisp_BarWidthIdx( 					// バーの幅に割り当てるアトリビュートindexを設定する
+			int atrIdx,									// アトリビュートindex
+			const int& pltLineIdx = 0					// プロットデータ系列index
+		);
+
 		void SetPlotLineColor( 							// プロット系列にデフォルト表示色を設定する
 			const ST_COLOR& color,						// 設定色
 			std::string pltLineName						// プロットデータ系列名
@@ -157,6 +162,11 @@ namespace SmplObjDrwLib {
 		void SetBarWidth( 								// バーのデフォルト長さを指定する
 			const float& width,							// 幅
 			std::string pltLineName						// プロットデータ系列名
+		);
+
+		void SetBarWidth( 								// バーのデフォルト長さを指定する
+			const float& width,							// 幅
+			const int& pltLineIdx = 0					// プロットデータ系列index
 		);
 
 		int GetNumPlotLines(); 							// プロット系列の数を取得する
