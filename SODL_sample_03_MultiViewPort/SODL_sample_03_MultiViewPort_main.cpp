@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 	//-----------------------------------------------------
 	// この時点でライブラリによってOpenGLコンテキストが作成され、
 	// OpenGLのウィンドウが表示される
-	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X, app::WINDOW_SIZE_Y);
+	sodl::DrawingManager::initMngr( app::WINDOW_SIZE_X, app::WINDOW_SIZE_Y);
 
 	// 描画マネージャにコールバック関数を設定する
 	sodl::drwMngr->SetKeyboardFunc(app::onKeyboard);

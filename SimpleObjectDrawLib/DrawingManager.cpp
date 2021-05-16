@@ -539,7 +539,10 @@ void DrawingManager::OnReshapeFunc(int x, int y)
 	//-------------------------------------
 	// ライブラリユーザ用コールバック
 	//-------------------------------------
-	(*usrReshapeFunc)( x, y );
+	if (drwMngr->usrReshapeFunc)
+	{
+		(*usrReshapeFunc)( x, y );
+	}
 }
 
 void DrawingManager::OnKeyboardFunc(unsigned char key, int u, int v)
@@ -604,43 +607,48 @@ void DrawingManager::OnMouseBtn(int button, int state, int u, int v)
 
 void DrawingManager::OnMouseDrag(int u, int v)
 {
+	int v_bk=v;
+	v = glutGet( GLUT_WINDOW_HEIGHT ) - v;
 	const int du = u - mouseU_prv;
 	const int dv = v - mouseV_prv;
 
-	Eigen::Vector3f mv;
+	auto& vp  = SmplObjDrwLib::drwMngr->viewPorts[0];
+	auto& cam = vp->camAttached;
 
-	auto& default_cam =SmplObjDrwLib::drwMngr->viewPorts[0]->camAttached;
-
-	if( (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
-	||	(mouseBtnSt[MOUSE_RIGHT_BUTTON] == MOUSE_DOWN)
+	// デフォルトビューポートの範囲にマウスポインタが乗っている場合
+	if( ( (vp->left   < u) && (u < (vp->left   + vp->width ) ) )
+	&&  ( (vp->bottom < v) && (v < (vp->bottom + vp->height) ) )
 	)
 	{
-		Eigen::Vector3f* cPos = &default_cam->camPos;
-		Eigen::Vector3f* tPos = &default_cam->camTgt;
-		Eigen::Vector3f dir_p2t = *cPos - *tPos;
-		dir_p2t.normalize();
-
-		Eigen::Vector3f uDir3D = dir_p2t.cross(UnitZ);
-		uDir3D.normalize();
-
-		Eigen::Vector3f vDir3D = dir_p2t.cross(uDir3D);
-
-
-		// 通常ドラッグの場合、視点を中心にカメラを回転させる
-		if (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
+		// マウスボタンが押下状態の場合
+		if( (mouseBtnSt[MOUSE_LEFT_BUTTON ] == MOUSE_DOWN)
+		||	(mouseBtnSt[MOUSE_RIGHT_BUTTON] == MOUSE_DOWN)
+		)
 		{
-			*cPos += 2 * ((uDir3D * du) + (-vDir3D * dv));
-		}
-		// 右ドラッグの場合、視点とカメラ位置を並行移動させる
-		else if(mouseBtnSt[MOUSE_RIGHT_BUTTON] == MOUSE_DOWN)
-		{
-			float z = 1.f/default_cam->zoomRatio;
-			*tPos += z * ((uDir3D * du) + (-vDir3D * dv));
-			*cPos += z * ((uDir3D * du) + (-vDir3D * dv));
-		}
+			Eigen::Vector3f* cPos = &cam->camPos;
+			Eigen::Vector3f* tPos = &cam->camTgt;
+			Eigen::Vector3f dir_p2t = *cPos - *tPos;
+			dir_p2t.normalize();
 
+			Eigen::Vector3f uDir3D = dir_p2t.cross(UnitZ);
+			uDir3D.normalize();
+
+			Eigen::Vector3f vDir3D = dir_p2t.cross(uDir3D);
+
+			// 通常ドラッグの場合、視点を中心にカメラを回転させる
+			if (mouseBtnSt[MOUSE_LEFT_BUTTON] == MOUSE_DOWN)
+			{
+				*cPos += 2 * ((uDir3D * du) + (vDir3D * dv));
+			}
+			// 右ドラッグの場合、視点とカメラ位置を並行移動させる
+			else if(mouseBtnSt[MOUSE_RIGHT_BUTTON] == MOUSE_DOWN)
+			{
+				float z = 1.f/cam->zoomRatio;
+				*tPos += z * ((uDir3D * du) + (vDir3D * dv));
+				*cPos += z * ((uDir3D * du) + (vDir3D * dv));
+			}
+		}
 	}
-
 
 	mouseU_prv = u;
 	mouseV_prv = v;
@@ -650,12 +658,15 @@ void DrawingManager::OnMouseDrag(int u, int v)
 	//-------------------------------------
 	if (usrMouseDragFunc)
 	{
-		(*usrMouseDragFunc)(u, v);
+		(*usrMouseDragFunc)(u, v_bk);
 	}
 }
 
 void DrawingManager::OnMouseHover(int u, int v)
 {
+	int v_bk=v;
+	v = glutGet( GLUT_WINDOW_HEIGHT ) - v;
+
 	mouseU_prv = u;
 	mouseV_prv = v;
 
@@ -664,7 +675,7 @@ void DrawingManager::OnMouseHover(int u, int v)
 	//-------------------------------------
 	if (usrMouseHoverFunc)
 	{
-		(*usrMouseHoverFunc)(u, v);
+		(*usrMouseHoverFunc)(u, v_bk);
 	}
 }
 

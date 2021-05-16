@@ -28,6 +28,7 @@ namespace SmplObjDrwLib {
 		public GraphObj
 	{
 		typedef GraphObj3D TypeOfSelf;
+
 		//--------------------------------------------
 		// コンストラクタ
 		//--------------------------------------------

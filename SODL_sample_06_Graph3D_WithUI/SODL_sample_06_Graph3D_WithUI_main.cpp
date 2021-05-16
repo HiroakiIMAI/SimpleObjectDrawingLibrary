@@ -31,9 +31,24 @@ namespace app {
 	int mouse_y = 0;
 
 	typedef struct VISUAL_IF_tp{
-		std::unordered_map< std::string, appUi::Vif_PlotCnfg > pltLines;
+		//-------------------------------------------------
+		// Visual to Model
+		//-------------------------------------------------
+		std::map< std::string, appUi::Vif_PlotCnfg > pltLines;
 		std::string newFilePath;
 		std::string newPlotLineName;
+
+		std::string cursol_pltLnName;
+		int cursol_pltLn_selIdx = 0;
+		int cursol_idx = 0;
+		bool cursol_enable = false;
+
+
+		//-------------------------------------------------
+		// Model to Visual
+		//-------------------------------------------------
+		int cursol_idxMax = 0;
+
 	}VISUAL_IF;
 	VISUAL_IF visualIf;
 
@@ -273,6 +288,20 @@ int main(int argc, char ** argv)
 			}
 		}
 
+		// カーソル関連
+		if( auto cursoledLine = graph3D->GetCpyPltLn( app::visualIf.cursol_pltLnName ) )
+		{
+			app::visualIf.cursol_idxMax = cursoledLine->size();
+		}
+		else
+		{
+			app::visualIf.cursol_idxMax = 0;
+		}
+		graph3D->SetCursolViible( app::visualIf.cursol_enable );
+
+		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName );
+		graph3D->UpdtCursol( app::visualIf.cursol_idx );
+
 		//-----------------------------------------------------
 		// 描画マネージャから描画更新を実行する
 		//-----------------------------------------------------
@@ -446,10 +475,10 @@ namespace app {
 					if( 0 == row )
 					{
 						// アトリビュート列を追加する
-						grph->AddAtr(pltLnName);
+						grph->AddAtr(tokens[col], pltLnName );
 
 						// アトリビュート名をUI表示用に保持する
-						uidat.vct_labelsOfAttribetes.push_back( tokens[col] );
+						uidat.vct_labelsOfAttribetes.emplace_back( tokens[col] );
 					}
 
 					// アトリビュートデータをグラフオブジェクトにセットする
@@ -469,6 +498,7 @@ namespace app {
 			}
 		}
 
+		// 作成した一時データをvisualIfにセットする
 		vif.pltLines.insert( std::make_pair( pltLnName, uidat ) );
 	};
 
@@ -532,6 +562,58 @@ namespace app {
 					app::visualIf.newPlotLineName = "file plot " + std::to_string(++openFileCtr);
 				}
 				ImGuiFileDialog::Instance()->Close();
+			}
+
+			ImGui::NewLine();
+			//------------------------------------------------------
+			// カーソル操作
+			//------------------------------------------------------
+			// 系列名で折り畳み項目を作成
+			if ( ImGui::CollapsingHeader( "Cursol Operation" ) )
+			{
+				ImGui::Indent();
+
+				// カーソル有効チェックボックス
+				ImGui::Checkbox( "cursol ehable", &visualIf.cursol_enable );
+				if( visualIf.cursol_enable )
+				{
+					//------------------------------------------------------
+					// カーソルを置くプロット系列の選択
+					//------------------------------------------------------
+					// コンボボックス表示内容を作成
+					std::vector< const char* > pList;
+					// アトリビュート数分ループ
+					for(auto	mpIt_ptLn  = visualIf.pltLines.begin();
+								mpIt_ptLn != visualIf.pltLines.end();
+							  ++mpIt_ptLn )
+					{
+						pList.push_back( mpIt_ptLn->first.c_str() );
+					}
+
+					if( 0 != pList.size() )
+					{
+						// コンボボックス表示
+						ImGui::Combo(
+							"put cursol to ",
+							&visualIf.cursol_pltLn_selIdx,
+							(char**)&pList[0],
+							pList.size()
+						);
+
+						// コンボボックスで選択されたプロット系列の名称を取得
+						if( pList.size() > visualIf.cursol_pltLn_selIdx )
+						{
+							visualIf.cursol_pltLnName = pList[visualIf.cursol_pltLn_selIdx];
+						}
+
+						//------------------------------------------------------
+						// カーソル位置の操作
+						//------------------------------------------------------
+						ImGui::SliderInt("cursol pos slider", &visualIf.cursol_idx, 0, visualIf.cursol_idxMax);
+					}
+				}
+
+				ImGui::Unindent();
 			}
 
 			// ImGuiウィンドウ終了

@@ -77,39 +77,46 @@ void TimeSeriesGraph::_drawShapeOfSelf()
 {
 	refleshRangeAsScroll();
 
-	// 描画範囲外のデータを表示しないために
-	// 一旦データを退避してから削減する
-	auto tmp = _lines[0];
-	_lines[0].clear();
-	int sizeDraw = MIN(dataNumToDraw, tmp.size());
-	auto itr = tmp.end();
-	for (int i = 0; i < sizeDraw; i++)
+	for( auto mpIt_ln  = _lines.begin();
+			  mpIt_ln != _lines.end();
+			++mpIt_ln)
 	{
-		--itr;
-		_lines[0].push_front( *itr );
+
+		auto& line = mpIt_ln->second;
+		// 描画範囲外のデータを表示しないために
+		// 一旦データを退避してから削減する
+		auto tmp = line;
+		line.clear();
+		int sizeDraw = MIN(dataNumToDraw, tmp.size());
+		auto itr = tmp.end();
+		for (int i = 0; i < sizeDraw; i++)
+		{
+			--itr;
+			line.push_front( *itr );
+		}
+
+	//	// 属性群のサイズもチェックする-------------------------------------------------------debug
+	//	for (auto atr = _dataToDraw->_sPtr_attributes.begin();
+	//		atr != _dataToDraw->_sPtr_attributes.end();
+	//		atr++
+	//		)
+	//	{
+	//		if (*atr)
+	//		{
+	//			// データ保持数オーバの場合は最古のデータを捨てる
+	//			if ((*atr)->data.size() > sizeDraw)
+	//			{
+	//				(*atr)->data.pop_front();
+	//			}
+	//		}
+	//	}
+
+		// 描画する
+		GraphObj::_drawShapeOfSelf();
+
+		// 退避したデータを復帰させる
+		line = tmp;
 	}
-
-//	// 属性群のサイズもチェックする-------------------------------------------------------debug
-//	for (auto atr = _dataToDraw->_sPtr_attributes.begin();
-//		atr != _dataToDraw->_sPtr_attributes.end();
-//		atr++
-//		)
-//	{
-//		if (*atr)
-//		{
-//			// データ保持数オーバの場合は最古のデータを捨てる
-//			if ((*atr)->data.size() > sizeDraw)
-//			{
-//				(*atr)->data.pop_front();
-//			}
-//		}
-//	}
-
-	// 描画する
-	GraphObj::_drawShapeOfSelf();
-
-	// 退避したデータを復帰させる
-	_lines[0] = tmp;
 }
 
 
@@ -120,7 +127,7 @@ void TimeSeriesGraph::_drawShapeOfSelf()
 //================================================================
 void TimeSeriesGraph::refleshRangeAsScroll()
 {
-	if (_lines[0].size() > dataNumToDraw)
+	if (_lines.begin()->second.size() > dataNumToDraw)
 	{
 		rangeMin.x() = rangeMax.x() - dataNumToDraw;
 	}

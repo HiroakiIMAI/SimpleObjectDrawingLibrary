@@ -58,7 +58,7 @@ namespace app {
 //================================================================
 int main(int argc, char ** argv)
 {
-	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X,app::WINDOW_SIZE_Y);
+	sodl::DrawingManager::initMngr( app::WINDOW_SIZE_X,app::WINDOW_SIZE_Y);
 	sodl::drwMngr->depthBufferIsEnable = true;
 	sodl::drwMngr->SetMouseFunc(app::onMouseBtn);
 	sodl::drwMngr->SetMouseDrag(app::onMouseDrag);
@@ -136,11 +136,12 @@ int main(int argc, char ** argv)
 				const int atrTopCol = 6;
 				if(atrTopCol <= col )
 				{
+					int num_atr = col - atrTopCol;
 					// 最初の行だけの処理
 					if( 1 == row )
 					{
 						// アトリビュート列を追加する
-						graph3D->AddAtr();
+						graph3D->AddAtr( "atr"+std::to_string(num_atr) );
 					}
 
 					// アトリビュートデータをグラフオブジェクトにセットする
@@ -164,156 +165,157 @@ int main(int argc, char ** argv)
 		//graph3D->CnfgAtrDisp_BarColorIdx(1);
 		graph3D->CnfgAtrDisp_PtColorIdx(2);
 		graph3D->CnfgAtrDisp_PtLnWdtIdx(0);
-		graph3D->SetPlotLineDrawType( sodl::DRAWTYPE::POINT );
+		//graph3D->SetPlotLineDrawType( sodl::DRAWTYPE::POINT );
 		graph3D->SetPlotLineWidth(10);
 
 	}
 
-	{
-		//-----------------------------------------------------
-		// 2. プロットデータ2をcsvファイルから読み出して系列2としてグラフにセット
-		//-----------------------------------------------------
-		// グラフにプロットする系列を追加する
-		int pltIdx = graph3D->AddPlotLine();
-		//-----------------------------------------------------
-		// 2.1 プロットデータ2をcsvファイルから読み出す
-		//-----------------------------------------------------
-		// ファイルを開いて行ごとにstringに詰める
-		std::vector<std::string> plotDatStr;
-		std::string exePath = app::GetModulePath();
-		app::ReadFile_IntoVctStr_PerLine(exePath + "plotData\\plotData2.csv", plotDatStr);
+//	{
+//		//-----------------------------------------------------
+//		// 2. プロットデータ2をcsvファイルから読み出して系列2としてグラフにセット
+//		//-----------------------------------------------------
+//		// グラフにプロットする系列を追加する
+//		const std::string plot2Name = "plot2";
+//		int pltIdx = graph3D->AddPlotLine(plot2Name);
+//		//-----------------------------------------------------
+//		// 2.1 プロットデータ2をcsvファイルから読み出す
+//		//-----------------------------------------------------
+//		// ファイルを開いて行ごとにstringに詰める
+//		std::vector<std::string> plotDatStr;
+//		std::string exePath = app::GetModulePath();
+//		app::ReadFile_IntoVctStr_PerLine(exePath + "plotData\\plotData2.csv", plotDatStr);
+//
+//		for (int row = 1; row < plotDatStr.size(); ++row) // 1行目はヘッダなので読み飛ばす
+//		{
+//			auto str = plotDatStr[row];
+//			// 1行データを','区切りのtokenに分割する
+//			std::vector<std::string> tokens;
+//			app::SplitString(str, ",", tokens);
+//
+//			// 1行分のトークンを処理する
+//			std::vector<float> dataOfLine;
+//			for (int col = 0; col < tokens.size(); ++col)
+//			{
+//				float fDat = 0;
+//				// トークンを数値データに変換する
+//				try
+//				{
+//					fDat = std::stof(tokens[col]);
+//				}
+//				// 数値変換に失敗した場合は初期値の0が採用される
+//				catch( std::exception& e )
+//				{
+//				}
+//				// トークンを変換して得られた数値データを配列に詰める
+//				dataOfLine.push_back( fDat );
+//
+//				// 6列目以降をアトリビュートとしてグラフオブジェクトにセットする
+//				const int atrTopCol = 6;
+//				if(atrTopCol <= col )
+//				{
+//					// 最初の行だけの処理
+//					if( 1 == row )
+//					{
+//						// アトリビュート列を追加する
+//						graph3D->AddAtr(pltIdx);
+//					}
+//
+//					// アトリビュートデータをグラフオブジェクトにセットする
+//					graph3D->AddAtrData( col - atrTopCol, fDat, pltIdx );
+//				}
+//			}
+//
+//			//-----------------------------------------------------
+//			// 2.2 読み出しだデータを系列1のプロット対象座標としてセットする
+//			//-----------------------------------------------------
+//			// 0～2列目データをプロット座標としてグラフオブジェクトにセットする
+//			graph3D->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltIdx );
+//			// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
+//			graph3D->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltIdx );
+//		}
+//
+//		//-----------------------------------------------------
+//		// 2.3 系列1のグラフ表示に追加するアトリビュートデータを設定する
+//		//-----------------------------------------------------
+//		graph3D->CnfgAtrDisp_BarIdx(1, pltIdx);
+//		//graph3D->CnfgAtrDisp_BarColorIdx(1, pltIdx);
+//		//graph3D->CnfgAtrDisp_PtColorIdx(2, pltIdx);
+//	}
 
-		for (int row = 1; row < plotDatStr.size(); ++row) // 1行目はヘッダなので読み飛ばす
-		{
-			auto str = plotDatStr[row];
-			// 1行データを','区切りのtokenに分割する
-			std::vector<std::string> tokens;
-			app::SplitString(str, ",", tokens);
 
-			// 1行分のトークンを処理する
-			std::vector<float> dataOfLine;
-			for (int col = 0; col < tokens.size(); ++col)
-			{
-				float fDat = 0;
-				// トークンを数値データに変換する
-				try
-				{
-					fDat = std::stof(tokens[col]);
-				}
-				// 数値変換に失敗した場合は初期値の0が採用される
-				catch( std::exception& e )
-				{
-				}
-				// トークンを変換して得られた数値データを配列に詰める
-				dataOfLine.push_back( fDat );
-
-				// 6列目以降をアトリビュートとしてグラフオブジェクトにセットする
-				const int atrTopCol = 6;
-				if(atrTopCol <= col )
-				{
-					// 最初の行だけの処理
-					if( 1 == row )
-					{
-						// アトリビュート列を追加する
-						graph3D->AddAtr(pltIdx);
-					}
-
-					// アトリビュートデータをグラフオブジェクトにセットする
-					graph3D->AddAtrData( col - atrTopCol, fDat, pltIdx );
-				}
-			}
-
-			//-----------------------------------------------------
-			// 2.2 読み出しだデータを系列1のプロット対象座標としてセットする
-			//-----------------------------------------------------
-			// 0～2列目データをプロット座標としてグラフオブジェクトにセットする
-			graph3D->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltIdx );
-			// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
-			graph3D->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltIdx );
-		}
-
-		//-----------------------------------------------------
-		// 2.3 系列1のグラフ表示に追加するアトリビュートデータを設定する
-		//-----------------------------------------------------
-		graph3D->CnfgAtrDisp_BarIdx(1, pltIdx);
-		//graph3D->CnfgAtrDisp_BarColorIdx(1, pltIdx);
-		//graph3D->CnfgAtrDisp_PtColorIdx(2, pltIdx);
-	}
-
-
-	{
-		//-----------------------------------------------------
-		// 2. プロットデータ2をcsvファイルから読み出して系列2としてグラフにセット
-		//-----------------------------------------------------
-		// グラフにプロットする系列を追加する
-		int pltIdx = graph3D->AddPlotLine();
-		//-----------------------------------------------------
-		// 2.1 プロットデータ2をcsvファイルから読み出す
-		//-----------------------------------------------------
-		// ファイルを開いて行ごとにstringに詰める
-		std::vector<std::string> plotDatStr;
-		std::string exePath = app::GetModulePath();
-		app::ReadFile_IntoVctStr_PerLine(exePath + "plotData\\plotData2.csv", plotDatStr);
-
-		for (int row = 1; row < plotDatStr.size(); ++row) // 1行目はヘッダなので読み飛ばす
-		{
-			auto str = plotDatStr[row];
-			// 1行データを','区切りのtokenに分割する
-			std::vector<std::string> tokens;
-			app::SplitString(str, ",", tokens);
-
-			// 1行分のトークンを処理する
-			std::vector<float> dataOfLine;
-			for (int col = 0; col < tokens.size(); ++col)
-			{
-				float fDat = 0;
-				// トークンを数値データに変換する
-				try
-				{
-					fDat = std::stof(tokens[col]);
-				}
-				// 数値変換に失敗した場合は初期値の0が採用される
-				catch( std::exception& e )
-				{
-				}
-				// トークンを変換して得られた数値データを配列に詰める
-				dataOfLine.push_back( fDat );
-
-				// 6列目以降をアトリビュートとしてグラフオブジェクトにセットする
-				const int atrTopCol = 6;
-				if(atrTopCol <= col )
-				{
-					// 最初の行だけの処理
-					if( 1 == row )
-					{
-						// アトリビュート列を追加する
-						graph3D->AddAtr(pltIdx);
-					}
-
-					// アトリビュートデータをグラフオブジェクトにセットする
-					graph3D->AddAtrData( col - atrTopCol, fDat, pltIdx );
-				}
-			}
-
-			//-----------------------------------------------------
-			// 2.2 読み出しだデータを系列1のプロット対象座標としてセットする
-			//-----------------------------------------------------
-			// 0～2列目データをプロット座標としてグラフオブジェクトにセットする
-			graph3D->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltIdx );
-			// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
-			graph3D->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltIdx );
-		}
-
-		//-----------------------------------------------------
-		// 2.3 系列1のグラフ表示に追加するアトリビュートデータを設定する
-		//-----------------------------------------------------
-		graph3D->SetPlotLineWidth(5, pltIdx);
-		graph3D->SetPlotLineOffset( Eigen::Vector3f(10,0,0) , pltIdx );
-		graph3D->CnfgAtrDisp_BarIdx(1, pltIdx);
-
-		//graph3D->CnfgAtrDisp_BarColorIdx(1, pltIdx);
-		//graph3D->CnfgAtrDisp_PtColorIdx(2, pltIdx);
-	}
+//	{
+//		//-----------------------------------------------------
+//		// 2. プロットデータ2をcsvファイルから読み出して系列2としてグラフにセット
+//		//-----------------------------------------------------
+//		// グラフにプロットする系列を追加する
+//		int pltIdx = graph3D->AddPlotLine();
+//		//-----------------------------------------------------
+//		// 2.1 プロットデータ2をcsvファイルから読み出す
+//		//-----------------------------------------------------
+//		// ファイルを開いて行ごとにstringに詰める
+//		std::vector<std::string> plotDatStr;
+//		std::string exePath = app::GetModulePath();
+//		app::ReadFile_IntoVctStr_PerLine(exePath + "plotData\\plotData2.csv", plotDatStr);
+//
+//		for (int row = 1; row < plotDatStr.size(); ++row) // 1行目はヘッダなので読み飛ばす
+//		{
+//			auto str = plotDatStr[row];
+//			// 1行データを','区切りのtokenに分割する
+//			std::vector<std::string> tokens;
+//			app::SplitString(str, ",", tokens);
+//
+//			// 1行分のトークンを処理する
+//			std::vector<float> dataOfLine;
+//			for (int col = 0; col < tokens.size(); ++col)
+//			{
+//				float fDat = 0;
+//				// トークンを数値データに変換する
+//				try
+//				{
+//					fDat = std::stof(tokens[col]);
+//				}
+//				// 数値変換に失敗した場合は初期値の0が採用される
+//				catch( std::exception& e )
+//				{
+//				}
+//				// トークンを変換して得られた数値データを配列に詰める
+//				dataOfLine.push_back( fDat );
+//
+//				// 6列目以降をアトリビュートとしてグラフオブジェクトにセットする
+//				const int atrTopCol = 6;
+//				if(atrTopCol <= col )
+//				{
+//					// 最初の行だけの処理
+//					if( 1 == row )
+//					{
+//						// アトリビュート列を追加する
+//						graph3D->AddAtr(pltIdx);
+//					}
+//
+//					// アトリビュートデータをグラフオブジェクトにセットする
+//					graph3D->AddAtrData( col - atrTopCol, fDat, pltIdx );
+//				}
+//			}
+//
+//			//-----------------------------------------------------
+//			// 2.2 読み出しだデータを系列1のプロット対象座標としてセットする
+//			//-----------------------------------------------------
+//			// 0～2列目データをプロット座標としてグラフオブジェクトにセットする
+//			graph3D->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltIdx );
+//			// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
+//			graph3D->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltIdx );
+//		}
+//
+//		//-----------------------------------------------------
+//		// 2.3 系列1のグラフ表示に追加するアトリビュートデータを設定する
+//		//-----------------------------------------------------
+//		graph3D->SetPlotLineWidth(5, pltIdx);
+//		graph3D->SetPlotLineOffset( Eigen::Vector3f(10,0,0) , pltIdx );
+//		graph3D->CnfgAtrDisp_BarIdx(1, pltIdx);
+//
+//		//graph3D->CnfgAtrDisp_BarColorIdx(1, pltIdx);
+//		//graph3D->CnfgAtrDisp_PtColorIdx(2, pltIdx);
+//	}
 
 
 

@@ -172,6 +172,7 @@ namespace SmplObjDrwLib {
 		T dynmcRange;
 		virtual ~AttributeClass(){};
 		int dataNumMax = 1000;
+		std::string atrName;
 
 	protected:
 		std::deque<T> _data;
@@ -194,7 +195,7 @@ namespace SmplObjDrwLib {
 			}
 			dynmcRange = max - min;
 			// データの保持
-			_data.push_back( dat );
+			_data.emplace_back( dat );
 
 			// データ数が最大値を超えていたら最古データを捨てる
 			for( ; _data.size() > dataNumMax; )
@@ -255,7 +256,6 @@ namespace SmplObjDrwLib {
 	public:
 		std::shared_ptr< std::deque<Eigen::Vector3f> > _sPtr_points;
 		std::shared_ptr< std::deque<Eigen::Vector3f> > _sPtr_ptVctrs;
-		//std::vector< std::shared_ptr< std::deque<float> > > _sPtr_attributes;
 		std::vector< std::shared_ptr< AttributeClass<float> > > _sPtr_attributes;
 
 

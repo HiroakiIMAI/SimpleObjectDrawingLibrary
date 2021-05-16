@@ -80,11 +80,13 @@ void appUi::Vif_PlotCnfg::Updt()
 			ImGui::Unindent();
 		}
 
-		if( ImGui::Button( ("Delete" + this->pltLnName).c_str() ) )
+		// Œn—ñ‚Ìíœƒ{ƒ^ƒ“
+		ImGui::Text("                                  ");
+		ImGui::SameLine();
+		if( ImGui::Button( ("Delete " + this->pltLnName).c_str() ) )
 		{
 			this->fg_delete = true;
 		}
-
 
 		ImGui::Unindent();
 	}

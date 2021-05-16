@@ -251,6 +251,11 @@ void PointsObj::_drawShapeOfSelf()
 		glBegin(GL_LINE_STRIP);
 		glColor4fv(this->colorWire.fv4);
 	}
+	else if(drawType == POINT)
+	{
+		glBegin(GL_POINTS);
+		glColor4fv(this->color.fv4);
+	}
 
 
 	for (auto itr = points.begin();

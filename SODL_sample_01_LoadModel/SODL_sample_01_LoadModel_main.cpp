@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
 	//-----------------------------------------------------
 	// この時点でライブラリによってOpenGLコンテキストが作成され、
 	// OpenGLのウィンドウが表示される
-	sodl::DrawingManager::initMngr( &argc, argv, app::WINDOW_SIZE_X, app::WINDOW_SIZE_Y);
+	sodl::DrawingManager::initMngr(app::WINDOW_SIZE_X, app::WINDOW_SIZE_Y);
 
 	//--------------------------------------------------------------------------------------
 	// 描画対象オブジェクトをcreateし、描画マネージャの描画空間にセットする

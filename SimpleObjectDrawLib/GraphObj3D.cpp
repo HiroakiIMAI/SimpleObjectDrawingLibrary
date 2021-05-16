@@ -54,11 +54,12 @@ std::shared_ptr < GraphObj3D::TypeOfSelf > GraphObj3D::create(
 	return  ptr;
 }
 
-//================================================================
-//
-//	<Summary>		ƒƒ“ƒo‰Šú‰»ŠÖ”
-//	<Description>
-//================================================================
+
+
+/** ***************************************************************
+ * @brief ƒƒ“ƒo‰Šú‰»ŠÖ”
+ *
+ ******************************************************************/
 void GraphObj3D::initSelf(Eigen::Vector3f graphBoxSize)
 {
 
@@ -82,7 +83,9 @@ void GraphObj3D::initSelf(Eigen::Vector3f graphBoxSize)
 	this->yMaxLabel = LabelSimple::create(name + "_yMaxLabel", area);
 	this->yMinLabel = LabelSimple::create(name + "_yMinLabel", area);
 
-	this->AddPlotLine(name + "_plot_default");
+	this->AddPlotLine( _DEFAULT_PLOT );
+
+	CreatePointCursol( area );
 
 	//-------------------------------
 	// ”wŒi‚Ì‰Šú‰»
