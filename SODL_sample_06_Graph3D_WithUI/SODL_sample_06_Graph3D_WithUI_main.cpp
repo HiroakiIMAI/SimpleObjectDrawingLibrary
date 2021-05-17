@@ -132,9 +132,9 @@ int main(int argc, char ** argv)
 	if (0 == vct_plotDataPath.size())
 	{
 		// コマンドライン引数が指定されていない場合はハードコーディングで所定のファイルを指定する。
-		std::string exePath = app::GetModulePath();
-		vct_plotDataPath.push_back(exePath + "plotData\\plotData.csv");
-		vct_plotDataPath.push_back(exePath + "plotData\\plotData2.csv");
+//		std::string exePath = app::GetModulePath();
+//		vct_plotDataPath.push_back(exePath + "plotData\\plotData.csv");
+//		vct_plotDataPath.push_back(exePath + "plotData\\plotData2.csv");
 	}
 
 	//------------------------------------------------------

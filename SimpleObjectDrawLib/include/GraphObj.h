@@ -81,7 +81,7 @@ namespace SmplObjDrwLib {
 
 		Eigen::Vector3f rangeMax = Eigen::Vector3f(1, 1, 1);	// プロットデータの最大値保持用(系列間共通)
 		Eigen::Vector3f rangeMin = Eigen::Vector3f(0, 0, 0);	// プロットデータの最小値保持用(系列間共通)
-		long dataNumMax = 1000;
+		long dataNumMax = 100000;
 		bool normarize_direcVec = true;
 
 		// グラフプロット範囲の制御方法
