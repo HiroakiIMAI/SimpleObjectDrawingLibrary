@@ -30,6 +30,26 @@ namespace app {
 	int mouse_x = 0;
 	int mouse_y = 0;
 
+	typedef struct ST_PLOT_FILE_tp{
+		std::string filePath;
+		std::ifstream ifs;
+		std::streampos seekPos = 0;
+		int seekRow = 0;
+
+		bool fg_xyz = false;
+		bool fg_xyzijk = false;
+		bool fg_xyzbc = false;
+		bool fg_xyzac = false;
+		bool fg_xyzabc = false;
+	}ST_PLOT_FILE;
+
+	typedef struct FILE_IF_tp{
+		std::map< std::string, ST_PLOT_FILE > pltFiles;
+	}FILE_IF;
+	FILE_IF csvIf;
+
+
+
 	typedef struct VISUAL_IF_tp{
 		//-------------------------------------------------
 		// Visual to Model
@@ -38,10 +58,11 @@ namespace app {
 		std::string newFilePath;
 		std::string newPlotLineName;
 
+		bool		cursol_enable		= false;
 		std::string cursol_pltLnName;
-		int cursol_pltLn_selIdx = 0;
-		int cursol_idx = 0;
-		bool cursol_enable = false;
+		int			cursol_pltLn_selIdx = 0;
+		int			cursol_idx			= 0;
+		int			cursolAdjUnit		= 1;
 
 
 		//-------------------------------------------------
@@ -75,12 +96,34 @@ namespace app {
 	// その他のアプリケーションロジック
 	//-------------------------------------------------
 	// ファイルを読出してグラフのプロット系列に加える
-	void Func_ReadFile_ToPlotLine(
-			int pltLnIdx,
+//	void Func_ReadFile_ToPlotLine(
+//			int pltLnIdx,
+//			std::string pltLnName,
+//			std::string filePath,
+//			std::shared_ptr<sodl::GraphObj> grph ,
+//			app::VISUAL_IF& vif
+//			);
+
+	void ReadCsvHeader_CreatePlotLine(
+			std::string csvHeader,
 			std::string pltLnName,
-			std::string filePath,
-			std::shared_ptr<sodl::GraphObj> grph ,
-			app::VISUAL_IF& vif
+			app::ST_PLOT_FILE& plotFile,
+			std::shared_ptr<sodl::GraphObj> grph,
+			appUi::Vif_PlotCnfg& uidat
+			);
+
+	void ReadCsvData_ToPlotLine(
+			std::string pltRowStr,
+			std::string pltLnName,
+			app::ST_PLOT_FILE& plotFile,
+			std::shared_ptr<sodl::GraphObj> grph
+			);
+
+	void Func_ReadFile_ToPlotLine(
+			std::string pltLnName,
+			std::shared_ptr<sodl::GraphObj> grph,
+			app::ST_PLOT_FILE& plotFile,
+			appUi::Vif_PlotCnfg& uidat
 			);
 
 
@@ -181,21 +224,29 @@ int main(int argc, char ** argv)
 	auto World_Origin = sodl::CoordChainObj::create("World_Origin");
 	World_Origin->CrdTrs.translation() = Eigen::Vector3f(0.f, 0.f, 0.f);
 
-	auto Crd1 = sodl::CoordChainObj::create("Crd1", World_Origin);
-	Crd1->CrdTrs.translation() = Eigen::Vector3f(10.f, 10.f, 0.f);
-
 	//-----------------------------------------------------
 	// 3Dグラフオブジェクトを生成する
 	//-----------------------------------------------------
-	auto graph3D = sodl::GraphObj3D::create("graph3D", Eigen::Vector3f(200,200,200), Crd1);
+	auto graph3D = sodl::GraphObj3D::create("graph3D", Eigen::Vector3f(200,200,200), World_Origin);
 	// コマンドライン引数で指定されたファイルを順に読みだしてグラフのプロット系列とする
 	for( int i=0; i<vct_plotDataPath.size(); ++i )
 	{
 		// i番目のプロット系列を追加
-		graph3D->AddPlotLine( "initial plot" + std::to_string(i) );
+		std::string pltName = "p" + std::to_string(i);
+		graph3D->AddPlotLine( pltName );
+		app::csvIf.pltFiles.	emplace( std::make_pair( pltName, app::ST_PLOT_FILE() ) );
+		app::visualIf.pltLines.	emplace( std::make_pair( pltName,appUi::Vif_PlotCnfg() ) );
+
+		// i番目のファイルをオープン
+		app::csvIf.pltFiles[pltName].ifs.open( vct_plotDataPath[i] );
+		app::csvIf.pltFiles[pltName].filePath = vct_plotDataPath[i];
 
 		// i番目の系列にファイルから読み出したデータを流し込む
-		app::Func_ReadFile_ToPlotLine( i, "initial plot" + std::to_string(i), vct_plotDataPath[i], graph3D, app::visualIf );
+		app::Func_ReadFile_ToPlotLine(
+			pltName,graph3D,
+			app::csvIf.pltFiles[pltName],
+			app::visualIf.pltLines[pltName]
+		);
 	}
 
 	// 生成した描画対象オブジェクトツリーをデフォルトの描画空間に配置する
@@ -248,11 +299,22 @@ int main(int argc, char ** argv)
 		// 追加ファイル名称がUIによってセットされている場合
 		if( 0 != app::visualIf.newFilePath.size() )
 		{
-			int i = graph3D->GetNumPlotLines();
+			std::string pltName = app::visualIf.newPlotLineName;
+			// プロット系列を追加
 			graph3D->AddPlotLine(app::visualIf.newPlotLineName);
+			app::csvIf.pltFiles.	emplace( std::make_pair( pltName, app::ST_PLOT_FILE() ) );
+			app::visualIf.pltLines.	emplace( std::make_pair( pltName,appUi::Vif_PlotCnfg() ) );
 
-			// i番目の系列にファイルから読み出したデータを流し込む
-			app::Func_ReadFile_ToPlotLine( i, app::visualIf.newPlotLineName, app::visualIf.newFilePath,	graph3D, app::visualIf );
+			// ファイルをオープン
+			app::csvIf.pltFiles[pltName].ifs.open( app::visualIf.newFilePath );
+			app::csvIf.pltFiles[pltName].filePath = app::visualIf.newFilePath;
+
+			// 系列にファイルから読み出したデータを流し込む
+			app::Func_ReadFile_ToPlotLine(
+				pltName,graph3D,
+				app::csvIf.pltFiles[pltName],
+				app::visualIf.pltLines[pltName]
+			);
 
 			// 追加ファイル名称をクリアする
 			app::visualIf.newFilePath.clear();
@@ -265,12 +327,19 @@ int main(int argc, char ** argv)
 				  ++vifPltLineMapItm)
 		{
 			auto& vifPltLine = vifPltLineMapItm->second;
+			graph3D->SetBarEnable				( vifPltLine.fg_cBox_barEnable, vifPltLine.pltLnName);
 			graph3D->CnfgAtrDisp_PtColorIdx		(vifPltLine.idx_pltColorAtr,	vifPltLine.pltLnName);
 			graph3D->CnfgAtrDisp_PtLnWdtIdx		(vifPltLine.idx_pltWdtAtr,		vifPltLine.pltLnName);
 
 			graph3D->CnfgAtrDisp_BarIdx			(vifPltLine.idx_barAtr,			vifPltLine.pltLnName);
 			graph3D->CnfgAtrDisp_BarColorIdx	(vifPltLine.idx_barColorAtr,	vifPltLine.pltLnName);
 			graph3D->CnfgAtrDisp_BarWidthIdx	(vifPltLine.idx_barWidthAtr,	vifPltLine.pltLnName);
+
+			if( vifPltLine.fg_cBox_updateCyclic )
+			{
+				// ファイル読出しを繰り返し実行する
+				app::Func_ReadFile_ToPlotLine( vifPltLine.pltLnName , graph3D, app::csvIf.pltFiles[ vifPltLine.pltLnName ], vifPltLine );
+			}
 
 			//-----------------------------------------------------
 			// プロット系列の削除
@@ -410,6 +479,163 @@ namespace app {
 	}
 
 
+	/** ***************************************************************
+	 *
+	 * @brief	csvのヘッダ行を受けて、グラフプロットの系列を構築する
+	 * 			Func_ReadFile_ToPlotLine()
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	void ReadCsvHeader_CreatePlotLine(
+			std::string csvHeader,
+			std::string pltLnName,
+			app::ST_PLOT_FILE& plotFile,
+			std::shared_ptr<sodl::GraphObj> grph,
+			appUi::Vif_PlotCnfg& uidat
+			)
+	{
+		uidat.pltLnName = pltLnName;
+
+
+		// 1行データを','区切りのtokenに分割する
+		std::vector<std::string> tokens;
+		app::SplitString(csvHeader, ",", tokens);
+
+		//-------------------------------------------------------------------
+		// 1.2 1行目はヘッダなので特別処理を実施する
+		//-------------------------------------------------------------------
+		// 1行分のトークンをループ処理する
+		std::vector<float> dataOfLine;
+		for (int col = 0; col < tokens.size(); ++col)
+		{
+			// グラフのアトリビュート配列にアトリビュート列を追加する。
+			grph->AddAtr(tokens[col], pltLnName );
+
+			// アトリビュート名をUI表示用に保持する
+			uidat.vct_labelsOfAttribetes.emplace_back( tokens[col] );
+		}
+
+		//-------------------------------------------------------------------
+		// 1.2.1 列名称が特定の並びに一致するとき、特別処理を実施するためのフラグを立てる
+		//-------------------------------------------------------------------
+		// 列の先頭が x, y, z である場合
+		if( ( tokens.size() >= 3 )
+		&&	(	("x" == tokens[0] )
+			||  ("X" == tokens[0] )
+			)
+		&&  (	("y" == tokens[1] )
+			||  ("Y" == tokens[1] )
+			)
+		&&  (	("z" == tokens[2] )
+			||  ("Z" == tokens[2] )
+			)
+		)
+		{
+			// 先頭列から順に x, y, z の名称がcsvに記載されているフラグ ON
+			plotFile.fg_xyz = true;
+
+			// 後続の列が i, j, k である場合、これを方向ベクトルとして扱う
+			if( ( tokens.size() >= 6 )
+			&&	(	("i" == tokens[3] )
+				||  ("I" == tokens[3] )
+				)
+			&&  (	("j" == tokens[4] )
+				||  ("J" == tokens[4] )
+				)
+			&&  (	("k" == tokens[5] )
+				||  ("K" == tokens[5] )
+				)
+			)
+			{
+				// x, y, z 後続して i, j, k の名称がcsvに記載されているフラグ ON
+				plotFile.fg_xyzijk = true;
+				uidat.fg_cBox_barEnable = true;
+			}
+		}
+
+	}
+
+
+
+	/** ***************************************************************
+	 *
+	 * @brief	csvの行ベクトルを受けて、グラフプロットの行に加える
+	 * 			Func_ReadFile_ToPlotLine()
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	void ReadCsvData_ToPlotLine(
+		std::string pltRowStr,
+		std::string pltLnName,
+		app::ST_PLOT_FILE& plotFile,
+		std::shared_ptr<sodl::GraphObj> grph
+		)
+	{
+		// 1行データを','区切りのtokenに分割する
+		std::vector<std::string> tokens;
+		app::SplitString(pltRowStr, ",", tokens);
+
+		//-------------------------------------------------------------------
+		// 1.2 1行目はヘッダなので特別処理を実施する
+		//-------------------------------------------------------------------
+		if( plotFile.seekRow == 0 )
+		{
+
+		}
+		//-------------------------------------------------------------------
+		// 1.3 ヘッダ行以降のデータを処理する
+		//-------------------------------------------------------------------
+		else
+		{
+			// 1行分のトークンを処理する
+			std::vector<float> dataOfLine;
+			for (int col = 0; col < tokens.size(); ++col)
+			{
+				float fDat = 0;
+
+				// トークンを数値データに変換する
+				try
+				{
+					fDat = std::stof(tokens[col]);
+				}
+				// 数値変換に失敗した場合は初期値の0が採用される
+				catch( std::exception& e )
+				{
+				}
+				// トークンを変換して得られた数値データを配列に詰める
+				dataOfLine.push_back( fDat );
+
+				// アトリビュートデータをグラフオブジェクトにセットする
+				grph->AddAtrData( col, fDat , pltLnName);
+			}
+
+			//-----------------------------------------------------
+			// 1.4 読み出しだデータを系列1のプロット対象座標としてセットする
+			//-----------------------------------------------------
+			// 先頭列から順に x, y, z の名称がcsvに記載されている場合
+			if( plotFile.fg_xyz )
+			{
+				// 0～2列目データをプロット座標 x, y, z としてグラフオブジェクトにセットする
+				grph->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltLnName);
+
+				// x, y, z 後続して i, j, k の名称がcsvに記載されている場合
+				if( plotFile.fg_xyzijk )
+				{
+					// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
+					grph->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltLnName);
+				}
+
+			}
+			// 先頭列から順に x, y, z の名称がcsvに記載されていない場合
+			else
+			{
+				// 0列目データをy座標としてプロット(n, y, 0)をグラフオブジェクトにセットする
+				grph->AddData( Eigen::Vector3f( plotFile.seekRow, dataOfLine[0], 0 ), pltLnName);
+			}
+		}
+	}
+
+
 
 	/** ***************************************************************
 	 *
@@ -419,87 +645,48 @@ namespace app {
 	 * </pre>
 	 ******************************************************************/
 	void Func_ReadFile_ToPlotLine(
-			int pltLnIdx,
 			std::string pltLnName,
-			std::string filePath,
 			std::shared_ptr<sodl::GraphObj> grph,
-			app::VISUAL_IF& vif
+			app::ST_PLOT_FILE& plotFile,
+			appUi::Vif_PlotCnfg& uidat
 			)
 	{
-		appUi::Vif_PlotCnfg uidat;
-		uidat.pltLnName = pltLnName;
 
 		//-----------------------------------------------------
 		// 1. プロットデータをcsvファイルから読み出して系列1としてグラフにセット
 		//-----------------------------------------------------
-		// 1.1 プロットデータをcsvファイルから読み出す
-		//-----------------------------------------------------
-		// ファイルを開いて行ごとにstringに詰める
-		std::vector<std::string> plotDatStr;
-		app::ReadFile_IntoVctStr_PerLine( filePath, plotDatStr);
-
-		for (int row = 0; row < plotDatStr.size(); ++row) // 1行目はヘッダなので読み飛ばす
+		// EOFビット等をクリアしておく
+		plotFile.ifs.clear();
+		if( 0 != plotFile.seekPos  )
 		{
-			auto str = plotDatStr[row];
-			// 1行データを','区切りのtokenに分割する
-			std::vector<std::string> tokens;
-			app::SplitString(str, ",", tokens);
-
-			// 1行分のトークンを処理する
-			std::vector<float> dataOfLine;
-			for (int col = 0; col < tokens.size(); ++col)
-			{
-				float fDat = 0;
-
-				// 1行目はヘッダなので飛ばす
-				if( row != 0 )
-				{
-					// トークンを数値データに変換する
-					try
-					{
-						fDat = std::stof(tokens[col]);
-					}
-					// 数値変換に失敗した場合は初期値の0が採用される
-					catch( std::exception& e )
-					{
-					}
-					// トークンを変換して得られた数値データを配列に詰める
-					dataOfLine.push_back( fDat );
-				}
-
-				// 6列目以降をアトリビュートとしてグラフオブジェクトにセットする
-				const int atrTopCol = 6;
-				if(atrTopCol <= col )
-				{
-					// 最初の行だけの処理
-					if( 0 == row )
-					{
-						// アトリビュート列を追加する
-						grph->AddAtr(tokens[col], pltLnName );
-
-						// アトリビュート名をUI表示用に保持する
-						uidat.vct_labelsOfAttribetes.emplace_back( tokens[col] );
-					}
-
-					// アトリビュートデータをグラフオブジェクトにセットする
-					grph->AddAtrData( col - atrTopCol, fDat , pltLnName);
-				}
-			}
-
-			//-----------------------------------------------------
-			// 1.2 読み出しだデータを系列1のプロット対象座標としてセットする
-			//-----------------------------------------------------
-			if( dataOfLine.size() > 6 )
-			{
-				// 0～2列目データをプロット座標としてグラフオブジェクトにセットする
-				grph->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltLnName);
-				// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
-				grph->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltLnName);
-			}
+			plotFile.ifs.seekg( plotFile.seekPos );
 		}
+		std::string line;
+		while( std::getline( plotFile.ifs, line ) )
+		{
+			if( 0 == plotFile.seekRow )
+			{
+				ReadCsvHeader_CreatePlotLine(
+						line,
+						pltLnName,
+						plotFile,
+						grph,
+						uidat
+						);
+			}
+			else
+			{
+				ReadCsvData_ToPlotLine(
+						line,
+						pltLnName,
+						plotFile,
+						grph
+						);
+			}
 
-		// 作成した一時データをvisualIfにセットする
-		vif.pltLines.insert( std::make_pair( pltLnName, uidat ) );
+			++plotFile.seekRow;									// 読出し行数のカウント
+			plotFile.seekPos = plotFile.ifs.tellg();			// 次の読出し位置をメモしておく
+		}
 	};
 
 
@@ -559,7 +746,7 @@ namespace app {
 				{
 					// 選択されたファイルパスをI/F領域にセットする
 					app::visualIf.newFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
-					app::visualIf.newPlotLineName = "file plot " + std::to_string(++openFileCtr);
+					app::visualIf.newPlotLineName = "plot" + std::to_string(++openFileCtr);
 				}
 				ImGuiFileDialog::Instance()->Close();
 			}
@@ -593,12 +780,14 @@ namespace app {
 					if( 0 != pList.size() )
 					{
 						// コンボボックス表示
+						ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
 						ImGui::Combo(
-							"put cursol to ",
+							"[Plot Line] put cursol to ",
 							&visualIf.cursol_pltLn_selIdx,
 							(char**)&pList[0],
 							pList.size()
 						);
+						ImGui::PopItemWidth();																	// 要素幅指定キャンセル
 
 						// コンボボックスで選択されたプロット系列の名称を取得
 						if( pList.size() > visualIf.cursol_pltLn_selIdx )
@@ -609,7 +798,22 @@ namespace app {
 						//------------------------------------------------------
 						// カーソル位置の操作
 						//------------------------------------------------------
-						ImGui::SliderInt("cursol pos slider", &visualIf.cursol_idx, 0, visualIf.cursol_idxMax);
+						ImGui::SliderInt("[Cursol Pos] slider", &visualIf.cursol_idx, 0, visualIf.cursol_idxMax);
+						if( ImGui::Button("<") )
+						{
+							visualIf.cursol_idx -= visualIf.cursolAdjUnit;
+						}
+						ImGui::SameLine();
+						if( ImGui::Button(">") )
+						{
+							visualIf.cursol_idx += visualIf.cursolAdjUnit;
+						}
+						ImGui::SameLine();
+						ImGui::Text("[Cursol Pos] adjust         ");
+						ImGui::SameLine();
+						ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
+						ImGui::InputInt( "adj unit", &visualIf.cursolAdjUnit );									// 数値入力ボックス
+						ImGui::PopItemWidth();																	// 要素幅指定キャンセル
 					}
 				}
 

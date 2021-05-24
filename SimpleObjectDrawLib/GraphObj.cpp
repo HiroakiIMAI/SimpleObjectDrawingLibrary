@@ -566,7 +566,22 @@ void GraphObj::SetPlotLineDrawType( 						// プロット系列の描画タイプを設定する
 
 
 /** ***************************************************************
- * @brief バーのデフォルト長さを指定する
+ * @brief バーの表示有効フラグを設定する
+ ******************************************************************/
+void GraphObj::SetBarEnable( 					// バーの表示有効フラグをセットする
+	const bool& enable,							// 有効フラグ
+	std::string pltLineName						// プロットデータ系列名
+)
+{
+	if (_lines.count(pltLineName))				// プロットデータ系列の存在チェック
+	{
+		this->_linesToDraw[pltLineName]->barEnable = enable;
+	}
+}
+
+
+/** ***************************************************************
+ * @brief バーのデフォルト幅を指定する
  ******************************************************************/
 void GraphObj::SetBarWidth( 					// バーのデフォルト長さを指定する
 	const float& width,							// 幅

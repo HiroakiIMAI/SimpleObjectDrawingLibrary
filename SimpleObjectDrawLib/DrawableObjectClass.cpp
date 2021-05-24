@@ -464,52 +464,61 @@ void PointsWithAttributes::_drawShapeOfSelf()
 		//-------------------------------------------------------------------
 		// 2. バーの描画
 		//-------------------------------------------------------------------
-		// デフォルト色の設定
-		glColor4fv( this->color.fv4 );
-		// デフォルト幅の設定
-		glLineWidth( this->barWidth );
-
-		// 色指定の有無をチェック
-		int size_barColors = 0;
-		auto sPtr_barColors = std::shared_ptr< SmplObjDrwLib::AttributeClass<float> >();
-		if(	( ATRIDX_NONE != atrIdx_barColor )
-		&&	( _sPtr_attributes[atrIdx_barColor] )
-		)
+		if( barEnable )
 		{
-			sPtr_barColors = _sPtr_attributes[atrIdx_barColor];
-			size_barColors = sPtr_barColors->data.size();
-		}
+			// デフォルト色の設定
+			glColor4fv( this->colorWire.fv4 );
+			// デフォルト幅の設定
+			glLineWidth( this->barWidth );
 
+			//-------------------------------------------------------------------
+			// 2.1 バー関連のアトリビュートの有効チェック
+			//-------------------------------------------------------------------
+			// 色指定の有無をチェック
+			int size_barColors = 0;
+			auto sPtr_barColors = std::shared_ptr< SmplObjDrwLib::AttributeClass<float> >();
+			if(	( ATRIDX_NONE != atrIdx_barColor )
+			&&	( _sPtr_attributes[atrIdx_barColor] )
+			)
+			{
+				sPtr_barColors = _sPtr_attributes[atrIdx_barColor];
+				size_barColors = sPtr_barColors->data.size();
+			}
 
-		// 幅指定の有無をチェック
-		int size_barWidth = 0;
-		auto sPtr_barWidth = std::shared_ptr< SmplObjDrwLib::AttributeClass<float> >();
-		if(	( ATRIDX_NONE != atrIdx_barWidth )
-		&&	( _sPtr_attributes[atrIdx_barWidth] )
-		)
-		{
-			sPtr_barWidth = _sPtr_attributes[atrIdx_barWidth];
-			size_barWidth = sPtr_barWidth->data.size();
-		}
+			// 幅指定の有無をチェック
+			int size_barWidth = 0;
+			auto sPtr_barWidth = std::shared_ptr< SmplObjDrwLib::AttributeClass<float> >();
+			if(	( ATRIDX_NONE != atrIdx_barWidth )
+			&&	( _sPtr_attributes[atrIdx_barWidth] )
+			)
+			{
+				sPtr_barWidth = _sPtr_attributes[atrIdx_barWidth];
+				size_barWidth = sPtr_barWidth->data.size();
+			}
 
+			// バーインデックスが有効チェック
+			std::shared_ptr< AttributeClass<float> > sPtr_attribute;
+			// 点群がセットされていて、属性バーの表示が有効な場合
+			if(	( ATRIDX_NONE != atrIdx_bar )				// バー表示用の属性idxが設定されている
+			&&	( _sPtr_attributes.size() != atrIdx_bar)	// 指定された属性idxの属性ポインタ配列要素が存在する
+			&&	( _sPtr_attributes[ atrIdx_bar ] )			// 指定された属性idxの属性ポインタの指す先がNULLでない
+			)
+			{
+				sPtr_attribute = _sPtr_attributes[atrIdx_bar];
+			}
 
-		glBegin(GL_LINES);
-		// 点群がセットされていて、属性バーの表示が有効な場合
-		if(( ATRIDX_NONE != atrIdx_bar )							// バー表示用の属性idxが設定されている
-		&& ( _sPtr_attributes.size() != atrIdx_bar)		// 指定された属性idxの属性ポインタ配列要素が存在する
-		&& ( _sPtr_attributes[ atrIdx_bar ] )			// 指定された属性idxの属性ポインタの指す先がNULLでない
-		)
-		{
-			const auto  sPtr_attribute = _sPtr_attributes[atrIdx_bar];
-			// 点群をプロットする
+			glBegin(GL_LINES);
+			//-------------------------------------------------------------------
+			// 2.2 バーのプロットループ
+			//-------------------------------------------------------------------
 			for (int i = 0;
 				(	( i < _sPtr_points->size() )
-				&&	( i < sPtr_attribute->data.size() )
+
 				);
 				i++)
 			{
 				//-------------------------------------------------------------------
-				// 2.1 バー色の指定
+				// 2.2.1 バー色の指定
 				//-------------------------------------------------------------------
 				if(	( sPtr_barColors )	// 色指定列が有効な場合
 				&&	( i < size_barColors )	// 座標値に対応する色データがある場合
@@ -527,7 +536,7 @@ void PointsWithAttributes::_drawShapeOfSelf()
 				}
 
 				//-------------------------------------------------------------------
-				// 2.1 バー幅の指定
+				// 2.2.2 バー幅の指定
 				//-------------------------------------------------------------------
 				if(	( sPtr_barWidth )		// 幅指定列が有効な場合
 				&&	( i < size_barWidth )	// 座標値に対応する幅データがある場合
@@ -539,24 +548,50 @@ void PointsWithAttributes::_drawShapeOfSelf()
 					glBegin(GL_LINES);
 				}
 
-				// バーの方向を固定値で初期化する
-				auto direc = atrBarDirec;
+				//-------------------------------------------------------------------
+				// 2.2.3 バーの方向を設定する
+				//-------------------------------------------------------------------
+				Eigen::Vector3f direc;
 				// 方向ベクトル配列が設定されている場合は、配列の値を使用する
-				if( _sPtr_ptVctrs->size() > i )
+				if( ( direcEnable )						// 方向ベクトルindex指定有効?
+				&&	( _sPtr_ptVctrs->size() > i )		// 方向ベクトル列をindexがオーバランしていない?
+				)
 				{
-					direc = (*_sPtr_ptVctrs)[i];
+					direc = (*_sPtr_ptVctrs)[i];		// 方向ベクトルをindex指定の値で上書き
+				}
+				else
+				{
+					direc = atrBarDirec;				// 方向ベクトルを固定値に設定する
 				}
 
+				//-------------------------------------------------------------------
+				// 2.2.4 バーの長さを設定する
+				//-------------------------------------------------------------------
+				float atr;
+				if( (sPtr_attribute)					// アトリビュート列が有効に設定されている場合
+				&&	( sPtr_attribute->data.size() > i )	// indexがアトリビュートデータをオーバランしていない?
+				)
+				{
+					atr = sPtr_attribute->data[i];		// アトリビュートの値をバー長さに設定する
+				}
+				else
+				{
+					atr = barLeng_default;				// バーの長さを固定値に設定する
+				}
+
+				//-------------------------------------------------------------------
+				// 2.2.5 プロットする
+				//-------------------------------------------------------------------
 				const auto  pt  = &(*_sPtr_points)[i];
-				const auto& atr = sPtr_attribute->data[i];
 				const auto  barEnd = (*pt) + ( atr * direc );
 
 				// 点から属性値に応じた長さのバーを描画する
 				glVertex3f(pt->x(), pt->y(), pt->z());
 				glVertex3f(barEnd.x(), barEnd.y(), barEnd.z());
+
 			}
+			glEnd();
 		}
-		glEnd();
 
 		glLineWidth( tick_bk );
 	}

@@ -33,11 +33,12 @@ namespace appUi {
 		bool fg_cBox_barLengAtr		= false;
 		bool fg_cBox_barColorByAtr	= false;
 		bool fg_cBox_barWidthByAtr	= false;
+		bool fg_cBox_updateCyclic	= false;
+
 
 		int		idx_pltWdtAtr		= sodl::PointsWithAttributes::ATRIDX_NONE;
 		int		idx_pltColorAtr		= sodl::PointsWithAttributes::ATRIDX_NONE;
 
-		bool	fg_BarEnable		= false;
 		int		idx_barAtr			= sodl::PointsWithAttributes::ATRIDX_NONE;
 		int		idx_barColorAtr		= sodl::PointsWithAttributes::ATRIDX_NONE;
 		int		idx_barWidthAtr		= sodl::PointsWithAttributes::ATRIDX_NONE;

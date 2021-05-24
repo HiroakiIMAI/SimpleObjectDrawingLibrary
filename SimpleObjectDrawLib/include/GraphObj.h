@@ -165,6 +165,12 @@ namespace SmplObjDrwLib {
 			std::string pltLineName =_DEFAULT_PLOT		// プロットデータ系列名
 		);
 
+		void SetBarEnable( 								// バーの表示有効フラグをセットする
+			const bool& enable,							// 有効フラグ
+			std::string pltLineName =_DEFAULT_PLOT		// プロットデータ系列名
+		);
+
+
 		void SetBarWidth( 								// バーのデフォルト長さを指定する
 			const float& width,							// 幅
 			std::string pltLineName =_DEFAULT_PLOT		// プロットデータ系列名

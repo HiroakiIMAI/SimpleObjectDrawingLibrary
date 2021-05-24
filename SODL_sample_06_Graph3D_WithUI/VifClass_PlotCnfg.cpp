@@ -56,39 +56,47 @@ void appUi::Vif_PlotCnfg::Updt()
 	// 系列名で折り畳み項目を作成
 	if ( ImGui::CollapsingHeader( this->pltLnName.c_str() ) )
 	{
+		ImGui::PushID(pltLnName.c_str());
+
 		ImGui::Indent();
 
 		// プロット色
-		Func_AtrCnfg(pltLnName + " color ",	fg_cBox_plotColorByAtr,	vct_labelsOfAttribetes, idx_pltColorAtr	);
+		Func_AtrCnfg("[Color]",	fg_cBox_plotColorByAtr,	vct_labelsOfAttribetes, idx_pltColorAtr	);
 		// プロット幅
-		Func_AtrCnfg(pltLnName + " width ",	fg_cBox_plotWidthByAtr,	vct_labelsOfAttribetes, idx_pltWdtAtr	);
+		Func_AtrCnfg("[Width]",	fg_cBox_plotWidthByAtr,	vct_labelsOfAttribetes, idx_pltWdtAtr	);
 
 		// バー表示有効チェックボックス
-		ImGui::Checkbox( (pltLnName + " Enable bar for each plot.").c_str(), &fg_cBox_barEnable);
+		ImGui::Checkbox( "Enable [Bar] ", &fg_cBox_barEnable);
 		// バー表示有効の場合、バー表示の設定項目を描画する
 		if( fg_cBox_barEnable )
 		{
 			ImGui::Indent();
 
 			// バー長さ
-			Func_AtrCnfg(pltLnName + " bar length",	fg_cBox_barLengAtr,		vct_labelsOfAttribetes, idx_barAtr		);
+			Func_AtrCnfg("[Bar Length]",	fg_cBox_barLengAtr,		vct_labelsOfAttribetes, idx_barAtr		);
 			// バー色
-			Func_AtrCnfg(pltLnName + " bar color",	fg_cBox_barColorByAtr,	vct_labelsOfAttribetes, idx_barColorAtr	);
+			Func_AtrCnfg("[Bar Color]",		fg_cBox_barColorByAtr,	vct_labelsOfAttribetes, idx_barColorAtr	);
 			// バー幅
-			Func_AtrCnfg(pltLnName + " bar width",	fg_cBox_barWidthByAtr,	vct_labelsOfAttribetes, idx_barWidthAtr	);
+			Func_AtrCnfg("[Bar Width]",		fg_cBox_barWidthByAtr,	vct_labelsOfAttribetes, idx_barWidthAtr	);
 
 			ImGui::Unindent();
 		}
 
+		ImGui::NewLine();
+
+		// リアルタイムファイルリロード
+		ImGui::Checkbox( "[Realtime File Reload] ", &fg_cBox_updateCyclic );
+
 		// 系列の削除ボタン
 		ImGui::Text("                                  ");
 		ImGui::SameLine();
-		if( ImGui::Button( ("Delete " + this->pltLnName).c_str() ) )
+		if( ImGui::Button( ("[Delete] " + this->pltLnName).c_str() ) )
 		{
 			this->fg_delete = true;
 		}
 
 		ImGui::Unindent();
+		ImGui::PopID();
 	}
 }
 

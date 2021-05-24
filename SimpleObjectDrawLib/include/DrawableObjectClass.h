@@ -263,10 +263,13 @@ namespace SmplObjDrwLib {
 		DRAWTYPE drawType = WIRE;
 		float pointTickness = 1.0;
 		float barWidth		= 1.0;
+		float barLeng_default = 10.0;
 
 		static const int ATRIDX_NONE = -1;
 		int atrIdx_pointColor	= ATRIDX_NONE;
 		int atrIdx_pointTickness= ATRIDX_NONE;
+		bool barEnable			= true;
+		bool direcEnable		= true;
 		int atrIdx_bar			= ATRIDX_NONE;
 		int atrIdx_barColor		= ATRIDX_NONE;
 		int atrIdx_barWidth		= ATRIDX_NONE;
