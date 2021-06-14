@@ -798,7 +798,7 @@ void LabelSimple::_drawShapeOfSelf()
 	// name ラベルの描画
 	glColor3d(1.0, 1.0, 1.0);	// White
 	glRasterPos3d(0, 0, -10.);		//0,0,0位置をスタート位置にする
-	glutBitmapString(GLUT_BITMAP_HELVETICA_10, (unsigned char*)text.c_str() );
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (unsigned char*)text.c_str() );
 
 }
 

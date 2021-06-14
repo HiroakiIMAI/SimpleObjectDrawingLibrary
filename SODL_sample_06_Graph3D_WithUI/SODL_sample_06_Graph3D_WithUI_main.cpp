@@ -41,6 +41,13 @@ namespace app {
 		bool fg_xyzbc = false;
 		bool fg_xyzac = false;
 		bool fg_xyzabc = false;
+
+		int cX = -1;
+		int cY = -1;
+		int cZ = -1;
+		int cI = -1;
+		int cJ = -1;
+		int cK = -1;
 	}ST_PLOT_FILE;
 
 	typedef struct FILE_IF_tp{
@@ -481,6 +488,37 @@ namespace app {
 
 	/** ***************************************************************
 	 *
+	 * @brief	iniファイルからデフォルトプロット列のヘッダ名取得
+	 * 			GetDefaultPlotHeaderNameFromIni()
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	void GetDefaultPlotHeaderNameFromIni(
+		std::string 				iniFilePath,
+		std::vector<std::string>&	headers
+		)
+	{
+		char buf[100];
+		if( 6 <= headers.size() )
+		{
+			GetPrivateProfileStringA( "DEFAULT_3D_PLOT_COL", "X", "NoKey", buf, 100, iniFilePath.c_str() );
+			headers[0] = buf;
+			GetPrivateProfileStringA( "DEFAULT_3D_PLOT_COL", "Y", "NoKey", buf, 100, iniFilePath.c_str() );
+			headers[1] = buf;
+			GetPrivateProfileStringA( "DEFAULT_3D_PLOT_COL", "Z", "NoKey", buf, 100, iniFilePath.c_str() );
+			headers[2] = buf;
+			GetPrivateProfileStringA( "DEFAULT_3D_PLOT_COL", "I", "NoKey", buf, 100, iniFilePath.c_str() );
+			headers[3] = buf;
+			GetPrivateProfileStringA( "DEFAULT_3D_PLOT_COL", "J", "NoKey", buf, 100, iniFilePath.c_str() );
+			headers[4] = buf;
+			GetPrivateProfileStringA( "DEFAULT_3D_PLOT_COL", "K", "NoKey", buf, 100, iniFilePath.c_str() );
+			headers[5] = buf;
+		}
+	}
+
+
+	/** ***************************************************************
+	 *
 	 * @brief	csvのヘッダ行を受けて、グラフプロットの系列を構築する
 	 * 			Func_ReadFile_ToPlotLine()
 	 * <pre>
@@ -497,13 +535,10 @@ namespace app {
 		uidat.pltLnName = pltLnName;
 
 
-		// 1行データを','区切りのtokenに分割する
+		// ヘッダ行データを','区切りのtokenに分割する
 		std::vector<std::string> tokens;
 		app::SplitString(csvHeader, ",", tokens);
 
-		//-------------------------------------------------------------------
-		// 1.2 1行目はヘッダなので特別処理を実施する
-		//-------------------------------------------------------------------
 		// 1行分のトークンをループ処理する
 		std::vector<float> dataOfLine;
 		for (int col = 0; col < tokens.size(); ++col)
@@ -516,43 +551,108 @@ namespace app {
 		}
 
 		//-------------------------------------------------------------------
+		// iniファイルからデフォルトプロット候補の列名称を取得する
+		//-------------------------------------------------------------------
+		std::vector< std::string > vct_defaultPltColNms(6);
+		GetDefaultPlotHeaderNameFromIni( ".\\plot.ini", vct_defaultPltColNms );
+
+		//-------------------------------------------------------------------
 		// 1.2.1 列名称が特定の並びに一致するとき、特別処理を実施するためのフラグを立てる
 		//-------------------------------------------------------------------
-		// 列の先頭が x, y, z である場合
-		if( ( tokens.size() >= 3 )
-		&&	(	("x" == tokens[0] )
-			||  ("X" == tokens[0] )
-			)
-		&&  (	("y" == tokens[1] )
-			||  ("Y" == tokens[1] )
-			)
-		&&  (	("z" == tokens[2] )
-			||  ("Z" == tokens[2] )
-			)
+		// iniファイル設定のデフォルトプロット列XYZ相当が存在するかチェックする
+		for (int col = 0; col < tokens.size(); ++col)
+		{
+			if( std::string::npos != tokens[col].find( vct_defaultPltColNms[0] ) )
+			{
+				plotFile.cX = col;
+			}
+			if( std::string::npos != tokens[col].find( vct_defaultPltColNms[1] ) )
+			{
+				plotFile.cY = col;
+			}
+			if( std::string::npos != tokens[col].find( vct_defaultPltColNms[2] ) )
+			{
+				plotFile.cZ = col;
+			}
+		}
+		if( ( -1 != plotFile.cX )
+		&&	( -1 != plotFile.cY )
+		&&	( -1 != plotFile.cZ )
 		)
 		{
-			// 先頭列から順に x, y, z の名称がcsvに記載されているフラグ ON
+			// XYZ列存在フラグON
 			plotFile.fg_xyz = true;
 
-			// 後続の列が i, j, k である場合、これを方向ベクトルとして扱う
-			if( ( tokens.size() >= 6 )
-			&&	(	("i" == tokens[3] )
-				||  ("I" == tokens[3] )
-				)
-			&&  (	("j" == tokens[4] )
-				||  ("J" == tokens[4] )
-				)
-			&&  (	("k" == tokens[5] )
-				||  ("K" == tokens[5] )
-				)
+			// iniファイル設定のデフォルトプロット列IJK相当が存在するかチェックする
+			for (int col = 0; col < tokens.size(); ++col)
+			{
+				if( std::string::npos != tokens[col].find( vct_defaultPltColNms[3] ) )
+				{
+					plotFile.cI = col;
+				}
+				if( std::string::npos != tokens[col].find( vct_defaultPltColNms[4] ) )
+				{
+					plotFile.cJ = col;
+				}
+				if( std::string::npos != tokens[col].find( vct_defaultPltColNms[5] ) )
+				{
+					plotFile.cK = col;
+				}
+			}
+			if( ( -1 != plotFile.cI )
+			&&	( -1 != plotFile.cJ )
+			&&	( -1 != plotFile.cK )
 			)
 			{
-				// x, y, z 後続して i, j, k の名称がcsvに記載されているフラグ ON
+				// XYZIJK列存在フラグON
 				plotFile.fg_xyzijk = true;
 				uidat.fg_cBox_barEnable = true;
 			}
 		}
+		// デフォルトプロット列XYZ相当が存在するかチェックする
+		else
+		{
+			// 列の先頭が x, y, z である場合
+			if( ( tokens.size() >= 3 )
+			&&	(	("x" == tokens[0] )
+				||  ("X" == tokens[0] )
+				)
+			&&  (	("y" == tokens[1] )
+				||  ("Y" == tokens[1] )
+				)
+			&&  (	("z" == tokens[2] )
+				||  ("Z" == tokens[2] )
+				)
+			)
+			{
+				// 先頭列から順に x, y, z の名称がcsvに記載されているフラグ ON
+				plotFile.fg_xyz = true;
+				plotFile.cX = 0;
+				plotFile.cY = 1;
+				plotFile.cZ = 2;
 
+				// 後続の列が i, j, k である場合、これを方向ベクトルとして扱う
+				if( ( tokens.size() >= 6 )
+				&&	(	("i" == tokens[3] )
+					||  ("I" == tokens[3] )
+					)
+				&&  (	("j" == tokens[4] )
+					||  ("J" == tokens[4] )
+					)
+				&&  (	("k" == tokens[5] )
+					||  ("K" == tokens[5] )
+					)
+				)
+				{
+					// x, y, z 後続して i, j, k の名称がcsvに記載されているフラグ ON
+					plotFile.fg_xyzijk = true;
+					uidat.fg_cBox_barEnable = true;
+					plotFile.cI = 3;
+					plotFile.cJ = 4;
+					plotFile.cK = 5;
+				}
+			}
+		}
 	}
 
 
@@ -616,13 +716,13 @@ namespace app {
 			if( plotFile.fg_xyz )
 			{
 				// 0～2列目データをプロット座標 x, y, z としてグラフオブジェクトにセットする
-				grph->AddData( Eigen::Vector3f(dataOfLine[0], dataOfLine[1], dataOfLine[2]), pltLnName);
+				grph->AddData( Eigen::Vector3f(dataOfLine[plotFile.cX], dataOfLine[plotFile.cY], dataOfLine[plotFile.cZ]), pltLnName);
 
 				// x, y, z 後続して i, j, k の名称がcsvに記載されている場合
 				if( plotFile.fg_xyzijk )
 				{
 					// 3～5列目を方向ベクトルとしてグラフオブジェクトにセットする
-					grph->AddPtVct( Eigen::Vector3f(dataOfLine[3], dataOfLine[4], dataOfLine[5]), pltLnName);
+					grph->AddPtVct( Eigen::Vector3f(dataOfLine[plotFile.cI], dataOfLine[plotFile.cJ], dataOfLine[plotFile.cK]), pltLnName);
 				}
 
 			}

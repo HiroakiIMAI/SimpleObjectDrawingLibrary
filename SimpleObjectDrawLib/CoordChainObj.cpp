@@ -53,8 +53,22 @@ std::shared_ptr<CoordChainObj> CoordChainObj::create(
 }
 
 /** ***************************************************************
- * @brief draw()
+ * @brief 描画関数
+ * <pre>
+ * [機能概要]
+ * 連鎖座標系を考慮して自己形状を描画する。
  *
+ * [機能詳細]
+ * SODLの描画マネージャによって DrawingManager::drawUpdt() の度にcallされる。
+ * CoordChainObj とその派生クラスは、本関数の中で連鎖座標系における
+ * 本オブジェクトの位置を再計算して、OpenGLのModel-Viewマトリックスを
+ * 更新し、描画環境に反映させる。その後 CoordChainObj::_drawShapeOfSelf() によって
+ * 親座標系の中における自己形状を描画する。
+ *
+ * 派生クラスは CoordChainObj::_drawShapeOfSelf() のみをoverrideして
+ * draw()の座標変換のギミックを流用しつつ描画形状を派生させる。
+ *
+ * </pre>
  ******************************************************************/
 void CoordChainObj::draw()
 {
