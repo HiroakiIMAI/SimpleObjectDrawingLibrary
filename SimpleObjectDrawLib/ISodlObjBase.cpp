@@ -67,14 +67,26 @@ return  Tptr;
 }
 */
 
-// static methods
+/** ***************************************************************
+ *
+ * @brief	インスタンスリストの取得
+ * 			GetInstanceList()
+ * <pre>
+ * </pre>
+ ******************************************************************/
 std::list<int> ISodlObjBase::GetInstanceList()
 {
 	return aliveInstanceList;
 }
 
 
-// constructor
+/** ***************************************************************
+ *
+ * @brief	ISodlObjBase コンストラクタ
+ * 			ISodlObjBase()
+ * <pre>
+ * </pre>
+ ******************************************************************/
 ISodlObjBase::ISodlObjBase(std::string name)
 //	: ISodlListedItem(name)
 	: name(name)
@@ -84,7 +96,13 @@ ISodlObjBase::ISodlObjBase(std::string name)
 	this->itr_selfInAliveList = --ISodlObjBase::aliveInstanceList.end();
 }
 
-// destructor
+/** ***************************************************************
+ *
+ * @brief	ISodlObjBase デストラクタ
+ * 			~ISodlObjBase()
+ * <pre>
+ * </pre>
+ ******************************************************************/
 ISodlObjBase::~ISodlObjBase()
 {
 	ISodlObjBase::aliveInstanceList.erase( this->itr_selfInAliveList );
