@@ -30,7 +30,7 @@ namespace SmplObjDrwLib {
 	using sPtr_map		= std::shared_ptr< std::map<T1, T2> >;
 
 	const float CULLING_BACK = 50000.f;
-	const float CULLING_FORE = 0.f;
+	const float CULLING_FORE = -1000.f;
 
 	typedef int T_ID;
 

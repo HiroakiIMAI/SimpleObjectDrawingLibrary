@@ -178,6 +178,12 @@ namespace SmplObjDrwLib {
 
 		int GetNumPlotLines(); 							// プロット系列の数を取得する
 
+		// プロット系列のattributeへのshared_ptr配列を取得する
+		std::vector< std::shared_ptr< AttributeClass<float> > >
+		GetAttributes_Shared(
+			std::string pltLineName =_DEFAULT_PLOT		// プロットデータ系列名
+		);
+
 
 	protected:
 		std::unordered_map< std::string, std::deque<Eigen::Vector3f> >				_lines;			// グラフのプロットデータ
@@ -209,7 +215,7 @@ namespace SmplObjDrwLib {
 		} ST_PointCursol;
 		ST_PointCursol _cursol;
 
-		void CreatePointCursol( sPtr_CoordObj prnt );
+		void CreatePointCursol( sPtr_CoordObj prnt, const float color[] );
 
 	public:
 		void UpdtCursol( int idx = -1 );

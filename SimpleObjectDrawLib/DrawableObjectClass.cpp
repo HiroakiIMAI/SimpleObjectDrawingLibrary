@@ -669,7 +669,7 @@ void LabelObj::_drawShapeOfSelf()
 	glOrtho(
 		x - (x*rate), x + ((prjMtxRangeX - x)*rate),
 		y - (y*rate), y + ((prjMtxRangeY - y)*rate),
-		CULLING_FORE, CULLING_FORE);
+		CULLING_FORE, CULLING_BACK);
 
 	// name ラベルの描画
 	glColor4fv(color.fv4);			// 文字色の設定
@@ -796,7 +796,7 @@ std::shared_ptr<LabelSimple> LabelSimple::create(
 void LabelSimple::_drawShapeOfSelf()
 {
 	// name ラベルの描画
-	glColor3d(1.0, 1.0, 1.0);	// White
+	glColor4fv( this->color.fv4 );
 	glRasterPos3d(0, 0, -10.);		//0,0,0位置をスタート位置にする
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (unsigned char*)text.c_str() );
 

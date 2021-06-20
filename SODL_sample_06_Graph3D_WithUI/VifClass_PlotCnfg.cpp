@@ -87,6 +87,23 @@ void appUi::Vif_PlotCnfg::Updt()
 		// リアルタイムファイルリロード
 		ImGui::Checkbox( "[Realtime File Reload] ", &fg_cBox_updateCyclic );
 
+
+		if( ImGui::Button( "Add 2DPlotArea" ) )
+		{
+			SetSlctDmnd( DMND_SRC_TP::AREA, 0 );
+		}
+		for( int i=0; i < vct_2dPlots.size(); ++i )
+		{
+			ImGui::PushID( (pltLnName + std::to_string(i) ).c_str() );
+			if( ImGui::Button( "Add 2DPlotLine" ) )
+			{
+				SetSlctDmnd( DMND_SRC_TP::LINE, i );
+			}
+			ImGui::PopID();
+		}
+		ShowSlctWndw();
+
+
 		// 系列の削除ボタン
 		ImGui::Text("                                  ");
 		ImGui::SameLine();
@@ -100,6 +117,90 @@ void appUi::Vif_PlotCnfg::Updt()
 	}
 }
 
+
+
+/** ***************************************************************
+ * @brief アトリビュート選択Windowに要求をセットする
+ * <pre>
+ * </pre>
+ ******************************************************************/
+void appUi::Vif_PlotCnfg::SetSlctDmnd( DMND_SRC_TP tp, int num )
+{
+	ST_atrSlctWindowCtl.lastDmndSrcTp = tp;
+	ST_atrSlctWindowCtl.lastDmndSrcIdx = num;
+	ST_atrSlctWindowCtl.fg_showAtrSlctWndw = true;
+}
+
+
+/** ***************************************************************
+ * @brief アトリビュート選択結果2Dプロット反映処理
+ * <pre>
+ * アトリビュート選択Windowの選択結果を2Dプロット[エリア/ライン]に追加する
+ * </pre>
+ ******************************************************************/
+void appUi::Vif_PlotCnfg::PrcSelected()
+{
+	auto & t = ST_atrSlctWindowCtl;
+
+	if ( "" != t.selectedAtrName )
+	{
+		switch( t.lastDmndSrcTp )
+		{
+		case DMND_SRC_TP::AREA:
+			{
+				std::vector<std::string> tmp;
+				tmp.push_back( t.selectedAtrName );
+				vct_2dPlots.emplace_back( tmp );
+			}
+			break;
+		case DMND_SRC_TP::LINE:
+			vct_2dPlots[t.lastDmndSrcIdx].push_back( t.selectedAtrName );
+			break;
+		}
+		t.selectedAtrName = "";
+	}
+}
+
+
+/** ***************************************************************
+ * @brief アトリビュート選択Window表示処理
+ * <pre>
+ * </pre>
+ ******************************************************************/
+void appUi::Vif_PlotCnfg::ShowSlctWndw()
+{
+	auto & t = ST_atrSlctWindowCtl;
+
+	if(t.fg_showAtrSlctWndw)
+	{
+		ImGui::Begin("SelectWindow");
+		{
+			// コンボボックス表示用の横幅を表示オブジェクト一般に設定
+			ImGui::PushItemWidth(100); // [pix]
+
+			// コンボボックス表示内容を作成
+			std::vector< const char* > pList;
+			// アトリビュート数分ループ
+			for(int i = 0; i<vct_labelsOfAttribetes.size(); ++i)
+			{
+				pList.push_back( vct_labelsOfAttribetes[i].c_str() );
+			}
+
+			// コンボボックス表示
+			ImGui::Combo( "[select]", &t.selectedAtrIdx, (char**)&pList[0], pList.size(), 10 );
+
+			// コンボボックス表示用の横幅の設定を表示オブジェクト一般に対して解除する
+			ImGui::PopItemWidth();
+
+			if(ImGui::Button("OK"))
+			{
+				t.selectedAtrName = pList[t.selectedAtrIdx];
+				t.fg_showAtrSlctWndw = false;
+			}
+		}
+		ImGui::End();
+	}
+}
 
 
 

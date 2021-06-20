@@ -92,14 +92,15 @@ void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
 	this->yMaxLabel = LabelObj::create(name + "_yMaxLabel", area);
 	this->yMinLabel = LabelObj::create(name + "_yMinLabel", area);
 
-	//this->_linesToDraw = PointsWithAttributes::create(name + "_data", area);
 	this->AddPlotLine( _DEFAULT_PLOT );
-
-	CreatePointCursol( area );
 
 	const int DEPTH_BACK				= -100;
 	const int DEPTH_AREA_FROM_BACK		= 10;
 	const int DEPTH_CONTENTS_FROM_AREA	= 10;
+
+	CreatePointCursol( xAxis, color4fv::BLUE );
+	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(0,0,DEPTH_CONTENTS_FROM_AREA);
+
 
 	//-------------------------------
 	// 背景の初期化
@@ -125,7 +126,7 @@ void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
 		Eigen::Vector3f(
 			0.05 * back->boxSize.x(),
 			0.10 * back->boxSize.y(),
-			DEPTH_AREA_FROM_BACK
+			DEPTH_CONTENTS_FROM_AREA + DEPTH_AREA_FROM_BACK
 		);
 	grph_area->drawType = POLYGON;
 	copyColor4fv(color4fv::WHITE, grph_area->color.fv4);
@@ -604,6 +605,18 @@ int GraphObj::GetNumPlotLines()
 }
 
 
+/** ***************************************************************
+ * @brief プロット系列の数を取得する
+ ******************************************************************/
+std::vector< std::shared_ptr< AttributeClass<float> > >
+GraphObj::GetAttributes_Shared(
+	std::string pltLineName					// プロットデータ系列名
+)
+{
+	return _linesToDraw[ pltLineName ]->_sPtr_attributes;
+}
+
+
 
 //================================================================
 //
@@ -676,7 +689,7 @@ void GraphObj::_drawShapeOfSelf()
  * @brief カーソルの生成
  *
  ******************************************************************/
-void GraphObj::CreatePointCursol( sPtr_CoordObj prnt )
+void GraphObj::CreatePointCursol( sPtr_CoordObj prnt, const float color[] )
 {
 	// オブジェクト生成
 	_cursol.ptCenterToDraw	= PointsObj::create		( name + "_cursol_center",		prnt					);
@@ -688,36 +701,38 @@ void GraphObj::CreatePointCursol( sPtr_CoordObj prnt )
 
 	// カーソルポイントの初期化
 	_cursol.ptCenterToDraw->visible = false;
+	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f( 0,0,0 );
 	_cursol.ptCenterToDraw->points.push_back( Eigen::Vector3f(0,0,0) );
 	_cursol.ptCenterToDraw->drawType = DRAWTYPE::POINT;
 	copyColor4fv( color4fv::RED, _cursol.ptCenterToDraw->color.fv4 );
 
 	// ラベルの初期化
-	//_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(10,10,10);
+	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f( 0,0,0 );
+	copyColor4fv( color, _cursol.ptCenterLab->color.fv4 );
 
 	// X軸平行線の初期化
 	_cursol.lineX->visible = false;
 	_cursol.lineX->points.push_back( Eigen::Vector3f(0,0,0) );
 	_cursol.lineX->points.push_back( Eigen::Vector3f(area->boxSize.x(),0,0) );
 	_cursol.lineX->drawType = DRAWTYPE::WIRE;
-	copyColor4fv( color4fv::WHITE, _cursol.lineX->colorWire.fv4 );
-	copyColor4fv( color4fv::WHITE, _cursol.lineX->color.fv4 );
+	copyColor4fv( color, _cursol.lineX->colorWire.fv4 );
+	copyColor4fv( color, _cursol.lineX->color.fv4 );
 
 	// Y軸平行線の初期化
 	_cursol.lineY->visible = false;
 	_cursol.lineY->points.push_back( Eigen::Vector3f(0,0,0) );
 	_cursol.lineY->points.push_back( Eigen::Vector3f(0,area->boxSize.y(),0) );
 	_cursol.lineY->drawType = DRAWTYPE::WIRE;
-	copyColor4fv( color4fv::WHITE, _cursol.lineY->colorWire.fv4 );
-	copyColor4fv( color4fv::WHITE, _cursol.lineY->color.fv4 );
+	copyColor4fv( color, _cursol.lineY->colorWire.fv4 );
+	copyColor4fv( color, _cursol.lineY->color.fv4 );
 
 	// Z軸平行線の初期化
 	_cursol.lineZ->visible = false;
 	_cursol.lineZ->points.push_back( Eigen::Vector3f(0,0,0) );
 	_cursol.lineZ->points.push_back( Eigen::Vector3f(0,0,area->boxSize.z()) );
 	_cursol.lineZ->drawType = DRAWTYPE::WIRE;
-	copyColor4fv( color4fv::WHITE, _cursol.lineZ->colorWire.fv4 );
-	copyColor4fv( color4fv::WHITE, _cursol.lineZ->color.fv4 );
+	copyColor4fv( color, _cursol.lineZ->colorWire.fv4 );
+	copyColor4fv( color, _cursol.lineZ->color.fv4 );
 
 	// デフォルト系列にカーソルを置く
 	_cursol.pltLnName = _linesToDraw.begin()->second->name;

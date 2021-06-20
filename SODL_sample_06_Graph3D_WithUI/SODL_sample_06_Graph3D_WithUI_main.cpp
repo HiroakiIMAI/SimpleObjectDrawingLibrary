@@ -56,6 +56,10 @@ namespace app {
 	FILE_IF csvIf;
 
 
+	typedef struct Plot2D_IF_tp{
+		std::map< std::string, std::shared_ptr<sodl::GraphObj> > graphs2D;
+	}Plot2D_IF;
+	Plot2D_IF plot2DIf;
 
 	typedef struct VISUAL_IF_tp{
 		//-------------------------------------------------
@@ -133,6 +137,7 @@ namespace app {
 			appUi::Vif_PlotCnfg& uidat
 			);
 
+	std::shared_ptr<sodl::GraphObj> Add2DPlot( std::string name );
 
 	//-------------------------------------------------
 	// その他のサブ関数
@@ -215,7 +220,7 @@ int main(int argc, char ** argv)
 			0,						// left
 			0,						// bottom
 			app::WINDOW_SIZE_X / 2,	// width
-			app::WINDOW_SIZE_Y		// height
+			app::WINDOW_SIZE_Y 		// height
 		);
 		auto cam1 = vp1->getCam();
 		cam1->camPos = Eigen::Vector3f(400.f, -400.f, 400.f);
@@ -294,7 +299,6 @@ int main(int argc, char ** argv)
 	//
 
 	int count = 0;
-	//while( count < 100 )
 	while( 1 )
 	{
 		//-----------------------------------------------------
@@ -302,7 +306,9 @@ int main(int argc, char ** argv)
 		//-----------------------------------------------------
 		// UIからの入力結果を描画内容に反映させる
 
-		// プロット系列の追加
+		//-------------------------------------------------------------------------------------------------
+		// C1 プロット系列の追加
+		//-------------------------------------------------------------------------------------------------
 		// 追加ファイル名称がUIによってセットされている場合
 		if( 0 != app::visualIf.newFilePath.size() )
 		{
@@ -310,7 +316,7 @@ int main(int argc, char ** argv)
 			// プロット系列を追加
 			graph3D->AddPlotLine(app::visualIf.newPlotLineName);
 			app::csvIf.pltFiles.	emplace( std::make_pair( pltName, app::ST_PLOT_FILE() ) );
-			app::visualIf.pltLines.	emplace( std::make_pair( pltName,appUi::Vif_PlotCnfg() ) );
+			app::visualIf.pltLines.	emplace( std::make_pair( pltName, appUi::Vif_PlotCnfg() ) );
 
 			// ファイルをオープン
 			app::csvIf.pltFiles[pltName].ifs.open( app::visualIf.newFilePath );
@@ -328,7 +334,41 @@ int main(int argc, char ** argv)
 			app::visualIf.newPlotLineName.clear();
 		}
 
-		// プロット系列の表示設定をグラフオブジェクトに反映する
+		//-------------------------------------------------------------------------------------------------
+		// C2 2Dプロットの追加
+		//-------------------------------------------------------------------------------------------------
+		// プロット系列ループ
+		for(auto	vifPltLineMapItm  = app::visualIf.pltLines.begin();
+					vifPltLineMapItm != app::visualIf.pltLines.end();
+				  ++vifPltLineMapItm)
+		{
+			auto& vifPltLine = vifPltLineMapItm->second;
+			auto& atrSlct = vifPltLine.ST_atrSlctWindowCtl;
+
+			// 新規2Dプロット名が要求されている場合
+			if( "" != atrSlct.selectedAtrName )
+			{
+				auto grph2D = app::Add2DPlot(
+					vifPltLine.pltLnName + "." +
+					atrSlct.selectedAtrName
+					);
+
+				auto attributes = graph3D->GetAttributes_Shared( vifPltLine.pltLnName );
+				auto atr = attributes[atrSlct.selectedAtrIdx];
+
+				for( int i=0; i<atr->data.size(); ++i )
+				{
+					grph2D->AddData( Eigen::Vector3f( i, atr->data[i], 10) );
+				}
+
+				atrSlct.selectedAtrName = "";
+			}
+		}
+
+		//-------------------------------------------------------------------------------------------------
+		// C3 プロット系列の表示設定をグラフオブジェクトに反映する
+		//-------------------------------------------------------------------------------------------------
+		// プロット系列ループ
 		for(auto	vifPltLineMapItm  = app::visualIf.pltLines.begin();
 					vifPltLineMapItm != app::visualIf.pltLines.end();
 				  ++vifPltLineMapItm)
@@ -364,7 +404,9 @@ int main(int argc, char ** argv)
 			}
 		}
 
-		// カーソル関連
+		//-------------------------------------------------------------------------------------------------
+		// C4 カーソル関連
+		//-------------------------------------------------------------------------------------------------
 		if( auto cursoledLine = graph3D->GetCpyPltLn( app::visualIf.cursol_pltLnName ) )
 		{
 			app::visualIf.cursol_idxMax = cursoledLine->size();
@@ -374,9 +416,18 @@ int main(int argc, char ** argv)
 			app::visualIf.cursol_idxMax = 0;
 		}
 		graph3D->SetCursolViible( app::visualIf.cursol_enable );
-
 		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName );
 		graph3D->UpdtCursol( app::visualIf.cursol_idx );
+
+		// 2Dプロットのカーソルを描画する
+		for( auto grph2Ditr = app::plot2DIf.graphs2D.begin();
+				  grph2Ditr != app::plot2DIf.graphs2D.end();
+				++grph2Ditr )
+		{
+			auto grph2D = grph2Ditr->second;
+			grph2D->SetCursolViible( app::visualIf.cursol_enable );
+			grph2D->UpdtCursol( app::visualIf.cursol_idx );
+		}
 
 		//-----------------------------------------------------
 		// 描画マネージャから描画更新を実行する
@@ -788,6 +839,60 @@ namespace app {
 			plotFile.seekPos = plotFile.ifs.tellg();			// 次の読出し位置をメモしておく
 		}
 	};
+
+
+	/** ***************************************************************
+	 *
+	 * @brief	2Dプロットを追加する
+	 * 			Add2DPlot()
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	std::shared_ptr<sodl::GraphObj> Add2DPlot( std::string name )
+	{
+		//----------------------------------------------------
+		// 描画空間、ビューポート、カメラの追加と設定
+		//----------------------------------------------------
+
+		// グラフ用に描画空間を追加
+		int idx_ds = sodl::drwMngr->drawingSpace->size();
+		auto spaceGrph = sodl::drwMngr->addDrawingSpace();
+		// ビューポート作成
+		const int hgt = 200;
+		auto vpGrph = sodl::drwMngr->addViewPort("vp" + name);
+		vpGrph->setVpSize(
+			app::WINDOW_SIZE_X / 2,		// left
+			hgt * (idx_ds-1),			// bottom
+			app::WINDOW_SIZE_X / 2,		// width
+			hgt							// height
+		);
+		// カメラ設定
+		auto camGrph = vpGrph->getCam();
+		camGrph->spaceAttached = spaceGrph;
+		camGrph->is2DGraphMode = true;
+		vpGrph->attachCam(camGrph);
+
+		//----------------------------------------------------
+		// 散布図グラフ(2次元)の作成と描画空間[2]への配置
+		//----------------------------------------------------
+		// 散布図グラフの作成
+		auto grph = sodl::GraphObj::create(
+			name,									// オブジェクト名称 = グラフタイトル
+			camGrph									// 関連付けるカメラ(カメラ投影行列などの設定が済んでいること)
+		);
+		// ラベルの設定
+		grph->title->text = name;
+		grph->xAxisLabel->text = "plot data idx";
+		grph->yAxisLabel->text = name;
+		// 描画空間[2]にグラフを追加
+		sodl::drwMngr->AddObjTree_ToDrwSpace(grph, idx_ds);
+
+		// 作成したグラフをアプリケーションの2Dグラフ配列に保持する
+		app::plot2DIf.graphs2D.insert( std::make_pair( name, grph ) );
+
+		return grph;
+	}
+
 
 
 

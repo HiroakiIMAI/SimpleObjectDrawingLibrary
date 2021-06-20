@@ -202,7 +202,7 @@ void ViewPortClass::attachCam(std::shared_ptr<CamClass> cam)
 		// 2DGraphに関連付けられたカメラは、グラフ平面を固定的に撮影するので
 		// vpにattachしたタイミングで位置姿勢を初期化する。
 		// ユーザコード側でいちいちカメラの位置姿勢を設定しなくてよい。
-		cam->camPos = Eigen::Vector3f(0.f, 0.f, 10.f);
+		cam->camPos = Eigen::Vector3f(0.f, 0.f, 100.f);
 		cam->camTgt = Eigen::Vector3f(0.f, 0.f, 0.f);
 		cam->camUpVec = Eigen::Vector3f(0.f, 1.f, 0.f);
 	}
@@ -348,9 +348,9 @@ void DrawingManager::draw()
 			// ズーム比に応じて、最終的に1[pix]で線が書けるように調整
 			float _a = 1.0 / (cam->zoomRatio);
 			glColor3d(1.0, 1.0, 1.1); // white
-			glRectf(-_w, -_h, _w, _w);
+			glRectf(-_w, -_h, _w, _h);
 			glColor3d(0.0, 0.0, 0.1); // navy
-			glRectf(-_w + _a, -_h + _a, _w - _a, _w - _a);
+			glRectf(-_w + _a, -_h + _a, _w - _a, _h - _a);
 		}
 
 		// カメラの配置
@@ -447,8 +447,8 @@ void DrawingManager::mvCam( Eigen::Vector3f mv )
 std::shared_ptr<ViewPortClass> DrawingManager::addViewPort(std::string name, int vpSizeX, int vpSizeY)
 {
 	// 引数のvpSizeが省略された場合は、windowSizeを使用する
-	(vpSizeX == -1) ? vpSizeX = _windowSizeX : vpSizeX = vpSizeX;
-	(vpSizeY == -1) ? vpSizeY = _windowSizeY : vpSizeY = vpSizeY;
+	(vpSizeX == -1) ? vpSizeX = _windowSizeX : vpSizeX;
+	(vpSizeY == -1) ? vpSizeY = _windowSizeY : vpSizeY;
 
 	auto vp = ViewPortClass::create(name, vpSizeX, vpSizeY);
 	viewPorts.push_back(vp);
