@@ -98,6 +98,9 @@ void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
 	const int DEPTH_AREA_FROM_BACK		= 10;
 	const int DEPTH_CONTENTS_FROM_AREA	= 10;
 
+	//-------------------------------
+	// ƒJ[ƒ\ƒ‹‚Ì‰Šú‰»
+	//-------------------------------
 	CreatePointCursol( xAxis, color4fv::BLUE );
 	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(0,0,DEPTH_CONTENTS_FROM_AREA);
 

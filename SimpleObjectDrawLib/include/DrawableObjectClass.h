@@ -268,7 +268,7 @@ namespace SmplObjDrwLib {
 		static const int ATRIDX_NONE = -1;
 		int atrIdx_pointColor	= ATRIDX_NONE;
 		int atrIdx_pointTickness= ATRIDX_NONE;
-		bool barEnable			= true;
+		bool barEnable			= false;
 		bool direcEnable		= true;
 		int atrIdx_bar			= ATRIDX_NONE;
 		int atrIdx_barColor		= ATRIDX_NONE;

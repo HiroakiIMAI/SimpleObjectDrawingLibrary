@@ -85,6 +85,9 @@ void GraphObj3D::initSelf(Eigen::Vector3f graphBoxSize)
 
 	this->AddPlotLine( _DEFAULT_PLOT );
 
+	//-------------------------------
+	// ƒJ[ƒ\ƒ‹‚Ì‰Šú‰»
+	//-------------------------------
 	CreatePointCursol( area, color4fv::WHITE );
 
 	//-------------------------------
