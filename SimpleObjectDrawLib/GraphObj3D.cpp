@@ -88,7 +88,9 @@ void GraphObj3D::initSelf(Eigen::Vector3f graphBoxSize)
 	//-------------------------------
 	// ƒJ[ƒ\ƒ‹‚Ì‰Šú‰»
 	//-------------------------------
-	CreatePointCursol( area, color4fv::WHITE );
+	_CreatePointCursol( CURSOL_SEL::MAIN, area, color4fv::WHITE );
+	_CreatePointCursol( CURSOL_SEL::SUB1, area, color4fv::GREEN );
+ 	_CreatePointCursol( CURSOL_SEL::SUB2, area, color4fv::BLUE );
 
 	//-------------------------------
 	// ”wŒi‚Ì‰Šú‰»

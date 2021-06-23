@@ -11,9 +11,9 @@ namespace SmplObjDrwLib {
 		const float BLACK[4]	= { 0.0, 0.0, 0.0, 1.0 };
 		const float WHITE[4]	= { 1.0, 1.0, 1.0, 1.0 };
 
-		const float RED[4]		= { 0.0, 0.0, 1.0, 1.0 };
-		const float GREEN[4]	= { 0.0, 0.0, 1.0, 1.0 };
-		const float BLUE[4]	= { 0.0, 0.0, 1.0, 1.0 };
+		const float RED[4]		= { 1.0, 0.0, 0.0, 1.0 };
+		const float GREEN[4]	= { 0.0, 1.0, 0.0, 1.0 };
+		const float BLUE[4]		= { 0.0, 0.0, 1.0, 1.0 };
 	}
 }
 

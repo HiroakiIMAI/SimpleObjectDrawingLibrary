@@ -101,8 +101,12 @@ void GraphObj::initSelf(std::weak_ptr<CamClass> cam)
 	//-------------------------------
 	// カーソルの初期化
 	//-------------------------------
-	CreatePointCursol( xAxis, color4fv::BLUE );
-	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(0,0,DEPTH_CONTENTS_FROM_AREA);
+	_CreatePointCursol( CURSOL_SEL::MAIN, xAxis, color4fv::RED );
+	_CreatePointCursol( CURSOL_SEL::SUB1, xAxis, color4fv::GREEN );
+	_CreatePointCursol( CURSOL_SEL::SUB2, xAxis, color4fv::BLUE );
+	_cursol			.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(0,0,DEPTH_CONTENTS_FROM_AREA);
+	_cursolSub[0]	.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(0,0,DEPTH_CONTENTS_FROM_AREA);
+	_cursolSub[1]	.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f(0,0,DEPTH_CONTENTS_FROM_AREA);
 
 
 	//-------------------------------
@@ -692,54 +696,76 @@ void GraphObj::_drawShapeOfSelf()
  * @brief カーソルの生成
  *
  ******************************************************************/
-void GraphObj::CreatePointCursol( sPtr_CoordObj prnt, const float color[] )
+void GraphObj::_CreatePointCursol( CURSOL_SEL slct, sPtr_CoordObj prnt, const float color[] )
 {
+	auto& csl = _SelectCursol( slct );
 	// オブジェクト生成
-	_cursol.ptCenterToDraw	= PointsObj::create		( name + "_cursol_center",		prnt					);
-	_cursol.ptCenterLab		= LabelSimple::create	( name + "_cursol_label",		_cursol.ptCenterToDraw	);
-	_cursol.atrLab			= LabelSimple::create	( name + "_cursol_atrLabel", 	_cursol.ptCenterLab		);
-	_cursol.lineX = PointsObj::create( name + "_cursol_lineX", prnt  );
-	_cursol.lineY = PointsObj::create( name + "_cursol_lineY", prnt  );
-	_cursol.lineZ = PointsObj::create( name + "_cursol_lineZ", prnt  );
+	csl.ptCenterToDraw	= PointsObj::create		( name + "_cursol_center",		prnt				);
+	csl.ptCenterLab		= LabelSimple::create	( name + "_cursol_label",		csl.ptCenterToDraw	);
+	csl.atrLab			= LabelSimple::create	( name + "_cursol_atrLabel", 	csl.ptCenterLab		);
+	csl.lineX = PointsObj::create( name + "_cursol_lineX", prnt  );
+	csl.lineY = PointsObj::create( name + "_cursol_lineY", prnt  );
+	csl.lineZ = PointsObj::create( name + "_cursol_lineZ", prnt  );
 
 	// カーソルポイントの初期化
-	_cursol.ptCenterToDraw->visible = false;
-	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f( 0,0,0 );
-	_cursol.ptCenterToDraw->points.push_back( Eigen::Vector3f(0,0,0) );
-	_cursol.ptCenterToDraw->drawType = DRAWTYPE::POINT;
-	copyColor4fv( color4fv::RED, _cursol.ptCenterToDraw->color.fv4 );
+	csl.ptCenterToDraw->visible = false;
+	csl.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f( 0,0,0 );
+	csl.ptCenterToDraw->points.push_back( Eigen::Vector3f(0,0,0) );
+	csl.ptCenterToDraw->drawType = DRAWTYPE::POINT;
+	copyColor4fv( color4fv::RED, csl.ptCenterToDraw->color.fv4 );
 
 	// ラベルの初期化
-	_cursol.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f( 0,0,0 );
-	copyColor4fv( color, _cursol.ptCenterLab->color.fv4 );
+	csl.ptCenterLab->CrdTrs.translation() = Eigen::Vector3f( 0,0,0 );
+	copyColor4fv( color, csl.ptCenterLab->color.fv4 );
 
 	// X軸平行線の初期化
-	_cursol.lineX->visible = false;
-	_cursol.lineX->points.push_back( Eigen::Vector3f(0,0,0) );
-	_cursol.lineX->points.push_back( Eigen::Vector3f(area->boxSize.x(),0,0) );
-	_cursol.lineX->drawType = DRAWTYPE::WIRE;
-	copyColor4fv( color, _cursol.lineX->colorWire.fv4 );
-	copyColor4fv( color, _cursol.lineX->color.fv4 );
+	csl.lineX->visible = false;
+	csl.lineX->points.push_back( Eigen::Vector3f(0,0,0) );
+	csl.lineX->points.push_back( Eigen::Vector3f(area->boxSize.x(),0,0) );
+	csl.lineX->drawType = DRAWTYPE::WIRE;
+	copyColor4fv( color, csl.lineX->colorWire.fv4 );
+	copyColor4fv( color, csl.lineX->color.fv4 );
 
 	// Y軸平行線の初期化
-	_cursol.lineY->visible = false;
-	_cursol.lineY->points.push_back( Eigen::Vector3f(0,0,0) );
-	_cursol.lineY->points.push_back( Eigen::Vector3f(0,area->boxSize.y(),0) );
-	_cursol.lineY->drawType = DRAWTYPE::WIRE;
-	copyColor4fv( color, _cursol.lineY->colorWire.fv4 );
-	copyColor4fv( color, _cursol.lineY->color.fv4 );
+	csl.lineY->visible = false;
+	csl.lineY->points.push_back( Eigen::Vector3f(0,0,0) );
+	csl.lineY->points.push_back( Eigen::Vector3f(0,area->boxSize.y(),0) );
+	csl.lineY->drawType = DRAWTYPE::WIRE;
+	copyColor4fv( color, csl.lineY->colorWire.fv4 );
+	copyColor4fv( color, csl.lineY->color.fv4 );
 
 	// Z軸平行線の初期化
-	_cursol.lineZ->visible = false;
-	_cursol.lineZ->points.push_back( Eigen::Vector3f(0,0,0) );
-	_cursol.lineZ->points.push_back( Eigen::Vector3f(0,0,area->boxSize.z()) );
-	_cursol.lineZ->drawType = DRAWTYPE::WIRE;
-	copyColor4fv( color, _cursol.lineZ->colorWire.fv4 );
-	copyColor4fv( color, _cursol.lineZ->color.fv4 );
+	csl.lineZ->visible = false;
+	csl.lineZ->points.push_back( Eigen::Vector3f(0,0,0) );
+	csl.lineZ->points.push_back( Eigen::Vector3f(0,0,area->boxSize.z()) );
+	csl.lineZ->drawType = DRAWTYPE::WIRE;
+	copyColor4fv( color, csl.lineZ->colorWire.fv4 );
+	copyColor4fv( color, csl.lineZ->color.fv4 );
 
 	// デフォルト系列にカーソルを置く
-	_cursol.pltLnName = _linesToDraw.begin()->second->name;
+	csl.pltLnName = _linesToDraw.begin()->second->name;
 }
+
+
+/** ***************************************************************
+ * @brief カーソル選択用内部I/F
+ *
+ ******************************************************************/
+GraphObj::ST_PointCursol& GraphObj::_SelectCursol( const CURSOL_SEL& sel )
+{
+	switch( sel )
+	{
+	case CURSOL_SEL::MAIN:
+		return _cursol;
+	case CURSOL_SEL::SUB1:
+		return _cursolSub[0];
+	case CURSOL_SEL::SUB2:
+		return _cursolSub[1];
+	}
+
+	return *(GraphObj::ST_PointCursol*)NULL;
+}
+
 
 
 
@@ -747,24 +773,26 @@ void GraphObj::CreatePointCursol( sPtr_CoordObj prnt, const float color[] )
  * @brief カーソルを置くプロット系列を選択する
  *
  ******************************************************************/
-void GraphObj::PutCursolToLine( const std::string &pltLineName )
+void GraphObj::PutCursolToLine( const std::string &pltLineName , CURSOL_SEL slct )
 {
-	_cursol.pltLnName= pltLineName;
+	_SelectCursol( slct ).pltLnName = pltLineName;
 }
 
 /** ***************************************************************
  * @brief カーソルの情報更新
  *
  ******************************************************************/
-void GraphObj::UpdtCursol( int idx )
+void GraphObj::UpdtCursol( int idx , CURSOL_SEL slct )
 {
+	auto& csl = _SelectCursol( slct );
+
 	if( idx == -1 )
 	{
-		idx = _cursol.idx_currentPt;
+		idx = csl.idx_currentPt;
 	}
 	else
 	{
-		_cursol.idx_currentPt = idx;
+		csl.idx_currentPt = idx;
 	}
 
 	//------------------------------------------
@@ -772,19 +800,19 @@ void GraphObj::UpdtCursol( int idx )
 	//------------------------------------------
 	{
 		// プロット系列名からプロット系列を取得
-		auto line = _lines.find( _cursol.pltLnName );
+		auto line = _lines.find( csl.pltLnName );
 		if( line != _lines.end() )
 		{
 			// プロット系列からプロット点を取得
 			if( line->second.size() > idx )
 			{
-				_cursol.ptCenter = line->second[idx];
+				csl.ptCenter = line->second[idx];
 			}
 		}
 		else
 		{
 			// プロット系列がない場合は(0,0,0)で更新
-			_cursol.ptCenter = Eigen::Vector3f(0,0,0);
+			csl.ptCenter = Eigen::Vector3f(0,0,0);
 		}
 	}
 
@@ -793,52 +821,52 @@ void GraphObj::UpdtCursol( int idx )
 	//------------------------------------------
 	{
 		// プロット系列名からプロット系列を取得
-		auto lineToDraw = _linesToDraw.find( _cursol.pltLnName );
+		auto lineToDraw = _linesToDraw.find( csl.pltLnName );
 		if( lineToDraw != _linesToDraw.end() )
 		{
 			if( lineToDraw->second->_sPtr_points->size() > idx )
 			{
 				// プロット系列からプロット点を取得
-				_cursol.ptCenterToDraw->points[0] = (*lineToDraw->second->_sPtr_points)[idx];
+				csl.ptCenterToDraw->points[0] = (*lineToDraw->second->_sPtr_points)[idx];
 
 				// カーソルライン、カーソルポイント位置の更新
-				_cursol.lineX->points[0] =
-				_cursol.lineX->points[1] =
+				csl.lineX->points[0] =
+				csl.lineX->points[1] =
 
-				_cursol.lineY->points[0] =
-				_cursol.lineY->points[1] =
+				csl.lineY->points[0] =
+				csl.lineY->points[1] =
 
-				_cursol.lineZ->points[0] =
-				_cursol.lineZ->points[1] =
-				_cursol.ptCenterToDraw->CrdTrs.translation() =
-				_cursol.ptCenterToDraw->points[0];
+				csl.lineZ->points[0] =
+				csl.lineZ->points[1] =
+				csl.ptCenterToDraw->CrdTrs.translation() =
+				csl.ptCenterToDraw->points[0];
 
 				// カーソルラインの長さを再設定
-				_cursol.lineX->points[0].x() = 0;
-				_cursol.lineX->points[1].x() = area->boxSize.x();
+				csl.lineX->points[0].x() = 0;
+				csl.lineX->points[1].x() = area->boxSize.x();
 
-				_cursol.lineY->points[0].y() = 0;
-				_cursol.lineY->points[1].y() = area->boxSize.y();
+				csl.lineY->points[0].y() = 0;
+				csl.lineY->points[1].y() = area->boxSize.y();
 
-				_cursol.lineZ->points[0].z() = 0;
-				_cursol.lineZ->points[1].z() = area->boxSize.z();
+				csl.lineZ->points[0].z() = 0;
+				csl.lineZ->points[1].z() = area->boxSize.z();
 
 				// カーソルラベルの更新
-				_cursol.ptCenterLab->text =
+				csl.ptCenterLab->text =
 						"( " +
-						std::to_string( _cursol.ptCenter.x() ) + ", " +
-						std::to_string( _cursol.ptCenter.y() ) + ", " +
-						std::to_string( _cursol.ptCenter.z() ) + ")";
+						std::to_string( csl.ptCenter.x() ) + ", " +
+						std::to_string( csl.ptCenter.y() ) + ", " +
+						std::to_string( csl.ptCenter.z() ) + ")";
 
 				// プロット系列に関連付けられたアトリビュートの値をラベルに書き出す
-				_cursol.atrLab->text = "";												// 空文字列で初期化
+				csl.atrLab->text = "";												// 空文字列で初期化
 				for( auto mpIt_atr  = lineToDraw->second->_sPtr_attributes.begin();
 						  mpIt_atr != lineToDraw->second->_sPtr_attributes.end();
 						++mpIt_atr )
 				{
 					if( (*mpIt_atr)->data.size() > idx )
 					{
-						_cursol.atrLab->text += "\n " +
+						csl.atrLab->text += "\n " +
 							(*mpIt_atr)->atrName + " : " + std::to_string( (*mpIt_atr)->data[idx] );
 					}
 				}
@@ -847,7 +875,7 @@ void GraphObj::UpdtCursol( int idx )
 		else
 		{
 			// プロット系列がない場合は(0,0,0)で更新
-			_cursol.ptCenterToDraw->points[0] = Eigen::Vector3f(0,0,0);
+			csl.ptCenterToDraw->points[0] = Eigen::Vector3f(0,0,0);
 		}
 	}
 
@@ -860,12 +888,17 @@ void GraphObj::UpdtCursol( int idx )
  * @brief カーソルの表示設定
  *
  ******************************************************************/
-void GraphObj::SetCursolViible( const bool fg )
+void GraphObj::SetCursolViible( const bool fg, CURSOL_SEL slct )
 {
-	_cursol.lineX->visible = fg;
-	_cursol.lineY->visible = fg;
-	_cursol.lineZ->visible = fg;
-	_cursol.ptCenterToDraw->visible = fg;
+	auto& csl = _SelectCursol( slct );
+
+	csl.lineX->visible = fg;
+	csl.lineY->visible = fg;
+	csl.lineZ->visible = fg;
+	csl.ptCenterToDraw->visible = fg;
+	csl.ptCenterLab->visible = fg;
+	csl.ptCenterToDraw->visible = fg;
+	csl.atrLab->visible = fg;
 }
 
 

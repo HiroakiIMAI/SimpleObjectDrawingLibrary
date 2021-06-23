@@ -75,6 +75,8 @@ namespace app {
 		int			cursol_idx			= 0;
 		int			cursolAdjUnit		= 1;
 
+		int			subCursol_idx[2]	= { 0, 0 };
+		bool		subCursol_enable[2]	= { false, false };
 
 		//-------------------------------------------------
 		// Model to Visual
@@ -415,9 +417,17 @@ int main(int argc, char ** argv)
 		{
 			app::visualIf.cursol_idxMax = 0;
 		}
-		graph3D->SetCursolViible( app::visualIf.cursol_enable );
-		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName );
-		graph3D->UpdtCursol( app::visualIf.cursol_idx );
+		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName,		sodl::GraphObj::CURSOL_SEL::MAIN );
+		graph3D->SetCursolViible( app::visualIf.cursol_enable,			sodl::GraphObj::CURSOL_SEL::MAIN );
+		graph3D->UpdtCursol		( app::visualIf.cursol_idx,				sodl::GraphObj::CURSOL_SEL::MAIN );
+
+		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName,		sodl::GraphObj::CURSOL_SEL::SUB1 );
+		graph3D->SetCursolViible( app::visualIf.subCursol_enable[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
+		graph3D->UpdtCursol		( app::visualIf.subCursol_idx	[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
+
+		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName,		sodl::GraphObj::CURSOL_SEL::SUB2 );
+		graph3D->SetCursolViible( app::visualIf.subCursol_enable[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
+		graph3D->UpdtCursol		( app::visualIf.subCursol_idx	[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
 
 		// 2Dプロットのカーソルを描画する
 		for( auto grph2Ditr = app::plot2DIf.graphs2D.begin();
@@ -425,8 +435,14 @@ int main(int argc, char ** argv)
 				++grph2Ditr )
 		{
 			auto grph2D = grph2Ditr->second;
-			grph2D->SetCursolViible( app::visualIf.cursol_enable );
-			grph2D->UpdtCursol( app::visualIf.cursol_idx );
+			grph2D->SetCursolViible	( app::visualIf.cursol_enable,			sodl::GraphObj::CURSOL_SEL::MAIN );
+			grph2D->UpdtCursol		( app::visualIf.cursol_idx,				sodl::GraphObj::CURSOL_SEL::MAIN );
+
+			grph2D->SetCursolViible	( app::visualIf.subCursol_enable[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
+			grph2D->UpdtCursol		( app::visualIf.subCursol_idx	[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
+
+			grph2D->SetCursolViible	( app::visualIf.subCursol_enable[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
+			grph2D->UpdtCursol		( app::visualIf.subCursol_idx	[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
 		}
 
 		//-----------------------------------------------------
@@ -908,126 +924,152 @@ namespace app {
 		static int openFileCtr = 0;
 
 		// アトリビュートをプロットにどのように反映するかを設定する
+		const char KEYSTR_DIALOG_FILE_OPEN[] = "KeyStr_Dialog_FileOpen";
+
+		// ImGuiウィンドウ開始
+		ImGui::Begin("Plot Configuration");
+
+		//------------------------------------------------------
+		// プロット系列数分の設定項目を表示する
+		//------------------------------------------------------
+		for (auto vifMapItm = visualIf.pltLines.begin(); vifMapItm != visualIf.pltLines.end(); ++vifMapItm)
 		{
-			const char KEYSTR_DIALOG_FILE_OPEN[] = "KeyStr_Dialog_FileOpen";
+			auto& vifPltLn = vifMapItm->second;
+			vifPltLn.Updt();
+		}
 
-			// ImGuiウィンドウ開始
-			ImGui::Begin("Plot Configuration");
+		//------------------------------------------------------
+		// プロット系列を追加するためのダイアログ表示ボタン
+		//------------------------------------------------------
+		if (ImGui::Button("Open CSV File, and Add Plot") )
+		{
+			const char* filters = ".csv,.*";
+			ImGuiFileDialog::Instance()->OpenDialog(
+				KEYSTR_DIALOG_FILE_OPEN,							// key dialog
+				" Choose a File", 									// title
+				filters, 											// filters
+				".", 												// path
+				"" 													// defaut file name
+			);
+		}
 
-			//------------------------------------------------------
-			// プロット系列数分の設定項目を表示する
-			//------------------------------------------------------
-			for (auto vifMapItm = visualIf.pltLines.begin(); vifMapItm != visualIf.pltLines.end(); ++vifMapItm)
+		//------------------------------------------------------
+		// プロット系列を追加するためのダイアログ処理
+		//------------------------------------------------------
+		ImVec2 minSize = ImVec2(0, 0);
+		ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
+		// ダイアログを表示する( Openされているかは内部で自動判断 )
+		if ( ImGuiFileDialog::Instance()->Display( KEYSTR_DIALOG_FILE_OPEN ) )
+		{
+			// ファイルが選択された場合
+			if (ImGuiFileDialog::Instance()->IsOk())
 			{
-				auto& vifPltLn = vifMapItm->second;
-				vifPltLn.Updt();
+				// 選択されたファイルパスをI/F領域にセットする
+				app::visualIf.newFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
+				app::visualIf.newPlotLineName = "plot" + std::to_string(++openFileCtr);
 			}
+			ImGuiFileDialog::Instance()->Close();
+		}
 
-			//------------------------------------------------------
-			// プロット系列を追加するためのダイアログ表示ボタン
-			//------------------------------------------------------
-			if (ImGui::Button("Open CSV File, and Add Plot") )
-			{
-				const char* filters = ".csv,.*";
-				ImGuiFileDialog::Instance()->OpenDialog(
-					KEYSTR_DIALOG_FILE_OPEN,							// key dialog
-					" Choose a File", 									// title
-					filters, 											// filters
-					".", 												// path
-					"" 													// defaut file name
-				);
-			}
+		ImGui::NewLine();
+		//------------------------------------------------------
+		// カーソル操作
+		//------------------------------------------------------
+		// 系列名で折り畳み項目を作成
+		if ( ImGui::CollapsingHeader( "Cursol Operation" ) )
+		{
+			ImGui::Indent();
 
-			//------------------------------------------------------
-			// プロット系列を追加するためのダイアログ処理
-			//------------------------------------------------------
-			ImVec2 minSize = ImVec2(0, 0);
-			ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
-			// ダイアログを表示する( Openされているかは内部で自動判断 )
-			if ( ImGuiFileDialog::Instance()->Display( KEYSTR_DIALOG_FILE_OPEN ) )
+			// カーソル有効チェックボックス
+			ImGui::Checkbox( "cursol ehable", &visualIf.cursol_enable );
+			if( visualIf.cursol_enable )
 			{
-				// ファイルが選択された場合
-				if (ImGuiFileDialog::Instance()->IsOk())
+				//------------------------------------------------------
+				// カーソルを置くプロット系列の選択
+				//------------------------------------------------------
+				// コンボボックス表示内容を作成
+				std::vector< const char* > pList;
+				// アトリビュート数分ループ
+				for(auto	mpIt_ptLn  = visualIf.pltLines.begin();
+							mpIt_ptLn != visualIf.pltLines.end();
+						  ++mpIt_ptLn )
 				{
-					// 選択されたファイルパスをI/F領域にセットする
-					app::visualIf.newFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
-					app::visualIf.newPlotLineName = "plot" + std::to_string(++openFileCtr);
+					pList.push_back( mpIt_ptLn->first.c_str() );
 				}
-				ImGuiFileDialog::Instance()->Close();
-			}
 
-			ImGui::NewLine();
-			//------------------------------------------------------
-			// カーソル操作
-			//------------------------------------------------------
-			// 系列名で折り畳み項目を作成
-			if ( ImGui::CollapsingHeader( "Cursol Operation" ) )
-			{
-				ImGui::Indent();
-
-				// カーソル有効チェックボックス
-				ImGui::Checkbox( "cursol ehable", &visualIf.cursol_enable );
-				if( visualIf.cursol_enable )
+				if( 0 != pList.size() )
 				{
 					//------------------------------------------------------
 					// カーソルを置くプロット系列の選択
 					//------------------------------------------------------
-					// コンボボックス表示内容を作成
-					std::vector< const char* > pList;
-					// アトリビュート数分ループ
-					for(auto	mpIt_ptLn  = visualIf.pltLines.begin();
-								mpIt_ptLn != visualIf.pltLines.end();
-							  ++mpIt_ptLn )
+					// コンボボックス表示
+					ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
+					ImGui::Combo(
+						"[Plot Line] put cursol to ",
+						&visualIf.cursol_pltLn_selIdx,
+						(char**)&pList[0],
+						pList.size()
+					);
+					ImGui::PopItemWidth();																	// 要素幅指定キャンセル
+
+					// コンボボックスで選択されたプロット系列の名称を取得
+					if( pList.size() > visualIf.cursol_pltLn_selIdx )
 					{
-						pList.push_back( mpIt_ptLn->first.c_str() );
+						visualIf.cursol_pltLnName = pList[visualIf.cursol_pltLn_selIdx];
 					}
 
-					if( 0 != pList.size() )
+					//------------------------------------------------------
+					// カーソル位置の操作
+					//------------------------------------------------------
+					ImGui::SliderInt("[Cursol Pos] slider", &visualIf.cursol_idx, 0, visualIf.cursol_idxMax);
+					if( ImGui::Button("<") )
 					{
-						// コンボボックス表示
-						ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
-						ImGui::Combo(
-							"[Plot Line] put cursol to ",
-							&visualIf.cursol_pltLn_selIdx,
-							(char**)&pList[0],
-							pList.size()
-						);
-						ImGui::PopItemWidth();																	// 要素幅指定キャンセル
+						visualIf.cursol_idx -= visualIf.cursolAdjUnit;
+					}
+					ImGui::SameLine();
+					if( ImGui::Button(">") )
+					{
+						visualIf.cursol_idx += visualIf.cursolAdjUnit;
+					}
+					ImGui::SameLine();
+					ImGui::Text("[Cursol Pos] adjust         ");
+					ImGui::SameLine();
+					ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
+					ImGui::InputInt( "adj unit", &visualIf.cursolAdjUnit );									// 数値入力ボックス
+					ImGui::PopItemWidth();																	// 要素幅指定キャンセル
+					ImGui::NewLine();																		// 改行
 
-						// コンボボックスで選択されたプロット系列の名称を取得
-						if( pList.size() > visualIf.cursol_pltLn_selIdx )
-						{
-							visualIf.cursol_pltLnName = pList[visualIf.cursol_pltLn_selIdx];
-						}
-
-						//------------------------------------------------------
-						// カーソル位置の操作
-						//------------------------------------------------------
-						ImGui::SliderInt("[Cursol Pos] slider", &visualIf.cursol_idx, 0, visualIf.cursol_idxMax);
-						if( ImGui::Button("<") )
-						{
-							visualIf.cursol_idx -= visualIf.cursolAdjUnit;
-						}
+					//------------------------------------------------------
+					// サブカーソルをセットする
+					//------------------------------------------------------
+					// 現在位置にサブカーソル1をセットする
+					ImGui::Checkbox( "subCursol 1 ehable", &visualIf.subCursol_enable[0] );
+					if( visualIf.subCursol_enable[0] )
+					{
 						ImGui::SameLine();
-						if( ImGui::Button(">") )
+						if( ImGui::Button("Set Sub Cursol 1 here") )
 						{
-							visualIf.cursol_idx += visualIf.cursolAdjUnit;
+							visualIf.subCursol_idx[0] = visualIf.cursol_idx;
 						}
+					}
+					// 現在位置にサブカーソル2をセットする
+					ImGui::Checkbox( "subCursol 2 ehable", &visualIf.subCursol_enable[1] );
+					if( visualIf.subCursol_enable[1] )
+					{
 						ImGui::SameLine();
-						ImGui::Text("[Cursol Pos] adjust         ");
-						ImGui::SameLine();
-						ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
-						ImGui::InputInt( "adj unit", &visualIf.cursolAdjUnit );									// 数値入力ボックス
-						ImGui::PopItemWidth();																	// 要素幅指定キャンセル
+						if( ImGui::Button("Set Sub Cursol 2 here") )
+						{
+							visualIf.subCursol_idx[1] = visualIf.cursol_idx;
+						}
 					}
 				}
-
-				ImGui::Unindent();
 			}
 
-			// ImGuiウィンドウ終了
-			ImGui::End();
+			ImGui::Unindent();
 		}
+
+		// ImGuiウィンドウ終了
+		ImGui::End();
 	}
 
 

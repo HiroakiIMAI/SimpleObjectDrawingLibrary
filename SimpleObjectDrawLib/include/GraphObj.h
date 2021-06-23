@@ -184,6 +184,11 @@ namespace SmplObjDrwLib {
 			std::string pltLineName =_DEFAULT_PLOT		// プロットデータ系列名
 		);
 
+		// プロット系列のコピーデータを取得する
+		const std::deque<Eigen::Vector3f>*
+		GetCpyPltLn(
+			std::string pltName
+		);
 
 	protected:
 		std::unordered_map< std::string, std::deque<Eigen::Vector3f> >				_lines;			// グラフのプロットデータ
@@ -197,7 +202,19 @@ namespace SmplObjDrwLib {
 		virtual void initSelf(std::weak_ptr<CamClass> cam = std::weak_ptr<CamClass>() );
 
 
-		// クラス内構造体宣言
+		//----------------------------------------------------------------------
+		// カーソル関連の定義
+		//----------------------------------------------------------------------
+		// 外部I/F
+	public:
+		enum struct CURSOL_SEL { MAIN, SUB1, SUB2 };
+		void UpdtCursol(int idx = -1, CURSOL_SEL slct = CURSOL_SEL::MAIN);
+		void PutCursolToLine(const std::string& pltLineName, CURSOL_SEL slct = CURSOL_SEL::MAIN);
+		void SetCursolViible(const bool fg, CURSOL_SEL slct = CURSOL_SEL::MAIN);
+
+		// 内部I/F・データ
+	protected:
+		// クラス内構カーソル造体宣言
 		typedef struct ST_PointCursol_tp
 		{
 		public:
@@ -213,15 +230,12 @@ namespace SmplObjDrwLib {
 			int idx_currentPt = 0;										///< 現在のカーソル表示に対応するデータindex
 
 		} ST_PointCursol;
+		// カーソル実体定義
 		ST_PointCursol _cursol;
-
-		void CreatePointCursol( sPtr_CoordObj prnt, const float color[] );
-
-	public:
-		void UpdtCursol( int idx = -1 );
-		void PutCursolToLine( const std::string &pltLineName );
-		void SetCursolViible( const bool fg );
-		const std::deque<Eigen::Vector3f>* GetCpyPltLn( std::string pltName );
+		ST_PointCursol _cursolSub[2];
+		// カーソル操作内部I/F関数
+		ST_PointCursol& _SelectCursol( const CURSOL_SEL& sel );
+		void _CreatePointCursol( CURSOL_SEL slct, sPtr_CoordObj prnt, const float color[] );
 
 	};
 
