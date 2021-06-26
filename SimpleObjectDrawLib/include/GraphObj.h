@@ -79,8 +79,11 @@ namespace SmplObjDrwLib {
 		std::shared_ptr<PointsObj>		xAxis;			// x軸
 		std::shared_ptr<PointsObj>		yAxis;			// y軸
 
-		Eigen::Vector3f rangeMax = Eigen::Vector3f(1, 1, 1);	// プロットデータの最大値保持用(系列間共通)
-		Eigen::Vector3f rangeMin = Eigen::Vector3f(0, 0, 0);	// プロットデータの最小値保持用(系列間共通)
+		Eigen::Vector3f drwRngMax = Eigen::Vector3f(1, 1, 1);	// プロット範囲の最大値設定用(系列間共通)
+		Eigen::Vector3f drwRngMin = Eigen::Vector3f(0, 0, 0);	// プロット範囲の最小値設定用(系列間共通)
+
+		Eigen::Vector3f datRngMax = Eigen::Vector3f(1, 1, 1);	// プロットデータの最大値保持用(系列間共通)
+		Eigen::Vector3f datRngMin = Eigen::Vector3f(0, 0, 0);	// プロットデータの最小値保持用(系列間共通)
 		long dataNumMax = 100000;
 		bool normarize_direcVec = true;
 
@@ -187,7 +190,7 @@ namespace SmplObjDrwLib {
 		// プロット系列のコピーデータを取得する
 		const std::deque<Eigen::Vector3f>*
 		GetCpyPltLn(
-			std::string pltName
+			std::string pltName = _DEFAULT_PLOT
 		);
 
 	protected:

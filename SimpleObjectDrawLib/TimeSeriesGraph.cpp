@@ -129,6 +129,6 @@ void TimeSeriesGraph::refleshRangeAsScroll()
 {
 	if (_lines.begin()->second.size() > dataNumToDraw)
 	{
-		rangeMin.x() = rangeMax.x() - dataNumToDraw;
+		drwRngMin.x() = drwRngMax.x() - dataNumToDraw;
 	}
 }

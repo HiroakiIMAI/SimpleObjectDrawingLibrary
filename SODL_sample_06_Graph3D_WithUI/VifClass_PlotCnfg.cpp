@@ -3,6 +3,38 @@
 #include "VifClass_PlotCnfg.h"
 
 
+appUi::Vif_InterVisualPartsAction ivpa;	//
+
+
+void appUi::Vif_PlotCnfg2D::draw2DPlotIf()
+{
+	// 2Dプロットの数だけ折り畳み項目を生成
+	if ( ImGui::CollapsingHeader( ("2D plot config  " + plt2dName).c_str(), ImGuiTreeNodeFlags_DefaultOpen ) )
+	{
+		ImGui::Indent();
+		ImGui::PushID(plt2dName.c_str());
+
+		//--------------------------------------------------------------------
+		// スケール操作
+		//--------------------------------------------------------------------
+		// スケールセット
+		if( ImGui::Checkbox( "Set Scale With Current SubCursol 1 and 2", &fg_cBox_scalefitToSubCursols ) )
+		{
+			if(	!ivpa.fg_subCursol1_enable
+			||	!ivpa.fg_subCursol2_enable
+			)
+			{
+				fg_cBox_scalefitToSubCursols = false;
+			}
+		}
+
+		ImGui::PopID();
+		ImGui::Unindent();
+	}
+}
+
+
+
 /** ***************************************************************
  * @brief 可視化アトリビュート設定
  * <pre>
@@ -51,11 +83,22 @@ void appUi::Vif_PlotCnfg::Func_AtrCnfg( std::string label, bool& fgEnable, std::
  * ユーザの設定結果をメンバ変数に保持する。
  * </pre>
  ******************************************************************/
-void appUi::Vif_PlotCnfg::Updt()
+void appUi::Vif_PlotCnfg::drawPltLnCnfg()
 {
 	// 系列名で折り畳み項目を作成
-	if ( ImGui::CollapsingHeader( this->pltLnName.c_str() ) )
+	if ( ImGui::CollapsingHeader( this->pltLnName.c_str() , ImGuiTreeNodeFlags_DefaultOpen ) )
 	{
+		// 系列の削除ボタン
+		ImGui::Text("                                  ");
+		ImGui::SameLine();
+		if( ImGui::Button( ("[Delete] " + this->pltLnName).c_str() ) )
+		{
+			this->fg_delete = true;
+		}
+
+		//--------------------------------------------------------------------------
+		// 3D Plot Line Config
+		//--------------------------------------------------------------------------
 		ImGui::PushID(pltLnName.c_str());
 
 		ImGui::Indent();
@@ -87,7 +130,9 @@ void appUi::Vif_PlotCnfg::Updt()
 		// リアルタイムファイルリロード
 		ImGui::Checkbox( "[Realtime File Reload] ", &fg_cBox_updateCyclic );
 
-
+		//--------------------------------------------------------------------------
+		// 2D Plot Config
+		//->>>----------------------------------------------------------------------
 		if( ImGui::Button( "Add 2DPlotArea" ) )
 		{
 			SetSlctDmnd( DMND_SRC_TP::AREA, 0 );
@@ -103,14 +148,19 @@ void appUi::Vif_PlotCnfg::Updt()
 		}
 		ShowSlctWndw();
 
-
-		// 系列の削除ボタン
-		ImGui::Text("                                  ");
-		ImGui::SameLine();
-		if( ImGui::Button( ("[Delete] " + this->pltLnName).c_str() ) )
+		// 2DプロットのUIを描画する
+		for( auto plt2dIf_itr  = grps2DIf.begin();
+				  plt2dIf_itr != grps2DIf.end();
+				++plt2dIf_itr)
 		{
-			this->fg_delete = true;
+			auto& plt2dIf = plt2dIf_itr->second;
+			plt2dIf.draw2DPlotIf();
 		}
+
+		//-<<<----------------------------------------------------------------------
+		// 2D Plot Config
+		//--------------------------------------------------------------------------
+
 
 		ImGui::Unindent();
 		ImGui::PopID();
@@ -200,6 +250,179 @@ void appUi::Vif_PlotCnfg::ShowSlctWndw()
 		}
 		ImGui::End();
 	}
+}
+
+
+void appUi::VISUAL_IF::drawVif()
+{
+	// アトリビュートをプロットにどのように反映するかを設定する
+
+	static int openFileCtr = 0;
+
+	const char KEYSTR_DIALOG_FILE_OPEN[] = "KeyStr_Dialog_FileOpen";
+
+	// ImGuiウィンドウ開始
+	ImGui::Begin("Plot Configuration");
+
+	//------------------------------------------------------
+	// プロット系列数分の設定項目を表示する
+	//------------------------------------------------------
+	for (auto vifMapItm = pltLines.begin(); vifMapItm != pltLines.end(); ++vifMapItm)
+	{
+		auto& vifPltLn = vifMapItm->second;
+		vifPltLn.drawPltLnCnfg();
+	}
+
+	ImGui::NewLine();
+	//------------------------------------------------------
+	// プロット系列を追加するためのダイアログ表示ボタン
+	//------------------------------------------------------
+	if (ImGui::Button("Open CSV File, and Add Plot") )
+	{
+		const char* filters = ".csv,.*";
+		ImGuiFileDialog::Instance()->OpenDialog(
+			KEYSTR_DIALOG_FILE_OPEN,							// key dialog
+			" Choose a File", 									// title
+			filters, 											// filters
+			".", 												// path
+			"" 													// defaut file name
+		);
+	}
+
+	//------------------------------------------------------
+	// プロット系列を追加するためのダイアログ処理
+	//------------------------------------------------------
+	ImVec2 minSize = ImVec2(0, 0);
+	ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
+	// ダイアログを表示する( Openされているかは内部で自動判断 )
+	if ( ImGuiFileDialog::Instance()->Display( KEYSTR_DIALOG_FILE_OPEN ) )
+	{
+		// ファイルが選択された場合
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			// 選択されたファイルパスをI/F領域にセットする
+			newFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
+			newPlotLineName = "plot" + std::to_string(++openFileCtr);
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+	ImGui::NewLine();
+	//------------------------------------------------------
+	// カーソル操作
+	//------------------------------------------------------
+	// プロット系列が存在する場合のみ表示する。
+	if( 0 != pltLines.size() )
+	{
+		// 系列名で折り畳み項目を作成
+		if ( ImGui::CollapsingHeader( "Cursol Operation" ) )
+		{
+			ImGui::Indent();
+
+			// カーソル有効チェックボックス
+			ImGui::Checkbox( "cursol ehable", &cursol_enable );
+			if( cursol_enable )
+			{
+				//------------------------------------------------------
+				// カーソルを置くプロット系列の選択
+				//------------------------------------------------------
+				// コンボボックス表示内容を作成
+				std::vector< const char* > pList;
+				// アトリビュート数分ループ
+				for(auto	mpIt_ptLn  = pltLines.begin();
+							mpIt_ptLn != pltLines.end();
+						  ++mpIt_ptLn )
+				{
+					pList.push_back( mpIt_ptLn->first.c_str() );
+				}
+
+				if( 0 != pList.size() )
+				{
+					//------------------------------------------------------
+					// カーソルを置くプロット系列の選択
+					//------------------------------------------------------
+					// コンボボックス表示
+					ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
+					ImGui::Combo(
+						"[Plot Line] put cursol to ",
+						&cursol_pltLn_selIdx,
+						(char**)&pList[0],
+						pList.size()
+					);
+					ImGui::PopItemWidth();																	// 要素幅指定キャンセル
+
+					// コンボボックスで選択されたプロット系列の名称を取得
+					if( pList.size() > cursol_pltLn_selIdx )
+					{
+						cursol_pltLnName = pList[cursol_pltLn_selIdx];
+					}
+
+					//------------------------------------------------------
+					// カーソル位置の操作
+					//------------------------------------------------------
+					ImGui::SliderInt("[Cursol Pos] slider", &cursol_idx, 0, cursol_idxMax);
+					if( ImGui::Button("<") )
+					{
+						cursol_idx -= cursolAdjUnit;
+					}
+					ImGui::SameLine();
+					if( ImGui::Button(">") )
+					{
+						cursol_idx += cursolAdjUnit;
+					}
+					ImGui::SameLine();
+					ImGui::Text("[Cursol Pos] adjust         ");
+					ImGui::SameLine();
+					ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
+					ImGui::InputInt( "adj unit", &cursolAdjUnit );											// 数値入力ボックス
+					ImGui::PopItemWidth();																	// 要素幅指定キャンセル
+					ImGui::NewLine();																		// 改行
+
+					//------------------------------------------------------
+					// サブカーソル操作
+					//------------------------------------------------------
+					// サブカーソル1を有効化
+					if( ImGui::Checkbox( "subCursol 1 ehable", &subCursol_enable[0] ) )
+					{
+						subCursol_idx[0] = cursol_idx;
+					}
+					// 現在位置にサブカーソル1をセットする
+					if( subCursol_enable[0] )
+					{
+						ImGui::SameLine();
+						if( ImGui::Button("Set Sub Cursol 1 here") )
+						{
+							subCursol_idx[0] = cursol_idx;
+						}
+					}
+					ivpa.fg_subCursol1_enable = subCursol_enable[0];
+
+					// サブカーソル2を有効化
+					if( ImGui::Checkbox( "subCursol 2 ehable", &subCursol_enable[1] ) )
+					{
+						subCursol_idx[1] = cursol_idx;
+					}
+					// 現在位置にサブカーソル2をセットする
+					if( subCursol_enable[1] )
+					{
+						ImGui::SameLine();
+						if( ImGui::Button("Set Sub Cursol 2 here") )
+						{
+							subCursol_idx[1] = cursol_idx;
+						}
+					}
+					ivpa.fg_subCursol2_enable = subCursol_enable[1];
+				}
+			}
+
+			ImGui::Unindent();
+		}
+	}
+
+	// ImGuiウィンドウ終了
+	ImGui::End();
+
+
 }
 
 

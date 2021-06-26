@@ -322,15 +322,23 @@ void GraphObj::AddData(
 {
 	if( _lines.count( pltLineName ) )					// プロットデータ系列の存在チェック
 	{
+		// データの最大/最小値を更新する
+		datRngMax.x() = MAX(datRngMax.x(), point.x());
+		datRngMax.y() = MAX(datRngMax.y(), point.y());
+		datRngMax.z() = MAX(datRngMax.z(), point.z());
+
+		datRngMin.x() = MIN(datRngMin.x(), point.x());
+		datRngMin.y() = MIN(datRngMin.y(), point.y());
+		datRngMin.z() = MIN(datRngMin.z(), point.z());
+
 		// グラフプロット範囲がAUTOに設定されている場合、最大値を自動更新する
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { rangeMax.x() = MAX(rangeMax.x(), point.x()); }
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { rangeMax.y() = MAX(rangeMax.y(), point.y()); }
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { rangeMax.z() = MAX(rangeMax.z(), point.z()); }
+		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { drwRngMax.x() = datRngMax.x(); }
+		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { drwRngMax.y() = datRngMax.y(); }
+		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { drwRngMax.z() = datRngMax.z(); }
 
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { rangeMin.x() = MIN(rangeMin.x(), point.x()); }
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { rangeMin.y() = MIN(rangeMin.y(), point.y()); }
-		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { rangeMin.z() = MIN(rangeMin.z(), point.z()); }
-
+		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { drwRngMin.x() = datRngMin.x(); }
+		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { drwRngMin.y() = datRngMin.y(); }
+		if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { drwRngMin.z() = datRngMin.z(); }
 
 		_lines[pltLineName].push_back( point );
 
@@ -641,18 +649,18 @@ void GraphObj::_drawShapeOfSelf()
 
 	// 軸を再配置
 	xAxis->points[0].y() =
-	xAxis->points[1].y() = -rangeMin.y() / (rangeMax.y() - rangeMin.y())* area->boxSize.y();
+	xAxis->points[1].y() = -drwRngMin.y() / (drwRngMax.y() - drwRngMin.y())* area->boxSize.y();
 
 	yAxis->points[0].x() =
-	yAxis->points[1].x() = -rangeMin.x() / (rangeMax.x() - rangeMin.x())* area->boxSize.x();
+	yAxis->points[1].x() = -drwRngMin.x() / (drwRngMax.x() - drwRngMin.x())* area->boxSize.x();
 
 	// 軸最[大/小]値の表示を更新
 	std::stringstream ss;
 	ss << std::fixed << std::setprecision(2);
-	ss << rangeMax.x(); xMaxLabel->text = ss.str();	ss.str("");
-	ss << rangeMax.y(); yMaxLabel->text = ss.str(); ss.str("");
-	ss << rangeMin.x();	xMinLabel->text = ss.str(); ss.str("");
-	ss << rangeMin.y();	yMinLabel->text = ss.str(); ss.str("");
+	ss << drwRngMax.x(); xMaxLabel->text = ss.str();	ss.str("");
+	ss << drwRngMax.y(); yMaxLabel->text = ss.str(); ss.str("");
+	ss << drwRngMin.x();	xMinLabel->text = ss.str(); ss.str("");
+	ss << drwRngMin.y();	yMinLabel->text = ss.str(); ss.str("");
 
 	// プロットデータ系列ループ
 	for(auto pltMapItm = _linesToDraw.begin(); pltMapItm != _linesToDraw.end(); ++pltMapItm)
@@ -678,9 +686,9 @@ void GraphObj::_drawShapeOfSelf()
 
 					// グラフプロット範囲がAUTOに設定されている場合
 					// pointの軸座標値を軸最大値で正規化して描画エリアサイズに合わせる。
-					if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { point.x() = ((point.x() - rangeMin.x()) / (rangeMax.x() - rangeMin.x())) * area->boxSize.x(); }
-					if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { point.y() = ((point.y() - rangeMin.y()) / (rangeMax.y() - rangeMin.y())) * area->boxSize.y(); }
-					if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { point.z() = ((point.z() - rangeMin.z()) / (rangeMax.z() - rangeMin.z())) * area->boxSize.z(); }
+					if (GRAPH_RANGE_CTL::AUTO == rangeCtl.x) { point.x() = ((point.x() - drwRngMin.x()) / (drwRngMax.x() - drwRngMin.x())) * area->boxSize.x(); }
+					if (GRAPH_RANGE_CTL::AUTO == rangeCtl.y) { point.y() = ((point.y() - drwRngMin.y()) / (drwRngMax.y() - drwRngMin.y())) * area->boxSize.y(); }
+					if (GRAPH_RANGE_CTL::AUTO == rangeCtl.z) { point.z() = ((point.z() - drwRngMin.z()) / (drwRngMax.z() - drwRngMin.z())) * area->boxSize.z(); }
 
 					sPtr_points->push_back(point);
 				}

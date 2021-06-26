@@ -24,12 +24,13 @@ namespace app {
 	const int	WINDOW_SIZE_X = 640*2;
 	const int	WINDOW_SIZE_Y = 480*2;
 
-	//-------------------------------------------------
-	// UIとアプリケーションロジックを媒介するI/F変数
-	//-------------------------------------------------
 	int mouse_x = 0;
 	int mouse_y = 0;
 
+	//-------------------------------------------------
+	// CSVファイルをアプリケーションロジック上で扱うためのI/F
+	//-------------------------------------------------
+	// ファイル毎の構造
 	typedef struct ST_PLOT_FILE_tp{
 		std::string filePath;
 		std::ifstream ifs;
@@ -50,41 +51,20 @@ namespace app {
 		int cK = -1;
 	}ST_PLOT_FILE;
 
+	// ファイル関連操作I/Fルート構造
 	typedef struct FILE_IF_tp{
 		std::map< std::string, ST_PLOT_FILE > pltFiles;
 	}FILE_IF;
+
+	// ファイル関連操作I/Fルートオブジェクト
 	FILE_IF csvIf;
 
+	std::map< std::string, std::shared_ptr<sodl::GraphObj> > graphs2D;
 
-	typedef struct Plot2D_IF_tp{
-		std::map< std::string, std::shared_ptr<sodl::GraphObj> > graphs2D;
-	}Plot2D_IF;
-	Plot2D_IF plot2DIf;
-
-	typedef struct VISUAL_IF_tp{
-		//-------------------------------------------------
-		// Visual to Model
-		//-------------------------------------------------
-		std::map< std::string, appUi::Vif_PlotCnfg > pltLines;
-		std::string newFilePath;
-		std::string newPlotLineName;
-
-		bool		cursol_enable		= false;
-		std::string cursol_pltLnName;
-		int			cursol_pltLn_selIdx = 0;
-		int			cursol_idx			= 0;
-		int			cursolAdjUnit		= 1;
-
-		int			subCursol_idx[2]	= { 0, 0 };
-		bool		subCursol_enable[2]	= { false, false };
-
-		//-------------------------------------------------
-		// Model to Visual
-		//-------------------------------------------------
-		int cursol_idxMax = 0;
-
-	}VISUAL_IF;
-	VISUAL_IF visualIf;
+	//-------------------------------------------------
+	// UIとアプリケーションロジックを媒介するI/F変数
+	//-------------------------------------------------
+	appUi::VISUAL_IF visualIf;
 
 	//-------------------------------------------------
 	// Windowインタラクション関連コールバック関数
@@ -350,18 +330,27 @@ int main(int argc, char ** argv)
 			// 新規2Dプロット名が要求されている場合
 			if( "" != atrSlct.selectedAtrName )
 			{
-				auto grph2D = app::Add2DPlot(
-					vifPltLine.pltLnName + "." +
-					atrSlct.selectedAtrName
-					);
+				std::string structredName = vifPltLine.pltLnName + "." + atrSlct.selectedAtrName;
 
+				// 2Dプロットの実体を生成してアプリケーション共通の2Dプロット保持用リストに加える
+				auto grph2D = app::Add2DPlot( structredName );
+
+				// UIで選択された3Dプロットのアトリビュート列を
+				// 生成した2Dプロットにプロットデータとして流し込む
 				auto attributes = graph3D->GetAttributes_Shared( vifPltLine.pltLnName );
 				auto atr = attributes[atrSlct.selectedAtrIdx];
-
 				for( int i=0; i<atr->data.size(); ++i )
 				{
+					// X:データindex
+					// Y:アトリビュート値
+					// Z:固定値
 					grph2D->AddData( Eigen::Vector3f( i, atr->data[i], 10) );
 				}
+
+				// 生成した2Dプロットに対応する操作用のUIを生成する
+				appUi::Vif_PlotCnfg2D plt2DVif;
+				plt2DVif.plt2dName = structredName;
+				vifPltLine.grps2DIf.insert( std::make_pair( structredName, plt2DVif ) );
 
 				atrSlct.selectedAtrName = "";
 			}
@@ -391,6 +380,102 @@ int main(int argc, char ** argv)
 			}
 
 			//-----------------------------------------------------
+			// 2Dプロットへの設定更新
+			//-----------------------------------------------------
+			for( auto	itr_plt2dIf  = vifPltLine.grps2DIf.begin();
+						itr_plt2dIf != vifPltLine.grps2DIf.end();
+					  ++itr_plt2dIf )
+			{
+				auto& plt2dIf =  itr_plt2dIf->second;
+
+				// 対象の2Dグラフを取得・存在チェック
+				auto itr_grph2D = app::graphs2D.find( plt2dIf.plt2dName );
+				if( app::graphs2D.end() != itr_grph2D )
+				{
+					auto& grph2D = itr_grph2D->second;
+
+					// グラフのプロットラインのデータを取得
+					auto p_line = grph2D->GetCpyPltLn();
+					const auto sz = p_line->size();
+
+					// 引数で与えた範囲におけるy座標の最大/最小を取得する。
+					auto func_GetYMax = [&p_line](
+						const int idxMin,
+						const int idxMax,
+						float& yMin,
+						float& yMax
+						)
+					{
+						yMax = -999999;
+						yMin = +999999;
+						for( int ln_idx  = idxMin;
+								 ln_idx <= idxMax;
+							  ++ ln_idx )
+						{
+							const float y = (*p_line)[ln_idx].y();
+							// 最大値保持
+							if( y > yMax )
+							{
+								yMax = y;
+							}
+							// 最小値保持
+							if( y < yMin )
+							{
+								yMin = y;
+							}
+						}
+					};
+
+					// サブカーソルによるスケーリング有効状態が前回値と異なる場合
+					if( plt2dIf.fg_cBox_scalefitToSubCursols
+					!=  plt2dIf.fg_cBox_scalefitToSubCursols_prv
+					)
+					{
+						// サブカーソルによるスケーリング有効の場合
+						if( plt2dIf.fg_cBox_scalefitToSubCursols )
+						{
+							// カーソルの大小関係を正規化
+							const int lnIdx_min = MIN( app::visualIf.subCursol_idx[0], app::visualIf.subCursol_idx[1] );
+							const int lnIdx_max = MAX( app::visualIf.subCursol_idx[0], app::visualIf.subCursol_idx[1] );
+
+							// カーソルがプロットライン上にあることをチェック
+							if(	( sz > lnIdx_min )
+							&&	( sz > lnIdx_max )
+							)
+							{
+								// カーソル上のプロット点を取得
+								const auto p1 = (*grph2D->GetCpyPltLn())[ lnIdx_min ];
+								const auto p2 = (*grph2D->GetCpyPltLn())[ lnIdx_max ];
+
+								// カーソル間のy座標の最大/最小値を取得
+								float yMax;
+								float yMin;
+								func_GetYMax( lnIdx_min, lnIdx_max, yMin, yMax );
+
+								// 2Dグラフの描画範囲を再設定
+								grph2D->drwRngMin.x() = lnIdx_min;
+								grph2D->drwRngMax.x() = lnIdx_max;
+								grph2D->drwRngMin.y() = yMin;
+								grph2D->drwRngMax.y() = yMax;
+							}
+						}
+						// サブカーソルによるスケーリング無効の場合
+						else
+						{
+							// 2Dグラフの描画範囲を再設定
+							grph2D->drwRngMin.x() = grph2D->datRngMin.x();
+							grph2D->drwRngMax.x() = grph2D->datRngMax.x();
+							grph2D->drwRngMin.y() = grph2D->datRngMin.y();
+							grph2D->drwRngMax.y() = grph2D->datRngMax.y();
+						}
+					}
+					// サブカーソルによるスケーリング有効状態 前回値更新
+					plt2dIf.fg_cBox_scalefitToSubCursols_prv = plt2dIf.fg_cBox_scalefitToSubCursols;
+				}
+			}
+
+
+			//-----------------------------------------------------
 			// プロット系列の削除
 			//-----------------------------------------------------
 			if( vifPltLine.fg_delete )
@@ -401,7 +486,7 @@ int main(int argc, char ** argv)
 				app::visualIf.pltLines.erase(vifPltLine.pltLnName);
 
 				// for文の繰り返し処理で空のイテレータを++しないようにループを抜ける
-				// 処理できなかった文のループは、諦めて次の表示周期に処理する。
+				// 処理できなかった分のループは、諦めて次の表示周期に処理する。
 				break;
 			}
 		}
@@ -421,28 +506,30 @@ int main(int argc, char ** argv)
 		graph3D->SetCursolViible( app::visualIf.cursol_enable,			sodl::GraphObj::CURSOL_SEL::MAIN );
 		graph3D->UpdtCursol		( app::visualIf.cursol_idx,				sodl::GraphObj::CURSOL_SEL::MAIN );
 
+		bool subCursolEnable_1 = ( app::visualIf.cursol_enable && app::visualIf.subCursol_enable[0] );
 		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName,		sodl::GraphObj::CURSOL_SEL::SUB1 );
-		graph3D->SetCursolViible( app::visualIf.subCursol_enable[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
-		graph3D->UpdtCursol		( app::visualIf.subCursol_idx	[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
+		graph3D->SetCursolViible( subCursolEnable_1,					sodl::GraphObj::CURSOL_SEL::SUB1 );
+		graph3D->UpdtCursol		( app::visualIf.subCursol_idx[0],		sodl::GraphObj::CURSOL_SEL::SUB1 );
 
+		bool subCursolEnable_2 = ( app::visualIf.cursol_enable && app::visualIf.subCursol_enable[1] );
+		graph3D->SetCursolViible( subCursolEnable_2,					sodl::GraphObj::CURSOL_SEL::SUB2 );
 		graph3D->PutCursolToLine( app::visualIf.cursol_pltLnName,		sodl::GraphObj::CURSOL_SEL::SUB2 );
-		graph3D->SetCursolViible( app::visualIf.subCursol_enable[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
-		graph3D->UpdtCursol		( app::visualIf.subCursol_idx	[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
+		graph3D->UpdtCursol		( app::visualIf.subCursol_idx[1],		sodl::GraphObj::CURSOL_SEL::SUB2 );
 
 		// 2Dプロットのカーソルを描画する
-		for( auto grph2Ditr = app::plot2DIf.graphs2D.begin();
-				  grph2Ditr != app::plot2DIf.graphs2D.end();
+		for( auto grph2Ditr = app::graphs2D.begin();
+				  grph2Ditr != app::graphs2D.end();
 				++grph2Ditr )
 		{
 			auto grph2D = grph2Ditr->second;
 			grph2D->SetCursolViible	( app::visualIf.cursol_enable,			sodl::GraphObj::CURSOL_SEL::MAIN );
 			grph2D->UpdtCursol		( app::visualIf.cursol_idx,				sodl::GraphObj::CURSOL_SEL::MAIN );
 
-			grph2D->SetCursolViible	( app::visualIf.subCursol_enable[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
-			grph2D->UpdtCursol		( app::visualIf.subCursol_idx	[0],	sodl::GraphObj::CURSOL_SEL::SUB1 );
+			grph2D->SetCursolViible	( subCursolEnable_1,					sodl::GraphObj::CURSOL_SEL::SUB1 );
+			grph2D->UpdtCursol		( app::visualIf.subCursol_idx[0],		sodl::GraphObj::CURSOL_SEL::SUB1 );
 
-			grph2D->SetCursolViible	( app::visualIf.subCursol_enable[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
-			grph2D->UpdtCursol		( app::visualIf.subCursol_idx	[1],	sodl::GraphObj::CURSOL_SEL::SUB2 );
+			grph2D->SetCursolViible	( subCursolEnable_2,					sodl::GraphObj::CURSOL_SEL::SUB2 );
+			grph2D->UpdtCursol		( app::visualIf.subCursol_idx[1],		sodl::GraphObj::CURSOL_SEL::SUB2 );
 		}
 
 		//-----------------------------------------------------
@@ -862,6 +949,9 @@ namespace app {
 	 * @brief	2Dプロットを追加する
 	 * 			Add2DPlot()
 	 * <pre>
+	 * 2Dプロットの実体を生成し、
+	 * アプリケーションスコープの2Dプロット保持用構造体に保持する。
+	 * 明示的に削除しない限り、アプリケーションの終了まで保持される。
 	 * </pre>
 	 ******************************************************************/
 	std::shared_ptr<sodl::GraphObj> Add2DPlot( std::string name )
@@ -904,11 +994,10 @@ namespace app {
 		sodl::drwMngr->AddObjTree_ToDrwSpace(grph, idx_ds);
 
 		// 作成したグラフをアプリケーションの2Dグラフ配列に保持する
-		app::plot2DIf.graphs2D.insert( std::make_pair( name, grph ) );
+		app::graphs2D.insert( std::make_pair( name, grph ) );
 
 		return grph;
 	}
-
 
 
 
@@ -921,155 +1010,7 @@ namespace app {
 	 ******************************************************************/
 	void ImGui_DrawAndOperate()
 	{
-		static int openFileCtr = 0;
-
-		// アトリビュートをプロットにどのように反映するかを設定する
-		const char KEYSTR_DIALOG_FILE_OPEN[] = "KeyStr_Dialog_FileOpen";
-
-		// ImGuiウィンドウ開始
-		ImGui::Begin("Plot Configuration");
-
-		//------------------------------------------------------
-		// プロット系列数分の設定項目を表示する
-		//------------------------------------------------------
-		for (auto vifMapItm = visualIf.pltLines.begin(); vifMapItm != visualIf.pltLines.end(); ++vifMapItm)
-		{
-			auto& vifPltLn = vifMapItm->second;
-			vifPltLn.Updt();
-		}
-
-		//------------------------------------------------------
-		// プロット系列を追加するためのダイアログ表示ボタン
-		//------------------------------------------------------
-		if (ImGui::Button("Open CSV File, and Add Plot") )
-		{
-			const char* filters = ".csv,.*";
-			ImGuiFileDialog::Instance()->OpenDialog(
-				KEYSTR_DIALOG_FILE_OPEN,							// key dialog
-				" Choose a File", 									// title
-				filters, 											// filters
-				".", 												// path
-				"" 													// defaut file name
-			);
-		}
-
-		//------------------------------------------------------
-		// プロット系列を追加するためのダイアログ処理
-		//------------------------------------------------------
-		ImVec2 minSize = ImVec2(0, 0);
-		ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
-		// ダイアログを表示する( Openされているかは内部で自動判断 )
-		if ( ImGuiFileDialog::Instance()->Display( KEYSTR_DIALOG_FILE_OPEN ) )
-		{
-			// ファイルが選択された場合
-			if (ImGuiFileDialog::Instance()->IsOk())
-			{
-				// 選択されたファイルパスをI/F領域にセットする
-				app::visualIf.newFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
-				app::visualIf.newPlotLineName = "plot" + std::to_string(++openFileCtr);
-			}
-			ImGuiFileDialog::Instance()->Close();
-		}
-
-		ImGui::NewLine();
-		//------------------------------------------------------
-		// カーソル操作
-		//------------------------------------------------------
-		// 系列名で折り畳み項目を作成
-		if ( ImGui::CollapsingHeader( "Cursol Operation" ) )
-		{
-			ImGui::Indent();
-
-			// カーソル有効チェックボックス
-			ImGui::Checkbox( "cursol ehable", &visualIf.cursol_enable );
-			if( visualIf.cursol_enable )
-			{
-				//------------------------------------------------------
-				// カーソルを置くプロット系列の選択
-				//------------------------------------------------------
-				// コンボボックス表示内容を作成
-				std::vector< const char* > pList;
-				// アトリビュート数分ループ
-				for(auto	mpIt_ptLn  = visualIf.pltLines.begin();
-							mpIt_ptLn != visualIf.pltLines.end();
-						  ++mpIt_ptLn )
-				{
-					pList.push_back( mpIt_ptLn->first.c_str() );
-				}
-
-				if( 0 != pList.size() )
-				{
-					//------------------------------------------------------
-					// カーソルを置くプロット系列の選択
-					//------------------------------------------------------
-					// コンボボックス表示
-					ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
-					ImGui::Combo(
-						"[Plot Line] put cursol to ",
-						&visualIf.cursol_pltLn_selIdx,
-						(char**)&pList[0],
-						pList.size()
-					);
-					ImGui::PopItemWidth();																	// 要素幅指定キャンセル
-
-					// コンボボックスで選択されたプロット系列の名称を取得
-					if( pList.size() > visualIf.cursol_pltLn_selIdx )
-					{
-						visualIf.cursol_pltLnName = pList[visualIf.cursol_pltLn_selIdx];
-					}
-
-					//------------------------------------------------------
-					// カーソル位置の操作
-					//------------------------------------------------------
-					ImGui::SliderInt("[Cursol Pos] slider", &visualIf.cursol_idx, 0, visualIf.cursol_idxMax);
-					if( ImGui::Button("<") )
-					{
-						visualIf.cursol_idx -= visualIf.cursolAdjUnit;
-					}
-					ImGui::SameLine();
-					if( ImGui::Button(">") )
-					{
-						visualIf.cursol_idx += visualIf.cursolAdjUnit;
-					}
-					ImGui::SameLine();
-					ImGui::Text("[Cursol Pos] adjust         ");
-					ImGui::SameLine();
-					ImGui::PushItemWidth(80); 																// 要素幅指定 [pix]
-					ImGui::InputInt( "adj unit", &visualIf.cursolAdjUnit );									// 数値入力ボックス
-					ImGui::PopItemWidth();																	// 要素幅指定キャンセル
-					ImGui::NewLine();																		// 改行
-
-					//------------------------------------------------------
-					// サブカーソルをセットする
-					//------------------------------------------------------
-					// 現在位置にサブカーソル1をセットする
-					ImGui::Checkbox( "subCursol 1 ehable", &visualIf.subCursol_enable[0] );
-					if( visualIf.subCursol_enable[0] )
-					{
-						ImGui::SameLine();
-						if( ImGui::Button("Set Sub Cursol 1 here") )
-						{
-							visualIf.subCursol_idx[0] = visualIf.cursol_idx;
-						}
-					}
-					// 現在位置にサブカーソル2をセットする
-					ImGui::Checkbox( "subCursol 2 ehable", &visualIf.subCursol_enable[1] );
-					if( visualIf.subCursol_enable[1] )
-					{
-						ImGui::SameLine();
-						if( ImGui::Button("Set Sub Cursol 2 here") )
-						{
-							visualIf.subCursol_idx[1] = visualIf.cursol_idx;
-						}
-					}
-				}
-			}
-
-			ImGui::Unindent();
-		}
-
-		// ImGuiウィンドウ終了
-		ImGui::End();
+		visualIf.drawVif();
 	}
 
 

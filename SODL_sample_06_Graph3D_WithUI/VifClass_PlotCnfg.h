@@ -19,6 +19,47 @@ namespace sodl = SmplObjDrwLib;
 
 namespace appUi {
 
+
+	/** ***************************************************************
+	 * @brief 描画パーツ間の相互作用クラス
+	 * <pre>
+	 * 描画パーツ間の相互作用を扱うデータと処理を定義するクラス
+	 * </pre>
+	 ******************************************************************/
+	class Vif_InterVisualPartsAction
+	{
+	public:
+
+		bool fg_subCursol1_enable = false;
+		bool fg_subCursol2_enable = false;
+
+	private:
+
+	};
+
+
+	/** ***************************************************************
+	 * @brief 2DプロットのViusualIF
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	class Vif_PlotCnfg2D
+	{
+	public:
+		std::string plt2dName;
+
+		bool fg_cBox_scalefitToSubCursols = false;
+		bool fg_cBox_scalefitToSubCursols_prv = false;
+
+		void draw2DPlotIf();
+	};
+
+
+	/** ***************************************************************
+	 * @brief プロットラインのViusualIF
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
 	class Vif_PlotCnfg
 	{
 	public:
@@ -61,12 +102,57 @@ namespace appUi {
 		void PrcSelected();
 		void ShowSlctWndw();
 
+		//---------------------------------------------------------------------
+		// 2Dプロット用のI/F
+		//---------------------------------------------------------------------
+		std::map< std::string, appUi::Vif_PlotCnfg2D > grps2DIf;
 
 	public:
 
 		void Func_AtrCnfg( std::string label, bool& fgEnable, std::vector<std::string>& atrs, int& selectedIdx  );
-		void Updt();
+		void drawPltLnCnfg();
 	};
+
+
+
+	/** ***************************************************************
+	 * @brief 3DグラフのViusualIFルート構造
+	 * <pre>
+	 * </pre>
+	 ******************************************************************/
+	class VISUAL_IF{
+	public:
+		//-------------------------------------------------
+		// Visual to Model
+		//-------------------------------------------------
+		std::map< std::string, appUi::Vif_PlotCnfg > pltLines;
+		std::string newFilePath;
+		std::string newPlotLineName;
+
+		bool		cursol_enable		= false;
+		std::string cursol_pltLnName;
+		int			cursol_pltLn_selIdx = 0;
+		int			cursol_idx			= 0;
+		int			cursolAdjUnit		= 1;
+
+		int			subCursol_idx[2]	= { 0, 0 };
+		bool		subCursol_enable[2]	= { false, false };
+
+
+
+		//-------------------------------------------------
+		// Model to Visual
+		//-------------------------------------------------
+		int cursol_idxMax = 0;
+
+
+		//-------------------------------------------------
+		// function I/F
+		//-------------------------------------------------
+		void drawVif();
+
+	};
+
 
 };
 
